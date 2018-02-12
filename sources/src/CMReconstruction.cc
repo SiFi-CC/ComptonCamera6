@@ -249,10 +249,11 @@ Double_t CMReconstruction::Hprime(Int_t i, int j){
 }
 //------------------------------------------------------------------
 Bool_t CMReconstruction::CalculateS(void){
-  S = new Double_t[fNvoxelsO+1];
+  //S = new Double_t[fNvoxelsO+1];
   
   for(int j=1; j<fNvoxelsO+1; j++){
-    S[j] = 0;
+    //S[j] = 0;
+    S.push_back(0);
     for(int i=1; i<fNvoxelsI+1; i++){
       S[j] += H(j,i);
     }

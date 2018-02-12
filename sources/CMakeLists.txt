@@ -15,7 +15,7 @@ list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
 
 
 #---Locate the ROOT package and defines a number of variables (e.g. ROOT_INCLUDE_DIRS)
-find_package(ROOT REQUIRED COMPONENTS RIO)
+find_package(ROOT REQUIRED COMPONENTS RIO Geom)
 
 
 #---Set global variables e.g. where sources and includes are
@@ -32,7 +32,6 @@ ROOT_GENERATE_DICTIONARY(G__ComptonCamera6 ${headers} LINKDEF LinkDef.hh)
 #---Create a shared library with generated dictionary
 add_library(ComptonCamera6 SHARED camera.cc ${sources} G__ComptonCamera6.cxx)
 target_link_libraries(ComptonCamera6 ${ROOT_LIBRARIES})
-
 
 #---Create  a main program using the library
 add_executable(camera camera.cc)

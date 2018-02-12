@@ -6,6 +6,7 @@
 #include "TTree.h"
 #include "Mask.hh"
 #include "Track.hh"
+#include <vector>
 
 class CMReconstruction : public TObject{
 
@@ -55,8 +56,8 @@ private:
 
   Int_t fNiter;
   Int_t fThisIter;
-  Double_t* S;
-
+  //Double_t* S;
+  std::vector <Double_t> S;
   
   ClassDef(CMReconstruction,1)
 };
