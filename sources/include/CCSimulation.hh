@@ -46,6 +46,7 @@ private:
   TVector3    fVersor1, fVersor2;
   Double_t    fEnergy0, fEnergy1, fEnergy2;
   Double_t    fYgap, fZgap;
+  Double_t    fRadius;
   
   TH2F *hSource;
   TH2F *hScat;

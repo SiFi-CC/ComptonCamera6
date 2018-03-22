@@ -21,7 +21,7 @@ CCSimulation::CCSimulation(TString name, Bool_t verbose){
   
   SetName(name);
   fVerbose = verbose;
-  fFile = new TFile("results/"+name+".root","RECREATE");
+  fFile = new TFile("../sources/results/"+name+".root","RECREATE");
   fTree = new TTree("data","data");
   fTree->Branch("point0",&fPoint0);	//source position
   fTree->Branch("point1",&fPoint1);	//interaction point on the scaterrer
@@ -89,6 +89,10 @@ Bool_t CCSimulation::GenerateRay(void){
   Double_t theta, phi, maxz;
   fYgap = -20.;
   fZgap = -20.;
+  fRadius = 15.;
+  Double_t theta_circ, phi_circ;
+  Double_t x,y,z,rad;
+  TVector3 circ;
   
   switch(fGenVersion){
     case 1:	//isotropic point-like source
@@ -117,6 +121,14 @@ Bool_t CCSimulation::GenerateRay(void){
 	fPoint0.SetXYZ(0,0,0);
       else 
 	fPoint0.SetXYZ(0,fYgap,0);
+      theta = acos(gRandom->Uniform(-1,1));			//rad
+      phi = gRandom->Uniform(-TMath::Pi(), TMath::Pi());	//rad
+      break;
+    case 5:	//circular source of given radius
+      phi_circ = gRandom->Uniform(-TMath::Pi(), TMath::Pi());
+      theta_circ = acos(gRandom->Uniform(-1,1));
+      rad = gRandom->Uniform(0,fRadius);
+      fPoint0.SetMagThetaPhi(rad,theta_circ,phi_circ);
       theta = acos(gRandom->Uniform(-1,1));			//rad
       phi = gRandom->Uniform(-TMath::Pi(), TMath::Pi());	//rad
       break;
@@ -207,7 +219,7 @@ void CCSimulation::Clear(void){
 }
 //------------------------------------------------------------------ 
 void CCSimulation::SaveGeometryTxt(void){
-  ofstream output(Form("results/CCSimulation_geometry_gen%i.txt",fGenVersion), std::ios::out | std::ios::trunc);
+  ofstream output(Form("../sources/results/CCSimulation_geometry_gen%i.txt",fGenVersion), std::ios::out | std::ios::trunc);
   output << "Generator version: " << fGenVersion << endl;
   if(fGenVersion==1)
     output << fPoint0.X() << " " << fPoint0.Y() << " " << fPoint0.Z() << endl;
@@ -217,8 +229,11 @@ void CCSimulation::SaveGeometryTxt(void){
     output << "0 0 0\t0 0 " << fZgap << endl;
   else if(fGenVersion==4)
     output << "0 0 0\t0 " << fYgap << " 0" << endl;
+  else if(fGenVersion==5)
+    output << "Center: 0 0 0 \t Radius: " << fRadius << endl;
   else
     cout << "##### Please choose correcr version of the generaror!" << endl;
+  
   output << "DetPlane object: " << fScatterer.GetName() << endl;
   output << "fA = " << fScatterer.GetA() << endl;
   output << "fB = " << fScatterer.GetB() << endl;
@@ -315,13 +330,19 @@ void CCSimulation::BuildTGeometry(void){
        source5->SetLineColor(kRed);
        source6->SetLineColor(kRed);
     }
+    else if(fGenVersion==5){
+       TGeoTranslation *tr7 = new TGeoTranslation(0.,0.,0.);
+       TGeoVolume *source7 = geom->MakeSphere("source",Vacuum,0.1,fRadius);
+       top->AddNode(source7,1,tr7);
+       source7->SetLineColor(kRed);
+    }
      else
       cout << "##### Please choose correcr version of the generaror!" << endl;
    
    //----- close geometry and save
    geom->CloseGeometry();
    geom->SetVisLevel(4);
-   geom->Export(Form("results/CCSimulation_TGeometry_gen%i.root",fGenVersion));
+   geom->Export(Form("../sources/results/CCSimulation_TGeometry_gen%i.root",fGenVersion));
 }
 //------------------------------------------------------------------ 
 void CCSimulation::Print(void){

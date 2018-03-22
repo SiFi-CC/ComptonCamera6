@@ -5,7 +5,7 @@ using namespace std;
 int main(void){
 
   Int_t nev = 100000;
-  Int_t gen = 4;
+  Int_t gen = 5;
   
   CCSimulation *sim = new CCSimulation(Form("CCSimulation_gen%i",gen),kFALSE);
   sim->SetGenVersion(gen);
