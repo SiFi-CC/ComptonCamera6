@@ -114,7 +114,7 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
     
    // cout<<"pixelSizeY = "<<pixelSizeY<<", pixelSizeZ = "<<pixelSizeZ<<endl;
    //cout<<"nbinsy = "<<nbinsy<<", nbinsz = "<<nbinsz<<endl;
-   cout<<"Loop over horizontal lines..."<<endl;
+  cout<<"Loop over horizontal lines..."<<endl;
     for (j=0; j<=nbinsy; j++){
 
       Double_t a = 2*(pow(-uvec.Z(),2) - pow(cos(coneTheta),2));
@@ -147,12 +147,12 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
       
           Double_t z1 = (b - sqrt(c))/a;
           Double_t z2 = (b + sqrt(c))/a;
-          //fImage->Fill(z1,y);
-          //fImage->Fill(z2,y);
+        
+          
 	  
 	  
-	  g->SetPoint(g->GetN(), z1, y);
-	  g->SetPoint(g->GetN(), z2, y);
+	  
+	  
 	  
 	  if(fabs(z1) <= zlimit){
 	    
@@ -164,7 +164,7 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
               pixelY = fImage->GetYaxis()->FindBin(y+abit);
 	      tmppoint->SetBinPoint(fImage->GetBin(pixelZ,pixelY), fXofRecoPlane, y, z1);
 	    }
-	    
+	   
 	    if(fabs(y-abit) <= ylimit){
 	      tmppoint = (IsectionPoint*)fArray->ConstructedAt(npoints++);
 	      pixelZ = fImage->GetXaxis()->FindBin(z1);
@@ -172,6 +172,8 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
               pixelY = fImage->GetYaxis()->FindBin(y-abit);
 	      tmppoint->SetBinPoint(fImage->GetBin(pixelZ,pixelY), fXofRecoPlane, y, z1);
 	    }
+	    g->SetPoint(g->GetN(), z1, y);
+	    //fImage->Fill(z1,y);
 	    cout<<"j="<<j<<", y="<<y<<", z="<<z1<<endl;
 	  }
 	  if(fabs(z2) <= zlimit){
@@ -192,6 +194,8 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
               pixelY = fImage->GetYaxis()->FindBin(y-abit);
 	      tmppoint->SetBinPoint(fImage->GetBin(pixelZ,pixelY), fXofRecoPlane, y, z2);
 	    }
+	    g->SetPoint(g->GetN(), z2, y);
+	    //fImage->Fill(z2,y);
 	    cout<<"j="<<j<<", y="<<y<<", z="<<z2<<endl;
 	  }
       }
@@ -206,7 +210,7 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   
    z = -B;
     
-   cout<<"Loop over vertical lines..."<<endl;
+   //cout<<"Loop over vertical lines..."<<endl;
     for (k=0; k<=nbinsz; k++){
 
       Double_t d = 2*(pow(-uvec.Y(),2) - pow(cos(coneTheta),2));
@@ -240,14 +244,14 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
             Double_t y2 = (e + sqrt(f))/d;
 	   
 	      
-	    //fImage->Fill(z,y1);
-	    //fImage->Fill(z,y2);
+	   
+	    
 	    
 	 
 	  
 	  
-	   g->SetPoint(g->GetN(), z, y1);
-	   g->SetPoint(g->GetN(), z, y2);
+	   
+	   
 	  
 	   if(fabs(y1) <= ylimit){
 	     
@@ -267,7 +271,9 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
 	       pixelZ = fImage->GetXaxis()->FindBin(z-abit);
                
 	       tmppoint->SetBinPoint(fImage->GetBin(pixelZ,pixelY), fXofRecoPlane, y1, z);
-	     }  
+	     }
+	     g->SetPoint(g->GetN(), z, y1);
+	     //fImage->Fill(z,y1);
 	     cout<<"k="<<k<<", y="<<y1<<", z="<<z<<endl;
 	   }
 	   
@@ -291,6 +297,8 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
 	      pixelZ = fImage->GetXaxis()->FindBin(z-abit);
 	      tmppoint->SetBinPoint(fImage->GetBin(pixelZ,pixelY), fXofRecoPlane, y2, z);
 	    }
+	    g->SetPoint(g->GetN(), z, y2);
+	    //fImage->Fill(z,y2);
 	    cout<<"k="<<k<<", y="<<y2<<", z="<<z<<endl;
 	  }
 	  
@@ -306,7 +314,7 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
 
     fArray->Sort();
     
-    cout<<"Print fArray after sorting..."<<endl;
+   cout<<"Print fArray after sorting..."<<endl;
     for(int i=0; i<npoints; i++){
       cout<<"i="<<i<<endl;
       ((IsectionPoint*)fArray->At(i))->Print();
@@ -330,15 +338,17 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
       tmpvec2 = tmppoint2->GetPointCoordinates();
       binno2 = tmppoint2->GetBin();
       //cout<<"binno2="<<binno2<<endl;
-      if(binno1!=binno2){
-        cout<<"Bin numbers are different when they should not!"<<endl;
-        //return kFALSE;
-      }
       
       if(dist <= sqrt(pow(pixelSizeY,2)+pow(pixelSizeZ,2))){
 	dist = ((*tmpvec1)-(*tmpvec2)).Mag();
         //cout<<i<<"  "<<dist<<endl;
       }
+      if(binno1!=binno2){
+        cout<<"Bin numbers are different when they should not!"<<endl;
+        //return kFALSE;
+      }
+      
+      
       //cout<<"\n\n\n"<<endl;
       fImage->SetBinContent(binno1, fImage->GetBinContent(binno1) + dist);
       //fImage->SetBinContent(binno2, fImage->GetBinContent(binno1) + dist);
