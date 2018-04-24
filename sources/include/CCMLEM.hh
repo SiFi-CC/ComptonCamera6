@@ -17,7 +17,7 @@
 class CCMLEM : public TObject{
   
 public:
-  CCMLEM(TString inputName, TString name, Int_t iter, Bool_t verbose, Double_t dimZ, Double_t dimY);
+  CCMLEM(TString inputName, TString name, Int_t iter, Bool_t verbose, Double_t dimZ, Double_t dimY, Int_t nbinsz, Int_t nbinsy);
   ~CCMLEM();
  
   //TVector3 ConnectPoints(TVector3 *point1, TVector3 *point2);
@@ -30,6 +30,7 @@ public:
   void SetInputName(TString inputName){ fInputName = inputName; };
   void SetIter(Int_t iter){ fIter = iter; };
   //TH2F* GetImage(void) { return fImage; };
+  Int_t AddIsectionPoint(TString dir, Double_t x, Double_t y, Double_t z);
   
 private:
   TString   fInputName;
@@ -40,6 +41,7 @@ private:
   TFile     *fFile;
   TTree     *fTree;
   TH2F      *fImage;
+  TGraph    *fGraph;
   TGraph    *g;
   TVector3  *fPoint0;
   TVector3  *fPoint1;
@@ -51,6 +53,11 @@ private:
   Double_t  fEnergy2;
   Double_t  fDimZ;
   Double_t  fDimY;
+  Int_t fNbinsZ;
+  Int_t fNbinsY;
+  Int_t fNIpoints;
+  Double_t  fPixelSizeZ;
+  Double_t  fPixelSizeY;
   Double_t  fXofRecoPlane;
   TClonesArray*  fArray;
   //DetPlane  fScatterer, fAbsorber;

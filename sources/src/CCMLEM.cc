@@ -14,7 +14,7 @@ ClassImp(CCMLEM);
 
 //--------------------
 
-CCMLEM::CCMLEM(TString inputName, TString name, Int_t iter, Bool_t verbose, Double_t dimZ, Double_t dimY){
+CCMLEM::CCMLEM(TString inputName, TString name, Int_t iter, Bool_t verbose, Double_t dimZ, Double_t dimY, Int_t nbinsz, Int_t nbinsy){
   
   SetInputName(inputName);
   SetName(name);
@@ -23,6 +23,10 @@ CCMLEM::CCMLEM(TString inputName, TString name, Int_t iter, Bool_t verbose, Doub
   fDimZ = dimZ;
   fDimY = dimY;
   fXofRecoPlane = 0;
+  fNbinsZ = nbinsz;
+  fNbinsY = nbinsy;
+  fPixelSizeZ = fDimZ/fNbinsZ;
+  fPixelSizeY = fDimY/fNbinsY;
   
   fPoint0 = new TVector3;
   fPoint1 = new TVector3;
@@ -45,6 +49,9 @@ CCMLEM::CCMLEM(TString inputName, TString name, Int_t iter, Bool_t verbose, Doub
   fNev = fTree->GetEntries();
   
   fArray = new TClonesArray("IsectionPoint",10000);
+  fNIpoints = 0;
+  
+  cout<<"CCMLEM: I will work in fVerbose="<<fVerbose<<" mode"<<endl;
 
 }
 //----------------------------------------
@@ -58,29 +65,25 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   CCReconstruction *reco = new CCReconstruction(fInputName, fName, fIter, fVerbose);
 
 //image histogram
-  Int_t nbinsz = (Int_t)fDimZ/10;
-  Int_t nbinsy = (Int_t)fDimY/10;
-  Double_t zlimit = fDimZ/2.;
-  Double_t ylimit = fDimY/2.;
-  fImage = new TH2F("image","image",nbinsz,-zlimit,zlimit,nbinsy,-ylimit,ylimit);
-  g = new TGraph();
-  g->SetName("g");
-  g->SetTitle("non-pixelized reco image");
-  g->SetMarkerStyle(7);
-  g->SetMarkerColor(kRed);
+  fImage = new TH2F("image","image",fNbinsZ,-fDimZ/2.,fDimZ/2.,fNbinsY,-fDimY/2.,fDimY/2.);
   fImage->GetXaxis()->SetTitle("z [mm]");
   fImage->GetYaxis()->SetTitle("y [mm]");
+
+  fGraph = new TGraph();
+  fGraph->SetName("g");
+  fGraph->SetTitle("non-pixelized reco image");
+  fGraph->SetMarkerStyle(7);
+  fGraph->SetMarkerColor(kRed);
+  TH1F* htmp = new TH1F("g","non-pixelized reco image",fNbinsZ,-fDimZ/2.,fDimZ/2.);
+  htmp->GetYaxis()->SetRangeUser(-fDimY/2.,fDimY/2.);
+  htmp->GetXaxis()->SetTitle("z [mm]");
+  htmp->GetYaxis()->SetTitle("y [mm]");
+  fGraph->SetHistogram(htmp);
  
-  
-  //TFile *file = new TFile("myTree.root","RECREATE");
-  //TTree *tree = new TTree("intersection","points");
-  //tree->Branch("intersectionPoints",&intersectionPoints,"x/D:y/D:z/D");
   Double_t pixelX = 0.;
   Double_t pixelY, pixelZ;
   Double_t abit = 1.E-3;
-  Double_t pixelSizeZ = zlimit*2/nbinsz;	//mm
-  Double_t pixelSizeY = ylimit*2/nbinsy;
-  
+
   Int_t j,k;
   
   TVector3 interactionPoint;
@@ -95,277 +98,221 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   
   
   fArray->Clear("C");
-  Int_t npoints = 0;
+  fNIpoints = 0;
   IsectionPoint* tmppoint;
   IsectionPoint* tmppoint1;
   IsectionPoint* tmppoint2;
 
+  const Double_t maxdist = sqrt(pow(fPixelSizeY,2)+pow(fPixelSizeZ,2));
   for(Int_t i=iStart; i<iStop; i++){
  
-    cout<<"Recontruction for event "<< i<<endl<<endl;;
+    if(fVerbose) cout<<"CCMLEM::Reconstruct(...) event "<< i<<endl<<endl;;
     ComptonCone *cone = reco->ReconstructCone(i);
     interactionPoint = cone->GetApex();
     coneAxis = cone->GetAxis();
     uvec = coneAxis.Unit();
     coneTheta = cone->GetAngle();
-      
-      
+    Double_t a, b, c1, c2, c3, c4, c, z1, z2;
+    Double_t d, e, f1, f2, f3, f4, f, y1, y2;  
+    
     y = -A;
-    
-   // cout<<"pixelSizeY = "<<pixelSizeY<<", pixelSizeZ = "<<pixelSizeZ<<endl;
-   //cout<<"nbinsy = "<<nbinsy<<", nbinsz = "<<nbinsz<<endl;
-  cout<<"Loop over horizontal lines..."<<endl;
-    for (j=0; j<=nbinsy; j++){
-
-      Double_t a = 2*(pow(-uvec.Z(),2) - pow(cos(coneTheta),2));
-
-      Double_t b = 2*((-uvec.Z())*((interactionPoint.Z())*(-uvec.Z()) - y*((-uvec.Y())) + (interactionPoint.Y())*
-                   (-uvec.Y()) + (interactionPoint.X())*(-uvec.X()) + F - (-uvec.X())*F) - (interactionPoint.Z())*pow(cos(coneTheta),2));
-	
-      Double_t c1 = pow(interactionPoint.Y(),2) + pow(interactionPoint.X(),2) + ((-2)*pow(interactionPoint.Y(),2)*pow(-uvec.Z(),2)) +  
-                    ((-2)*pow(interactionPoint.X(),2)*pow(-uvec.Z(),2)) + ((-2)*pow(interactionPoint.Y(),2)*pow(-uvec.Y(),2)) + 
-                    ((-4)*(interactionPoint.Y())*(interactionPoint.X())*(-uvec.Y())*(-uvec.X())) + ((-2)*pow(interactionPoint.X(),2)*
-		    pow(-uvec.X(),2));
-		      
-      Double_t c2 = (-2)*(interactionPoint.X())*F + 4*(interactionPoint.X())*F*
-		    pow(-uvec.Z(),2) - 4*(interactionPoint.Y())*(-uvec.Y())*F - 4*(interactionPoint.X())*
-		    (-uvec.X())*F + 4*(interactionPoint.Y())*(-uvec.Y())*(-uvec.X())*F + 
-		    4*(interactionPoint.X())*pow(-uvec.X(),2)*F - pow(F,2) - 2*pow(-uvec.Z(),2)*
-		    pow(F,2) + 4*(-uvec.X())*pow(F,2) - 2*pow(-uvec.X(),2)*pow(F,2);
-	
-      Double_t c3 = pow(y,2)*(1 - 2*pow(-uvec.Z(),2) - 2*pow(-uvec.Y(),2)) + y*
-		    ((interactionPoint.Y())*((-2) + 4*pow(-uvec.Z(),2) + 4*pow(-uvec.Y(),2)) + 4*(-uvec.Y())*((interactionPoint.X())*(-uvec.X()) + 
-                    F - (-uvec.X())*F));
-	
-      Double_t c4 = (pow(y,2) - 2*y*(interactionPoint.Y()) + pow(interactionPoint.Y(),2) + pow((interactionPoint.X() - F),2))*
-                    ((-1) + 2*pow(cos(coneTheta),2));
-	
-
-      Double_t c = (-2)*pow(cos(coneTheta),2)*(c1 + c2 + c3 + c4); 
-	
-        if(c >= 0){
+    if(fVerbose) cout<<"Loop over horizontal lines..."<<endl;
+    for (j=0; j<=fNbinsY; j++){
       
-          Double_t z1 = (b - sqrt(c))/a;
-          Double_t z2 = (b + sqrt(c))/a;
-        
-          
-	  
-	  
-	  
-	  
-	  
-	  if(fabs(z1) <= zlimit){
-	    
-	    if(fabs(y+abit) <= ylimit){
-	    
-	      tmppoint = (IsectionPoint*)fArray->ConstructedAt(npoints++);
-	      pixelZ = fImage->GetXaxis()->FindBin(z1);
-	      
-              pixelY = fImage->GetYaxis()->FindBin(y+abit);
-	      tmppoint->SetBinPoint(fImage->GetBin(pixelZ,pixelY), fXofRecoPlane, y, z1);
-	    }
-	   
-	    if(fabs(y-abit) <= ylimit){
-	      tmppoint = (IsectionPoint*)fArray->ConstructedAt(npoints++);
-	      pixelZ = fImage->GetXaxis()->FindBin(z1);
-	      
-              pixelY = fImage->GetYaxis()->FindBin(y-abit);
-	      tmppoint->SetBinPoint(fImage->GetBin(pixelZ,pixelY), fXofRecoPlane, y, z1);
-	    }
-	    g->SetPoint(g->GetN(), z1, y);
-	    //fImage->Fill(z1,y);
-	    cout<<"j="<<j<<", y="<<y<<", z="<<z1<<endl;
-	  }
-	  if(fabs(z2) <= zlimit){
-	    
-	    if(fabs(y+abit) <= ylimit){
-	    
-	      tmppoint = (IsectionPoint*)fArray->ConstructedAt(npoints++);
-	      pixelZ = fImage->GetXaxis()->FindBin(z2);
-	    
-              pixelY = fImage->GetYaxis()->FindBin(y+abit);
-	      tmppoint->SetBinPoint(fImage->GetBin(pixelZ,pixelY), fXofRecoPlane, y, z2);
-	    }
-	    
-	    if(fabs(y-abit) <= ylimit){
-	      tmppoint = (IsectionPoint*)fArray->ConstructedAt(npoints++);
-	      pixelZ = fImage->GetXaxis()->FindBin(z2);
-	      
-              pixelY = fImage->GetYaxis()->FindBin(y-abit);
-	      tmppoint->SetBinPoint(fImage->GetBin(pixelZ,pixelY), fXofRecoPlane, y, z2);
-	    }
-	    g->SetPoint(g->GetN(), z2, y);
-	    //fImage->Fill(z2,y);
-	    cout<<"j="<<j<<", y="<<y<<", z="<<z2<<endl;
-	  }
+      a = 2*(pow(-uvec.Z(),2) - pow(cos(coneTheta),2));
+      
+      b = 2*((-uvec.Z())*((interactionPoint.Z())*(-uvec.Z()) - y*((-uvec.Y())) + (interactionPoint.Y())*
+			  (-uvec.Y()) + (interactionPoint.X())*(-uvec.X()) + F - (-uvec.X())*F) - (interactionPoint.Z())*pow(cos(coneTheta),2));
+      
+      c1 = pow(interactionPoint.Y(),2) + pow(interactionPoint.X(),2) + ((-2)*pow(interactionPoint.Y(),2)*pow(-uvec.Z(),2)) +  
+	((-2)*pow(interactionPoint.X(),2)*pow(-uvec.Z(),2)) + ((-2)*pow(interactionPoint.Y(),2)*pow(-uvec.Y(),2)) + 
+	((-4)*(interactionPoint.Y())*(interactionPoint.X())*(-uvec.Y())*(-uvec.X())) + ((-2)*pow(interactionPoint.X(),2)*
+											pow(-uvec.X(),2));
+      
+      c2 = (-2)*(interactionPoint.X())*F + 4*(interactionPoint.X())*F*
+	pow(-uvec.Z(),2) - 4*(interactionPoint.Y())*(-uvec.Y())*F - 4*(interactionPoint.X())*
+	(-uvec.X())*F + 4*(interactionPoint.Y())*(-uvec.Y())*(-uvec.X())*F + 
+	4*(interactionPoint.X())*pow(-uvec.X(),2)*F - pow(F,2) - 2*pow(-uvec.Z(),2)*
+	pow(F,2) + 4*(-uvec.X())*pow(F,2) - 2*pow(-uvec.X(),2)*pow(F,2);
+      
+      c3 = pow(y,2)*(1 - 2*pow(-uvec.Z(),2) - 2*pow(-uvec.Y(),2)) + y*
+	((interactionPoint.Y())*((-2) + 4*pow(-uvec.Z(),2) + 4*pow(-uvec.Y(),2)) + 4*(-uvec.Y())*((interactionPoint.X())*(-uvec.X()) + 
+												  F - (-uvec.X())*F));
+      
+      c4 = (pow(y,2) - 2*y*(interactionPoint.Y()) + pow(interactionPoint.Y(),2) + pow((interactionPoint.X() - F),2))*
+	((-1) + 2*pow(cos(coneTheta),2));
+      
+      
+      c = (-2)*pow(cos(coneTheta),2)*(c1 + c2 + c3 + c4); 
+      
+      if(c >= 0){
+	z1 = (b - sqrt(c))/a;
+        z2 = (b + sqrt(c))/a;
+	if(fabs(z1)<1e-14) z1 = z1*1e6;
+	if(fabs(z2)<1e-14) z2 = z2*1e6;
+	AddIsectionPoint("hor", fXofRecoPlane, y, z1);
+	AddIsectionPoint("hor", fXofRecoPlane, y, z2);
       }
-
-      y=y+pixelSizeY;
-     
-     
-    // tree->Fill();
-
+      y=y+fPixelSizeY;    
     } //end of loop over horizontal lines
-   
-  
-   z = -B;
     
-   //cout<<"Loop over vertical lines..."<<endl;
-    for (k=0; k<=nbinsz; k++){
-
-      Double_t d = 2*(pow(-uvec.Y(),2) - pow(cos(coneTheta),2));
-
-      Double_t e = 2*((-uvec.Y())*((interactionPoint.Z())*(-uvec.Z()) - z*((-uvec.Z())) + (interactionPoint.Y())*
-                    (-uvec.Y()) + (interactionPoint.X())*(-uvec.X()) + F - (-uvec.X())*F) - (interactionPoint.Y())*pow(cos(coneTheta),2));
-
-      Double_t f1 = pow(interactionPoint.Z(),2) + pow(interactionPoint.X(),2) + ((-2)*pow(interactionPoint.Z(),2)*pow(-uvec.Z(),2)) +  
-                    ((-2)*pow(interactionPoint.Z(),2)*pow(-uvec.Y(),2)) + ((-2)*pow(interactionPoint.X(),2)*pow(-uvec.Y(),2)) + 
-                    ((-4)*(interactionPoint.Z())*(interactionPoint.X())*(-uvec.Z())*(-uvec.X())) + ((-2)*pow(interactionPoint.X(),2)*
-		    pow(-uvec.X(),2));
-		      
-      Double_t f2 = (-2)*(interactionPoint.X())*F + 4*(interactionPoint.X())*F*
-		    pow(-uvec.Y(),2) - 4*(interactionPoint.Z())*(-uvec.Z())*F - 4*(interactionPoint.X())*
-		    (-uvec.X())*F + 4*(interactionPoint.Z())*(-uvec.Z())*(-uvec.X())*F + 
-		    4*(interactionPoint.X())*pow(-uvec.X(),2)*F - pow(F,2) - 2*pow(-uvec.Y(),2)*
-		    pow(F,2) + 4*(-uvec.X())*pow(F,2) - 2*pow(-uvec.X(),2)*pow(F,2);
-	
-      Double_t f3 = pow(z,2)*(1 - 2*pow(-uvec.Z(),2) - 2*pow(-uvec.Y(),2)) + z*
-		    ((interactionPoint.Z())*((-2) + 4*pow(-uvec.Z(),2) + 4*pow(-uvec.Y(),2)) + 4*(-uvec.Z())*((interactionPoint.X())*(-uvec.X()) + 
-                    F - (-uvec.X())*F));
-	
-      Double_t f4 = (pow(z,2) - 2*z*(interactionPoint.Z()) + pow(interactionPoint.Z(),2) + pow((interactionPoint.X() - F),2))*
-                    ((-1) + 2*pow(cos(coneTheta),2));
-       
-      Double_t f = (-2)*pow(cos(coneTheta),2)*(f1 + f2 + f3 + f4);
-
-          if(f >= 0){
-
-            Double_t y1 = (e - sqrt(f))/d;
-            Double_t y2 = (e + sqrt(f))/d;
-	   
-	      
-	   
-	    
-	    
-	 
-	  
-	  
-	   
-	   
-	  
-	   if(fabs(y1) <= ylimit){
-	     
-	     if(fabs(z+abit) <= zlimit){
-	     
-	       tmppoint = (IsectionPoint*)fArray->ConstructedAt(npoints++);
-	       pixelY = fImage->GetYaxis()->FindBin(y1);
-	       
-	       pixelZ = fImage->GetXaxis()->FindBin(z+abit);
-	       tmppoint->SetBinPoint(fImage->GetBin(pixelZ,pixelY), fXofRecoPlane, y1, z);
-	     }
-	     
-	     if(fabs(z-abit) <= zlimit){
-	       tmppoint = (IsectionPoint*)fArray->ConstructedAt(npoints++);
-	       pixelY = fImage->GetYaxis()->FindBin(y1);
-	       
-	       pixelZ = fImage->GetXaxis()->FindBin(z-abit);
-               
-	       tmppoint->SetBinPoint(fImage->GetBin(pixelZ,pixelY), fXofRecoPlane, y1, z);
-	     }
-	     g->SetPoint(g->GetN(), z, y1);
-	     //fImage->Fill(z,y1);
-	     cout<<"k="<<k<<", y="<<y1<<", z="<<z<<endl;
-	   }
-	   
-	  if(fabs(y2) <= ylimit){
-	    
-	    if(fabs(z+abit) <= zlimit){
-	    
-	      tmppoint = (IsectionPoint*)fArray->ConstructedAt(npoints++);
-	      
-              pixelY = fImage->GetYaxis()->FindBin(y2);
-	      
-	      pixelZ = fImage->GetXaxis()->FindBin(z+abit);
-	      tmppoint->SetBinPoint(fImage->GetBin(pixelZ,pixelY), fXofRecoPlane, y2, z);
-	    }
-	    
-	    if(fabs(z-abit) <= zlimit){
-	      tmppoint = (IsectionPoint*)fArray->ConstructedAt(npoints++);
-	      
-              pixelY = fImage->GetYaxis()->FindBin(y2);
-	      
-	      pixelZ = fImage->GetXaxis()->FindBin(z-abit);
-	      tmppoint->SetBinPoint(fImage->GetBin(pixelZ,pixelY), fXofRecoPlane, y2, z);
-	    }
-	    g->SetPoint(g->GetN(), z, y2);
-	    //fImage->Fill(z,y2);
-	    cout<<"k="<<k<<", y="<<y2<<", z="<<z<<endl;
-	  }
-	  
-      }
+    
+    z = -B; 
+    if(fVerbose) cout<<"Loop over vertical lines..."<<endl;
+    for (k=0; k<=fNbinsZ; k++){
       
-      z=z+pixelSizeZ;
+      d = 2*(pow(-uvec.Y(),2) - pow(cos(coneTheta),2));
       
-   
-  // tree->Fill();
-
+      e = 2*((-uvec.Y())*((interactionPoint.Z())*(-uvec.Z()) - z*((-uvec.Z())) + (interactionPoint.Y())*
+			  (-uvec.Y()) + (interactionPoint.X())*(-uvec.X()) + F - (-uvec.X())*F) - (interactionPoint.Y())*pow(cos(coneTheta),2));
+      
+      f1 = pow(interactionPoint.Z(),2) + pow(interactionPoint.X(),2) + ((-2)*pow(interactionPoint.Z(),2)*pow(-uvec.Z(),2)) +  
+	((-2)*pow(interactionPoint.Z(),2)*pow(-uvec.Y(),2)) + ((-2)*pow(interactionPoint.X(),2)*pow(-uvec.Y(),2)) + 
+	((-4)*(interactionPoint.Z())*(interactionPoint.X())*(-uvec.Z())*(-uvec.X())) + ((-2)*pow(interactionPoint.X(),2)*
+											pow(-uvec.X(),2));
+      
+      f2 = (-2)*(interactionPoint.X())*F + 4*(interactionPoint.X())*F*
+	pow(-uvec.Y(),2) - 4*(interactionPoint.Z())*(-uvec.Z())*F - 4*(interactionPoint.X())*
+	(-uvec.X())*F + 4*(interactionPoint.Z())*(-uvec.Z())*(-uvec.X())*F + 
+	4*(interactionPoint.X())*pow(-uvec.X(),2)*F - pow(F,2) - 2*pow(-uvec.Y(),2)*
+	pow(F,2) + 4*(-uvec.X())*pow(F,2) - 2*pow(-uvec.X(),2)*pow(F,2);
+      
+      f3 = pow(z,2)*(1 - 2*pow(-uvec.Z(),2) - 2*pow(-uvec.Y(),2)) + z*
+	((interactionPoint.Z())*((-2) + 4*pow(-uvec.Z(),2) + 4*pow(-uvec.Y(),2)) + 4*(-uvec.Z())*((interactionPoint.X())*(-uvec.X()) + 
+												  F - (-uvec.X())*F));
+      
+      f4 = (pow(z,2) - 2*z*(interactionPoint.Z()) + pow(interactionPoint.Z(),2) + pow((interactionPoint.X() - F),2))*
+	((-1) + 2*pow(cos(coneTheta),2));
+      
+      f = (-2)*pow(cos(coneTheta),2)*(f1 + f2 + f3 + f4);
+      
+      if(f >= 0){
+	y1 = (e - sqrt(f))/d;
+	y2 = (e + sqrt(f))/d;
+	if(fabs(y1)<1e-14) y1 = y1*1e6;
+	if(fabs(y2)<1e-14) y2 = y2*1e6;
+	AddIsectionPoint("ver", fXofRecoPlane, y1, z);
+	AddIsectionPoint("ver", fXofRecoPlane, y2, z);	  
+      }      
+      z=z+fPixelSizeZ;
+      
     } //end of loop over vertical lines
     
-
     fArray->Sort();
-    
-   cout<<"Print fArray after sorting..."<<endl;
-    for(int i=0; i<npoints; i++){
-      cout<<"i="<<i<<endl;
-      ((IsectionPoint*)fArray->At(i))->Print();
+    if(fVerbose){
+      cout<<"Print fArray after sorting..."<<endl;
+      for(int i=0; i<fNIpoints; i++){
+	cout<<"i="<<i<<endl;
+	((IsectionPoint*)fArray->At(i))->Print();
+      }
+      cout<<"End of print fArray after sorting..."<<endl;
     }
-    cout<<"End of print fArray after sorting..."<<endl;
 
     TVector3 *tmpvec1;
     TVector3 *tmpvec2;
     Double_t dist;
     Int_t binno1, binno2;
-    //cout<<npoints<<endl;
-    for(int i=0; i<npoints; i=i+2){
+    for(int i=0; i<fNIpoints; i=i+2){
       
       tmppoint1 = (IsectionPoint*)fArray->At(i);
-      //cout<<"tmppoint1="<<tmppoint1<<endl;
       tmpvec1 = tmppoint1->GetPointCoordinates();
       binno1 = tmppoint1->GetBin();
-      //cout<<"binno1="<<binno1<<endl;
       tmppoint2 = (IsectionPoint*)fArray->At(i+1);
-     // cout<<"tmppoint2="<<tmppoint2<<endl;
       tmpvec2 = tmppoint2->GetPointCoordinates();
       binno2 = tmppoint2->GetBin();
-      //cout<<"binno2="<<binno2<<endl;
       
-      if(dist <= sqrt(pow(pixelSizeY,2)+pow(pixelSizeZ,2))){
-	dist = ((*tmpvec1)-(*tmpvec2)).Mag();
-        //cout<<i<<"  "<<dist<<endl;
+      dist = ((*tmpvec1)-(*tmpvec2)).Mag();
+
+      if(dist > maxdist){
+        cout<<"Event "<<i<<": distance exceeds pixel diagonal "<<dist/maxdist<<" times"<<endl;
+	continue;
       }
       if(binno1!=binno2){
-        cout<<"Bin numbers are different when they should not!"<<endl;
-        //return kFALSE;
+        cout<<binno1<<"!="<<binno2<<" ->Bin numbers are different when they should not!"<<endl;
       }
       
-      
-      //cout<<"\n\n\n"<<endl;
       fImage->SetBinContent(binno1, fImage->GetBinContent(binno1) + dist);
-      //fImage->SetBinContent(binno2, fImage->GetBinContent(binno1) + dist);
     }
-    cout<<"end of loop"<<endl;
+    if(fVerbose) cout<<"end of loop"<<endl;
     
     delete cone;
   }// end of loop over events
    
   SaveHistogram(fImage);
-  SaveToFile(g);
-  //tree->Write();
+  SaveToFile(fGraph);
   delete reco;
    
   return kTRUE;
 }
 
+//------------------------------------
+Int_t CCMLEM::AddIsectionPoint(TString dir, Double_t x, Double_t y, Double_t z){
+  if(fVerbose)
+    cout<<dir<<"\t"<<x<<"\t"<<y<<"\t"<<z<<endl;
+  dir.ToLower();
+  if(dir!="hor" && dir!="ver"){
+    if(fVerbose) cout<<"Unknown direction of intrsecting line: "<<dir<<endl;
+    return 0;
+  }
+  if(fabs(y)>fDimY/2. || fabs(z)>fDimZ/2.){
+    if(fVerbose) cout<<"point outside of image range..."<<endl;
+    return 0;
+  }
+    
+  IsectionPoint* tmppoint;
+  Int_t added = 0;
+  Int_t pixelZ, pixelY;
+  Double_t yplus, yminus;
+  Double_t zplus, zminus;
+  if(dir=="hor"){ // adding point from intersections with horizontal lines
+    pixelZ = fImage->GetXaxis()->FindBin(z);
+    if(pixelZ>fNbinsZ) pixelZ=fNbinsZ; //inclusion of upper edges of histo
+    yplus = y +0.5*fPixelSizeY;
+    yminus = y -0.5*fPixelSizeY;
+
+    if(fabs(yplus)<=fDimY/2){
+      tmppoint = (IsectionPoint*)fArray->ConstructedAt(fNIpoints++);
+      pixelY = fImage->GetYaxis()->FindBin(yplus);
+      tmppoint->SetBinPoint(fImage->GetBin(pixelZ,pixelY), x, y, z);
+      if(fVerbose) tmppoint->Print();
+      fGraph->SetPoint(fGraph->GetN(), z, y);
+      added++;
+    }
+    if(fabs(yminus)<=fDimY/2){
+      tmppoint = (IsectionPoint*)fArray->ConstructedAt(fNIpoints++);
+      pixelY = fImage->GetYaxis()->FindBin(yminus);
+      tmppoint->SetBinPoint(fImage->GetBin(pixelZ,pixelY), x, y, z);
+      if(fVerbose) tmppoint->Print();
+      fGraph->SetPoint(fGraph->GetN(), z, y);
+      added++;
+    }
+  }
+  if(dir=="ver"){ // adding point from intersections with vertical lines
+    pixelY = fImage->GetYaxis()->FindBin(y);
+    if(pixelY>fNbinsY) pixelY=fNbinsY; //inclusion of upper edges of histo
+    zplus = z +0.5*fPixelSizeZ;
+    zminus = z -0.5*fPixelSizeZ;
+    
+    if(fabs(zplus)<=fDimZ/2){
+      tmppoint = (IsectionPoint*)fArray->ConstructedAt(fNIpoints++);
+      pixelZ = fImage->GetXaxis()->FindBin(zplus);
+      tmppoint->SetBinPoint(fImage->GetBin(pixelZ,pixelY), x, y, z);
+      if(fVerbose) tmppoint->Print();
+      fGraph->SetPoint(fGraph->GetN(), z, y);
+      added++;
+    }
+    if(fabs(zminus)<=fDimZ/2){
+      tmppoint = (IsectionPoint*)fArray->ConstructedAt(fNIpoints++);
+      pixelZ = fImage->GetXaxis()->FindBin(zminus);
+      tmppoint->SetBinPoint(fImage->GetBin(pixelZ,pixelY), x, y, z);
+      if(fVerbose) tmppoint->Print();
+      fGraph->SetPoint(fGraph->GetN(), z, y);
+      added++;
+    }
+  }
+  if(fVerbose)  cout<<added<<" points added..."<<endl<<endl;;
+  return added;
+}
 
 //------------------------------------
 Bool_t CCMLEM::SaveHistogram(TH2F *h){
