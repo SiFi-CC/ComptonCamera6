@@ -8,6 +8,7 @@ using namespace std;
 ClassImp(Track);
 
 //------------------------------------------------------------------
+///Default constructor. 
 Track::Track(){
   SetPoint(TVector3(0,0,0));
   SetVersor(TVector3(-1,0,0));
@@ -15,6 +16,11 @@ Track::Track(){
   SetName("track");
 }
 //------------------------------------------------------------------
+///Standard constructor.
+///\param point (TVector3) - starting point.
+///\param vec (TVector3) - leading versor.
+///\param energy (Double_t) - energy (MeV).
+///\param name (TString) - object name.
 Track::Track(TVector3 point, TVector3 vec, Double_t energy, TString name){
   SetPoint(point);
   SetVersor(vec);
@@ -22,15 +28,20 @@ Track::Track(TVector3 point, TVector3 vec, Double_t energy, TString name){
   SetName(name);
 }
 //------------------------------------------------------------------
+/// Standard destructor.
 Track::~Track(){
 }
 //------------------------------------------------------------------
+///Sets coordinates of the starting point of the Track.
+///\param point (TVector3) - starting point.
 void Track::SetPoint(TVector3 point){ 
   fPoint.SetX(point.X());
   fPoint.SetY(point.Y());
   fPoint.SetZ(point.Z());
 }
 //------------------------------------------------------------------
+///Sets coordinates of the leading versor of the track.
+///\param vec (TVector3) - leading vector, later normalized into versor.
 void Track::SetVersor(TVector3 vec){
   Double_t n = sqrt(vec.X()*vec.X() + 
                     vec.Y()*vec.Y() +
@@ -40,10 +51,19 @@ void Track::SetVersor(TVector3 vec){
   fVersor.SetZ(vec.Z()/n);
 }
 //------------------------------------------------------------------
+///Sets Track's energy.
+///\param energy - energy in MeV
 void Track::SetEnergy(Double_t energy){
  fEnergy = energy;
 }
 //------------------------------------------------------------------
+///Calculates coordinates of cross point of the Track and given plane. 
+///\param plane (DetPlane*) - plane wich intersects with the given Track.
+///\param position (TVector3) - coordinates of the cross point returned as reference.
+///Function returns kTRUE when there is single cross point and kFALSE in the following 
+///cases: (1) when Track is parallel to the plane and there are no cross points, (2) 
+///when plane includes the Track and all points are common, (3) when cross point is outside 
+///of the plane (size of the plane is specified in DetPlane object).
 Bool_t Track::FindCrossPoint(DetPlane* plane, TVector3 &position){
   
   Double_t a    = plane->GetA();
@@ -86,6 +106,7 @@ Bool_t Track::FindCrossPoint(DetPlane* plane, TVector3 &position){
   return kTRUE;
 }
 //------------------------------------------------------------------
+///Prints details of the Track class object.
 void Track::Print(void){
   cout << "\nTrack::Print() for object " << GetName() << endl;
   cout << "\tCoordinates of the starting point of the track: \n\t";
