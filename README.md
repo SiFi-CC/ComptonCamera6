@@ -7,6 +7,8 @@ Prerequisites
 
 To build run cmake and make from build directory
 ------------------------------------------------
-    cd build
-    cmake ../sources
-    make
+```
+cd build
+cmake ../sources
+make
+```
