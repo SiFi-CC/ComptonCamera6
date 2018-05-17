@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['physicsbase',['PhysicsBase',['../classPhysicsBase.html',1,'']]],
-  ['print',['Print',['../classTrack.html#af4f2d469f80e491a56d25670efa51983',1,'Track']]]
+  ['newenergy',['NewEnergy',['../classPhysicsBase.html#ab09afc123c3b3c4b4f295dc9b7711649',1,'PhysicsBase']]]
 ];

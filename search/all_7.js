@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['setenergy',['SetEnergy',['../classTrack.html#a591727ac6b34a04bfe8ac68378084343',1,'Track']]],
-  ['setname',['SetName',['../classTrack.html#ad57cb64496ba44beafd7d5acb2017642',1,'Track']]],
-  ['setpoint',['SetPoint',['../classTrack.html#a8137cc329aeaff58cdebee3c53fa8cb4',1,'Track']]],
-  ['setversor',['SetVersor',['../classTrack.html#a90a7edac8f6ceb28859f9d855aba6b21',1,'Track']]]
+  ['physicsbase',['PhysicsBase',['../classPhysicsBase.html',1,'PhysicsBase'],['../classPhysicsBase.html#ae69bb6fbcf57296d0f42b1b667aef543',1,'PhysicsBase::PhysicsBase()'],['../classPhysicsBase.html#abbe990c80ce8234986d53dbe3a809855',1,'PhysicsBase::PhysicsBase(TString name)']]],
+  ['print',['Print',['../classDetPlane.html#addee20484ee9c396c3d86a7d640700b1',1,'DetPlane::Print()'],['../classPhysicsBase.html#a74729a2909d62a0d25061d4f2c1e99df',1,'PhysicsBase::Print()'],['../classTrack.html#af4f2d469f80e491a56d25670efa51983',1,'Track::Print()']]]
 ];
