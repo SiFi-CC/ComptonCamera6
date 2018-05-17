@@ -28,7 +28,7 @@ Track::Track(TVector3 point, TVector3 vec, Double_t energy, TString name){
   SetName(name);
 }
 //------------------------------------------------------------------
-/// Standard destructor.
+///Deafault destructor.
 Track::~Track(){
 }
 //------------------------------------------------------------------
@@ -40,7 +40,7 @@ void Track::SetPoint(TVector3 point){
   fPoint.SetZ(point.Z());
 }
 //------------------------------------------------------------------
-///Sets coordinates of the leading versor of the track.
+///Sets coordinates of the leading versor of the Track.
 ///\param vec (TVector3) - leading vector, later normalized into versor.
 void Track::SetVersor(TVector3 vec){
   Double_t n = sqrt(vec.X()*vec.X() + 
@@ -51,7 +51,7 @@ void Track::SetVersor(TVector3 vec){
   fVersor.SetZ(vec.Z()/n);
 }
 //------------------------------------------------------------------
-///Sets Track's energy.
+///Sets Track energy.
 ///\param energy - energy in MeV
 void Track::SetEnergy(Double_t energy){
  fEnergy = energy;

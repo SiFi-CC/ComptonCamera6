@@ -5,7 +5,7 @@
 #---------------------------------------------------------------------------
 
 DOXYFILE_ENCODING      = UTF-8
-PROJECT_NAME           = "ScintillatingFibers"
+PROJECT_NAME           = "ComptonCamera6"
 PROJECT_NUMBER         =
 PROJECT_BRIEF          =
 PROJECT_LOGO           =

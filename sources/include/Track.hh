@@ -6,7 +6,7 @@
 
 class DetPlane;
 
-///Class, which represents single gamma ray. The track object consists of:
+///Class, which represents single gamma ray. The Track object consists of:
 ///- starting point i.e. place of origin of gamma ray, 
 ///- leading versor i.e. direction of the gamma ray,
 ///- energy - gamma energy in MeV,
@@ -27,13 +27,13 @@ public:
   
   ///Returns energy assigned to the track [MeV].
   Double_t GetEnergy(void) { return fEnergy; };
-  ///Returns Track's leading versor coordinates.
+  ///Returns Track leading versor coordinates.
   TVector3 GetVersor(void){ return fVersor; };
-  ///Returns Track's starting point coordinates.
+  ///Returns Track starting point coordinates.
   TVector3 GetPoint(void){ return fPoint; };
-  ///Sets name of the Track.
+  ///Sets name of the object.
   void     SetName(TString name){fName = name;};
-  ///Returns name of the Track.
+  ///Returns name of the object.
   const char*  GetName() const { return fName.Data(); }
   
 private:

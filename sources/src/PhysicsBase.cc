@@ -11,10 +11,11 @@ const double kR0  = 2.817E-15;	// m
 const double kMe  = 0.510999;	// MeV/c2
 
 //------------------------------------------------------------------
+///Klein-Nishina formula. Returns probablility of Compton scattering in m2.
+///\param x - table of x, where x[0] is theta [deg]
+///\param par - table of parameters, where par[0] is energy of incident photon [MeV].
 Double_t KleinNishina(Double_t *x, Double_t *par){
-  
-  //x[0]   - theta in deg
-  //par[0] - energy of incident photon in MeV
+
   Double_t costheta = cos(x[0]*TMath::DegToRad());
   Double_t alpha    = par[0]/kMe;
   Double_t factor1  = (1. + costheta*costheta)/2.;
@@ -24,7 +25,7 @@ Double_t KleinNishina(Double_t *x, Double_t *par){
                       (1 + costheta*costheta));
  
   Double_t prob = kR0*kR0*factor1*factor2*factor2*factor3;	// m2
-  //prob = prob*1E31;	// mb
+  //prob = prob*1E31;						// mb
  
   return prob;
 }
@@ -33,27 +34,35 @@ Double_t KleinNishina(Double_t *x, Double_t *par){
 ClassImp(PhysicsBase);
 
 //------------------------------------------------------------------
+///Deafault constructor
 PhysicsBase::PhysicsBase(){
   SetName("physics");
   fTheta = 0.;
   fPhi = 0.;
 }
 //------------------------------------------------------------------
+///Standard constructor.
+///\param name - object name.
 PhysicsBase::PhysicsBase(TString name){
   SetName(name);
   fTheta = 0.;
   fPhi = 0.;
 }
 //------------------------------------------------------------------
+///Deafault destructor.
 PhysicsBase::~PhysicsBase(){
   if(fFunction) delete fFunction;
 }
 //------------------------------------------------------------------
+///Finds value of phi angle [rad].
 Double_t PhysicsBase::FindPhi(void){
   Double_t phi = gRandom->Uniform(-TMath::Pi(),TMath::Pi()); 	//rad 
   return phi;
 }
 //------------------------------------------------------------------
+///Generates Klein-Nishina function for requested energy of gamma quantum 
+///and finds value of theta scattering angle [rad].
+///\param energy (Double_t) energy of incident gamma quantum [MeV].
 Double_t PhysicsBase::FindTheta(Double_t energy){
   fFunction = new TF1("fFunction",KleinNishina,0,180,1);
   fFunction->SetParameter(0,energy);
@@ -62,6 +71,9 @@ Double_t PhysicsBase::FindTheta(Double_t energy){
   return theta;
 }
 //------------------------------------------------------------------
+///Returns energy [MeV] of gamma quantum after Compton scattering.
+///\param theta (Double_t) theta scattering angle (must be given in radians)
+///\param inintE (Double_t) initial energy of gamma quantum [MeV] 
 Double_t PhysicsBase::NewEnergy(Double_t theta, Double_t initE){
   Double_t costheta = cos(theta);	//theta must be in rad
   Double_t alpha    = initE/kMe;
@@ -69,6 +81,15 @@ Double_t PhysicsBase::NewEnergy(Double_t theta, Double_t initE){
   return finE;
 }
 //------------------------------------------------------------------
+///Method for Compton scattering process.
+///\param initTrack (*Track) - track representing incident gamma quantum
+///\param plane (*DetPlane) - plane of the detector
+///
+///1. Checks whether incident Track hits the detector plane. If not returns NULL.
+///2. Finds theta and phi scattering angles.
+///3. Calculates gamma energy after scattering.
+///4. Calculates coordinates of the new Track, representing scattered gamma quantum.
+///5. Assignes values to the scattered Track object and returns it.
 Track* PhysicsBase::ComptonScatter(Track *initTrack, DetPlane *plane){
   
   TVector3 crossPoint;
@@ -130,6 +151,7 @@ Track* PhysicsBase::ComptonScatter(Track *initTrack, DetPlane *plane){
   return finTrack;
 }
 //------------------------------------------------------------------
+///Prints details of the PhysicsBase class object.
 void PhysicsBase::Print(void){
  cout << "\nPhysicsBase::Print() for object " << GetName() << endl; 
  cout << "\tTheta scattering angle: " << fTheta*TMath::RadToDeg() << " deg" << endl;
