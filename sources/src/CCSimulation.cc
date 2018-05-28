@@ -9,6 +9,7 @@ using namespace std;
 ClassImp(CCSimulation);
 
 //------------------------------------------------------------------
+///Default constructor.
 CCSimulation::CCSimulation(){
   SetName("simulation");
   fVerbose = kTRUE;
@@ -17,6 +18,15 @@ CCSimulation::CCSimulation(){
   fNev = 0;
 }
 //------------------------------------------------------------------
+///Standard constructor. 
+///\param name (TString) - name of the object
+///\param verbose (Bool_t) - verbose level for print-outs on the screen
+///
+///The following private class members are created and definded here:
+///- results ROOT file fFile
+///- tree fTree with simulation results. For the description of tree barnches
+///see description of the class
+///- histograms hSource, hScat, hAbs anf hEnergy.
 CCSimulation::CCSimulation(TString name, Bool_t verbose){
   
   SetName(name);
@@ -50,6 +60,9 @@ CCSimulation::CCSimulation(TString name, Bool_t verbose){
   
 }
 //------------------------------------------------------------------
+///Default destructor. Here the tree and 2D histograms are saved
+///in the ROOT file. Additionally detector geometry is saved in *.txt file
+///and in ROOT file as TGeometry. All files are subsequently closed.
 CCSimulation::~CCSimulation(){
   if(fVerbose) cout << "Inside destructor of the CCSimulation class" << endl;
   if(fFile && fTree){
@@ -64,6 +77,15 @@ CCSimulation::~CCSimulation(){
   BuildTGeometry();
 }
 //------------------------------------------------------------------
+///Sets details of detector geometry, i.e. fScaterrer and fAbsorber.
+///\param scatDist (Double_t) - distance from the source to the scatterer
+///\param scatZ    (Double_t) - full length of scatterer along Z axis
+///\param scatY    (Double_t) - full length of scatterer along Y axis
+///\param absDist  (Double_t) - distance from the source to the absorber
+///\param absZ     (Double_t) - full length of absorber along Z axis
+///\param absY     (Double_t) - full length of absorber along Y axis.
+///
+///All dimensions and distanses should be given in mm.
 void CCSimulation::BuildSetup(Double_t scatDist = 50, //mm
 			      Double_t scatZ    = 80,
 			      Double_t scatY    = 80,
@@ -84,6 +106,10 @@ void CCSimulation::BuildSetup(Double_t scatDist = 50, //mm
   if(fVerbose) fAbsorber.Print();
 }
 //------------------------------------------------------------------
+///Sets details of the gamma ray generated in the source, i.e. 
+///coordinates of source point fPoint0 and direction of the Track fVersor1.
+///The source point is generated according to chosen generator version.
+///Generator version can be set via SetGenVersion(Int_t gen) function.
 Bool_t CCSimulation::GenerateRay(void){
   
   Double_t theta, phi, maxz;
@@ -133,7 +159,7 @@ Bool_t CCSimulation::GenerateRay(void){
       phi = gRandom->Uniform(-TMath::Pi(), TMath::Pi());	//rad
       break;
     default:
-      cout << "##### Please choose correcr version of the generaror!" << endl;
+      cout << "##### Please choose correct version of the generaror!" << endl;
       break;
   }
   
@@ -142,6 +168,16 @@ Bool_t CCSimulation::GenerateRay(void){
   return kTRUE;
 }
 //------------------------------------------------------------------
+///Function which processes single gamma ray. Subsequents steps:
+///- energy 4.44 MeV is assigned to initial Track
+///- finding cross point of initial Track and scatterer plane
+///- Compton scattering using PhysicsBase
+///- setting values of fVersor2, fEnergy1 and fEnergy2
+///- finding cross point of scattered track and absorber
+///- filling the tree 
+///
+///Only events which are in acceptance of both - scatterer and
+///absorber, are taken into account.
 Bool_t CCSimulation::ProcessEvent(void){
  
   Clear();
@@ -197,6 +233,9 @@ Bool_t CCSimulation::ProcessEvent(void){
   return kTRUE;
 }
 //------------------------------------------------------------------
+///Loop over the events.
+///\param nev (Int_t) - number of events in the acceptance of the
+///absorber to be simulated. 
 void CCSimulation::Loop(Int_t nev){
   Int_t i=0;
   while(fNev<nev){
@@ -207,6 +246,7 @@ void CCSimulation::Loop(Int_t nev){
   }
 } 
 //------------------------------------------------------------------ 
+///Resets private members of the class to their default values.
 void CCSimulation::Clear(void){
   fPoint0.SetXYZ(-1000,-1000,-1000);
   fPoint1.SetXYZ(-1000,-1000,-1000);
@@ -218,6 +258,9 @@ void CCSimulation::Clear(void){
   fEnergy2 = -1000;
 }
 //------------------------------------------------------------------ 
+///Saves details of the simulated detector setup and gamma source in the 
+///text file. Name of the file: CCSimulation_geometry_genX.txt (X is the 
+///generator number).
 void CCSimulation::SaveGeometryTxt(void){
   ofstream output(Form("../sources/results/CCSimulation_geometry_gen%i.txt",fGenVersion), std::ios::out | std::ios::trunc);
   output << "Generator version: " << fGenVersion << endl;
@@ -252,6 +295,9 @@ void CCSimulation::SaveGeometryTxt(void){
   if(fVerbose) cout << "Geometry of the setup saved in the text file" << endl;
 }
 //------------------------------------------------------------------ 
+///Builds detector setup and the gamma source as TGeometry and saves 
+///it in the ROOT file. File name: CCSimulation_TGeometry_genX.root
+///(X is the generator number)
 void CCSimulation::BuildTGeometry(void){
   
    TGeoManager *geom = new TGeoManager("world", "CCSimulation - world");
@@ -345,6 +391,7 @@ void CCSimulation::BuildTGeometry(void){
    geom->Export(Form("../sources/results/CCSimulation_TGeometry_gen%i.root",fGenVersion));
 }
 //------------------------------------------------------------------ 
+///Prints details of the CCSimulation class object.
 void CCSimulation::Print(void){
  cout << "\nCCSimulation::Print() for object " << GetName() << endl; 
 }
