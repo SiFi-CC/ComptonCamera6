@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['checkpoint',['CheckPoint',['../classDetPlane.html#adeb60e3568ac91eab95aae08de24eece',1,'DetPlane']]],
-  ['comptonscatter',['ComptonScatter',['../classPhysicsBase.html#a9f680c7de362d210f6ee8fce08d259d0',1,'PhysicsBase']]]
+  ['buildsetup',['BuildSetup',['../classCCSimulation.html#af5bbc8c96dca08ead13079473880fea9',1,'CCSimulation']]],
+  ['buildtgeometry',['BuildTGeometry',['../classCCSimulation.html#a19e09a40237e5858332332a1ead9ced5',1,'CCSimulation']]]
 ];
