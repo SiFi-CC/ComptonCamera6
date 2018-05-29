@@ -2,6 +2,9 @@ var searchData=
 [
   ['fa',['fA',['../classDetPlane.html#ad7297b44d845239b0b1783b412433d01',1,'DetPlane']]],
   ['fabsorber',['fAbsorber',['../classCCSimulation.html#a27084879446b457c8e4660ea9785fdba',1,'CCSimulation']]],
+  ['fangle',['fAngle',['../classComptonCone.html#ad6c1e388f9fe480ba1aa89ad86093012',1,'ComptonCone']]],
+  ['fapex',['fApex',['../classComptonCone.html#a505da09372219e3ad1fad69f1ef4abb3',1,'ComptonCone']]],
+  ['faxis',['fAxis',['../classComptonCone.html#aee940947f46395d069a587d96334f1d7',1,'ComptonCone']]],
   ['fb',['fB',['../classDetPlane.html#a6f2e1f2c8b0c3c650be3647805c4542e',1,'DetPlane']]],
   ['fc',['fC',['../classDetPlane.html#a11e44a6a48471d5fef605e2424d827be',1,'DetPlane']]],
   ['fd',['fD',['../classDetPlane.html#a8723e5ddb0d4e1cf3688b585911a308f',1,'DetPlane']]],
@@ -14,7 +17,7 @@ var searchData=
   ['ffile',['fFile',['../classCCSimulation.html#a5d26f557b5af6f378c9f734ae6684117',1,'CCSimulation']]],
   ['ffunction',['fFunction',['../classPhysicsBase.html#aeae89de6f5dafb70949051b32ddbdb43',1,'PhysicsBase']]],
   ['fgenversion',['fGenVersion',['../classCCSimulation.html#a18f9e18b2d4385f29fd409e87b8ca25c',1,'CCSimulation']]],
-  ['fname',['fName',['../classCCSimulation.html#a957198bd670bbd5cf453b68306712846',1,'CCSimulation::fName()'],['../classDetPlane.html#a5eefdb8ae6b0f71cb775afc9f7c2be3a',1,'DetPlane::fName()'],['../classPhysicsBase.html#a2add2a8d88c5a66612cd4de73b60edae',1,'PhysicsBase::fName()'],['../classTrack.html#a5dfca2ab847830bdf43bb271ab91503f',1,'Track::fName()']]],
+  ['fname',['fName',['../classCCSimulation.html#a957198bd670bbd5cf453b68306712846',1,'CCSimulation::fName()'],['../classComptonCone.html#ad869b7abd85fc9c357838e6620aa4648',1,'ComptonCone::fName()'],['../classDetPlane.html#a5eefdb8ae6b0f71cb775afc9f7c2be3a',1,'DetPlane::fName()'],['../classPhysicsBase.html#a2add2a8d88c5a66612cd4de73b60edae',1,'PhysicsBase::fName()'],['../classTrack.html#a5dfca2ab847830bdf43bb271ab91503f',1,'Track::fName()']]],
   ['fnev',['fNev',['../classCCSimulation.html#acc99506627007ce1ab9991604480a934',1,'CCSimulation']]],
   ['fphi',['fPhi',['../classPhysicsBase.html#ae32182ea96c78a440887afc8836d612d',1,'PhysicsBase']]],
   ['fphysics',['fPhysics',['../classCCSimulation.html#a99fc085e180f84feaabcc7e9636032ea',1,'CCSimulation']]],
