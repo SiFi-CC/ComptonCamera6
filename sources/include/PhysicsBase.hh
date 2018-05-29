@@ -29,9 +29,9 @@ public:
   ///Returns object name.
   const char* GetName() const { return fName.Data(); };
   ///Returns theta angle [rad]
-  Double_t    GetTheta(void){ return fTheta; };
+  Double_t    GetTheta(void)  { return fTheta; };
   ///Returns phi angle [rad]
-  Double_t    GetPhi(void){ return fPhi; };
+  Double_t    GetPhi(void)    { return fPhi; };
   
 private:
   

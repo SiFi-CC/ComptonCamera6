@@ -73,7 +73,7 @@ Double_t PhysicsBase::FindTheta(Double_t energy){
 //------------------------------------------------------------------
 ///Returns energy [MeV] of gamma quantum after Compton scattering.
 ///\param theta (Double_t) theta scattering angle (must be given in radians)
-///\param inintE (Double_t) initial energy of gamma quantum [MeV] 
+///\param initE (Double_t) initial energy of gamma quantum [MeV] 
 Double_t PhysicsBase::NewEnergy(Double_t theta, Double_t initE){
   Double_t costheta = cos(theta);	//theta must be in rad
   Double_t alpha    = initE/kMe;

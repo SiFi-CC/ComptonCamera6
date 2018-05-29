@@ -6,6 +6,7 @@ using namespace std;
 ClassImp(ComptonCone);
 
 //------------------------------------------------------------------
+///Default constructor.
 ComptonCone::ComptonCone(){
  TVector3 apex(0,0,0);
  TVector3 axis(-1,0,0);
@@ -15,6 +16,11 @@ ComptonCone::ComptonCone(){
  SetAngle(0); 
 }
 //------------------------------------------------------------------
+///Standard constructor.
+///\param name (TString) - name of the object
+///\param apex (TVector3) - coordinates of the apex
+///\param axis (TVector3) - cone axis
+///\param angle (Double_t) - apex angle
 ComptonCone::ComptonCone(TString name, TVector3 apex, TVector3 axis, Double_t angle){
   SetName(name);
   SetApex(apex);
@@ -22,9 +28,11 @@ ComptonCone::ComptonCone(TString name, TVector3 apex, TVector3 axis, Double_t an
   SetAngle(angle);
 }
 //------------------------------------------------------------------
+///Default destructor.
 ComptonCone::~ComptonCone(){
 }
 //------------------------------------------------------------------
+///Prints details of the ComptonCone class object.
 void ComptonCone::Print(void){
  cout << "\nComptonCone::Print() for object " << GetName() << endl;
  cout << "\tCoordinates of the apex: \n\t";
