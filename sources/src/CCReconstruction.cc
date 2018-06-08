@@ -10,6 +10,12 @@ ClassImp(CCReconstruction);
 const double kMe  = 0.510999;	// MeV/c2
 
 //------------------------------------------------------------------
+///Standard constructor. Opens given ROOT file containing simulation data
+///and accesses tree with events.
+///\param inputName (TString) - path to the ROOT file with the simulation data
+///\param name (TString) - name of the object
+///\param iter (Int_t) - number of iterations for MLEM (not used for now)
+///\param verbose (Bool_t) - verbose level for print-outs on the screen.
 CCReconstruction::CCReconstruction(TString inputName, TString name, Int_t iter, Bool_t verbose){
   
   SetInputName(inputName);
@@ -36,14 +42,21 @@ CCReconstruction::CCReconstruction(TString inputName, TString name, Int_t iter, 
   fTree->SetBranchAddress("energy0",&fEnergy0);
   fTree->SetBranchAddress("energy1",&fEnergy1);
   fTree->SetBranchAddress("energy2",&fEnergy2);
-
   fNev = fTree->GetEntries();
 }
 //------------------------------------------------------------------
+///Default destructor.
 CCReconstruction::~CCReconstruction(){
   if(fFile) fFile->Close();
 }
 //------------------------------------------------------------------
+///Calculates coordinates of versor connecting two given points.
+///\param point1 (TVector3) - coordinates of first point
+///\param point2 (TVector3) - coordinates of second point
+///
+///In this reconstruction algorithm this function is used to find ComptonCone
+///axis. Then point1 is interaction point in the scatterer and point2 is 
+///interaction point in the absorber.
 TVector3 CCReconstruction::ConnectPoints(TVector3 point1, TVector3 point2){
   TVector3 vec;
   vec.SetX(point2.X() - point1.X());
@@ -53,12 +66,19 @@ TVector3 CCReconstruction::ConnectPoints(TVector3 point1, TVector3 point2){
   return vec;	//versor
 }
 //------------------------------------------------------------------
+///Calculates scattering angle theta. Angle is returned in radians.
+///\param e1 (Double_t) - initail gamma energy
+///\param e2 (Double_t) - gamma energy after Compton scattering.
 Double_t CCReconstruction::CalculateTheta(Double_t e1, Double_t e2){
   Double_t costheta = 1. - kMe*(1./e2 - 1./e1);
   Double_t theta = TMath::ACos(costheta);	//rad
   return theta;
 }
 //------------------------------------------------------------------
+///Opens text file containing details of simulated Compton Camera setup.
+///Based on the information form the file rebuilds the setup for image ,
+///reconstruction i.e. stes parameters and dimensions of fScatterer and 
+///fAbsorber.
 void CCReconstruction::RebuildSetupTxt(void){
   
   cout << "\n----- Rebuilding setup from the txt file \n" << endl;
@@ -112,6 +132,9 @@ void CCReconstruction::RebuildSetupTxt(void){
   input.close();
 }
 //------------------------------------------------------------------
+///Based on the simulated data accessed from the tree reconstructs
+///single ComptonCone class object. 
+///\param i (Int_t) - number of event (cone) to be reconstructed.
 ComptonCone* CCReconstruction::ReconstructCone(Int_t i){
   
   Double_t epsilon = 1.E-8;
@@ -182,6 +205,13 @@ ComptonCone* CCReconstruction::ReconstructCone(Int_t i){
   return cone;
 }
 //------------------------------------------------------------------
+///Function for image reconstruction. Sets 2D image histogram and 
+///1D histogram of filled pixels distribution. In the loop reconstructs
+///requested numbers of ComptonCones and looks for their intersection with 
+///the pixels of the image plane. Details of this simple back projection 
+///algorithm can be found in presentation linked in the description of this class.
+///\param iStart (Int_t) - number of first event for image reconstruction
+///\param iStop (Int_t) - number of last event for image reconstruction
 Bool_t CCReconstruction::ReconstructImage(Int_t iStart, Int_t iStop){
   
   cout << "\n\n----- Image reconstruction ----- \n\n" << endl;
@@ -243,6 +273,9 @@ Bool_t CCReconstruction::ReconstructImage(Int_t iStart, Int_t iStop){
   return kTRUE;
 }
 //------------------------------------------------------------------ 
+///Resests values of chosen private members of the class to their default values.
+///Varaibles reset in this function: fPoint0, fPoint1, fPoint2, fVersor1, fVersor2,
+///fEnergy0, fEnergy1, fEnergy2.
 void CCReconstruction::Clear(void){
   fPoint0->SetXYZ(-1000,-1000,-1000);
   fPoint1->SetXYZ(-1000,-1000,-1000);
@@ -254,6 +287,8 @@ void CCReconstruction::Clear(void){
   fEnergy2 = -1000;
 }
 //------------------------------------------------------------------
+///Saves 1D histogram in the ROOT file. Name of the file is based on the name 
+///of the CCReconstruction object.
 Bool_t CCReconstruction::SaveHistogram(TH1F *h){
   TString name = "../sources/results/" + fName + ".root";
   TFile *file = new TFile(name,"UPDATE");
@@ -264,6 +299,8 @@ Bool_t CCReconstruction::SaveHistogram(TH1F *h){
   return kTRUE;
 }
 //------------------------------------------------------------------
+///Saves 2D histogram in the ROOT file. Name of the file is based on the name 
+///of the CCReconstruction object.
 Bool_t CCReconstruction::SaveHistogram(TH2F *h){
   TString name = "../sources/results/" + fName + ".root";
   TFile *file = new TFile(name,"UPDATE");
@@ -274,6 +311,7 @@ Bool_t CCReconstruction::SaveHistogram(TH2F *h){
   return kTRUE;
 }
 //------------------------------------------------------------------
+///Prints details of the CCReconstruction class object.
 void CCReconstruction::Print(void){
   cout << "\nCCReconstruction::Print() for the object: " << fName << endl;
   cout << "\tData reconstruction form the file: " << fInputName << endl;
