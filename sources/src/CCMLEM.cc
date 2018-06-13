@@ -205,26 +205,26 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
    
     Int_t index[fNIpoints]; 
     
-    /*Int_t fA[fNIpoints];
+    Int_t fA[fNIpoints];
     IsectionPoint *temp;
     
     for(Int_t i=0; i<fNIpoints; i++){
        temp = (IsectionPoint*)fArray->At(i);
       
        fA[i] = temp->GetBin();
-    }*/
+    }
 
-    TMath::Sort(fNIpoints, fArray, index, kFALSE);
+    TMath::Sort(fNIpoints, fA, index, kFALSE);
     
-    TVector3 *tmpvec1;
+  /*TVector3 *tmpvec1;
     TVector3 *tmpvec2;
     Double_t dist;
     Int_t binno1, binno2;
-    
-    for(int i=0; i<fNIpoints; i+2) {
-      //cout << index[i] << " " << fA[index[i]] <<endl;
-    
-      tmppoint1 = (IsectionPoint*)fArray->At(i);
+    */
+    for(int i=0; i<fNIpoints; i++) {
+      cout << index[i] << " " << fA[index[i]] <<endl;
+    }
+    /*tmppoint1 = (IsectionPoint*)fArray->At(i);
       tmpvec1 = tmppoint1->GetPointCoordinates();
       binno1 = tmppoint1->GetBin();
       tmppoint2 = (IsectionPoint*)fArray->At(i+1);
@@ -237,15 +237,15 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
         //cout<<"Event "<<i<<": distance exceeds pixel diagonal "<<dist/maxdist<<" times"<<endl;
 	continue;
       }
-      if(binno1!=binno2){
+      /*if(binno1!=binno2){
         cout<<binno1<<"!="<<binno2<<" ->Bin numbers are different when they should not!"<<endl;
       }
       
       fImage->SetBinContent(binno1, fImage->GetBinContent(binno1) + dist);
       
-      //fImage->Fill(i,fA[index[i]]);
+      fImage->Fill(i,fA[index[i]]);
     }
-
+*/
 
     //if(fVerbose) cout<<"end of loop"<<endl;
    
