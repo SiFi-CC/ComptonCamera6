@@ -5,7 +5,8 @@
 #include "CCReconstruction.hh"
 #include "IsectionPoint.hh"
 #include "TClonesArray.h"
-
+#include "TStopwatch.h"
+#include "TMath.h"
 using namespace std;
 
 ClassImp(CCMLEM);
@@ -48,7 +49,7 @@ CCMLEM::CCMLEM(TString inputName, TString name, Int_t iter, Bool_t verbose, Doub
 
   fNev = fTree->GetEntries();
   
-  fArray = new TClonesArray("IsectionPoint",10000);
+  fArray = new TClonesArray("IsectionPoint",1000);
   fNIpoints = 0;
   
   cout<<"CCMLEM: I will work in fVerbose="<<fVerbose<<" mode"<<endl;
@@ -59,7 +60,6 @@ CCMLEM::~CCMLEM(){
   if(fFile) fFile->Close();
 }
 //------------------------------------------
-
 Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
 
   CCReconstruction *reco = new CCReconstruction(fInputName, fName, fIter, fVerbose);
@@ -69,7 +69,7 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   fImage->GetXaxis()->SetTitle("z [mm]");
   fImage->GetYaxis()->SetTitle("y [mm]");
 
-  fGraph = new TGraph();
+ /*fGraph = new TGraph();
   fGraph->SetName("g");
   fGraph->SetTitle("non-pixelized reco image");
   fGraph->SetMarkerStyle(7);
@@ -79,10 +79,10 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   htmp->GetXaxis()->SetTitle("z [mm]");
   htmp->GetYaxis()->SetTitle("y [mm]");
   fGraph->SetHistogram(htmp);
- 
+ */
   Double_t pixelX = 0.;
   Double_t pixelY, pixelZ;
-  Double_t abit = 1.E-3;
+  //Double_t abit = 1.E-3;
 
   Int_t j,k;
   
@@ -96,33 +96,37 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   Double_t A = fDimY/2.;  
   Double_t B = fDimZ/2.;
   
-  
-  fArray->Clear("C");
+  //fArray->SetOwner(kTRUE); 
+  //fArray->Clear("C");
   fNIpoints = 0;
-  IsectionPoint* tmppoint;
+  //IsectionPoint* tmppoint;
   IsectionPoint* tmppoint1;
   IsectionPoint* tmppoint2;
 
   const Double_t maxdist = sqrt(pow(fPixelSizeY,2)+pow(fPixelSizeZ,2));
+   TStopwatch t;
+    t.Start(); 
   for(Int_t i=iStart; i<iStop; i++){
- 
-    if(fVerbose) cout<<"CCMLEM::Reconstruct(...) event "<< i<<endl<<endl;;
+   
+    //if(fVerbose) 
+    cout<<"CCMLEM::Reconstruct(...) event "<< i<<endl<<endl;;
     ComptonCone *cone = reco->ReconstructCone(i);
     interactionPoint = cone->GetApex();
     coneAxis = cone->GetAxis();
     uvec = coneAxis.Unit();
     coneTheta = cone->GetAngle();
+    Double_t K = cos(coneTheta);
     Double_t a, b, c1, c2, c3, c4, c, z1, z2;
     Double_t d, e, f1, f2, f3, f4, f, y1, y2;  
     
     y = -A;
-    if(fVerbose) cout<<"Loop over horizontal lines..."<<endl;
+   // if(fVerbose) cout<<"Loop over horizontal lines..."<<endl;
     for (j=0; j<=fNbinsY; j++){
       
-      a = 2*(pow(-uvec.Z(),2) - pow(cos(coneTheta),2));
+      a = 2*(pow(-uvec.Z(),2) - pow(K,2));
       
       b = 2*((-uvec.Z())*((interactionPoint.Z())*(-uvec.Z()) - y*((-uvec.Y())) + (interactionPoint.Y())*
-			  (-uvec.Y()) + (interactionPoint.X())*(-uvec.X()) + F - (-uvec.X())*F) - (interactionPoint.Z())*pow(cos(coneTheta),2));
+			  (-uvec.Y()) + (interactionPoint.X())*(-uvec.X()) + F - (-uvec.X())*F) - (interactionPoint.Z())*pow(K,2));
       
       c1 = pow(interactionPoint.Y(),2) + pow(interactionPoint.X(),2) + ((-2)*pow(interactionPoint.Y(),2)*pow(-uvec.Z(),2)) +  
 	((-2)*pow(interactionPoint.X(),2)*pow(-uvec.Z(),2)) + ((-2)*pow(interactionPoint.Y(),2)*pow(-uvec.Y(),2)) + 
@@ -140,10 +144,10 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
 												  F - (-uvec.X())*F));
       
       c4 = (pow(y,2) - 2*y*(interactionPoint.Y()) + pow(interactionPoint.Y(),2) + pow((interactionPoint.X() - F),2))*
-	((-1) + 2*pow(cos(coneTheta),2));
+	((-1) + 2*pow(K,2));
       
       
-      c = (-2)*pow(cos(coneTheta),2)*(c1 + c2 + c3 + c4); 
+      c = (-2)*pow(K,2)*(c1 + c2 + c3 + c4); 
       
       if(c >= 0){
 	z1 = (b - sqrt(c))/a;
@@ -158,13 +162,13 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
     
     
     z = -B; 
-    if(fVerbose) cout<<"Loop over vertical lines..."<<endl;
+   // if(fVerbose) cout<<"Loop over vertical lines..."<<endl;
     for (k=0; k<=fNbinsZ; k++){
       
-      d = 2*(pow(-uvec.Y(),2) - pow(cos(coneTheta),2));
+      d = 2*(pow(-uvec.Y(),2) - pow(K,2));
       
       e = 2*((-uvec.Y())*((interactionPoint.Z())*(-uvec.Z()) - z*((-uvec.Z())) + (interactionPoint.Y())*
-			  (-uvec.Y()) + (interactionPoint.X())*(-uvec.X()) + F - (-uvec.X())*F) - (interactionPoint.Y())*pow(cos(coneTheta),2));
+			  (-uvec.Y()) + (interactionPoint.X())*(-uvec.X()) + F - (-uvec.X())*F) - (interactionPoint.Y())*pow(K,2));
       
       f1 = pow(interactionPoint.Z(),2) + pow(interactionPoint.X(),2) + ((-2)*pow(interactionPoint.Z(),2)*pow(-uvec.Z(),2)) +  
 	((-2)*pow(interactionPoint.Z(),2)*pow(-uvec.Y(),2)) + ((-2)*pow(interactionPoint.X(),2)*pow(-uvec.Y(),2)) + 
@@ -182,9 +186,9 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
 												  F - (-uvec.X())*F));
       
       f4 = (pow(z,2) - 2*z*(interactionPoint.Z()) + pow(interactionPoint.Z(),2) + pow((interactionPoint.X() - F),2))*
-	((-1) + 2*pow(cos(coneTheta),2));
+	((-1) + 2*pow(K,2));
       
-      f = (-2)*pow(cos(coneTheta),2)*(f1 + f2 + f3 + f4);
+      f = (-2)*pow(K,2)*(f1 + f2 + f3 + f4);
       
       if(f >= 0){
 	y1 = (e - sqrt(f))/d;
@@ -197,23 +201,29 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
       z=z+fPixelSizeZ;
       
     } //end of loop over vertical lines
+    //TVector3 *tmpvec1;
+   
+    Int_t index[fNIpoints]; 
     
-    fArray->Sort();
-    if(fVerbose){
-      cout<<"Print fArray after sorting..."<<endl;
-      for(int i=0; i<fNIpoints; i++){
-	cout<<"i="<<i<<endl;
-	((IsectionPoint*)fArray->At(i))->Print();
-      }
-      cout<<"End of print fArray after sorting..."<<endl;
-    }
+    /*Int_t fA[fNIpoints];
+    IsectionPoint *temp;
+    
+    for(Int_t i=0; i<fNIpoints; i++){
+       temp = (IsectionPoint*)fArray->At(i);
+      
+       fA[i] = temp->GetBin();
+    }*/
 
+    TMath::Sort(fNIpoints, fArray, index, kFALSE);
+    
     TVector3 *tmpvec1;
     TVector3 *tmpvec2;
     Double_t dist;
     Int_t binno1, binno2;
-    for(int i=0; i<fNIpoints; i=i+2){
-      
+    
+    for(int i=0; i<fNIpoints; i+2) {
+      //cout << index[i] << " " << fA[index[i]] <<endl;
+    
       tmppoint1 = (IsectionPoint*)fArray->At(i);
       tmpvec1 = tmppoint1->GetPointCoordinates();
       binno1 = tmppoint1->GetBin();
@@ -223,8 +233,8 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
       
       dist = ((*tmpvec1)-(*tmpvec2)).Mag();
 
-      if(dist > maxdist){
-        cout<<"Event "<<i<<": distance exceeds pixel diagonal "<<dist/maxdist<<" times"<<endl;
+        if(dist > maxdist){
+        //cout<<"Event "<<i<<": distance exceeds pixel diagonal "<<dist/maxdist<<" times"<<endl;
 	continue;
       }
       if(binno1!=binno2){
@@ -232,14 +242,24 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
       }
       
       fImage->SetBinContent(binno1, fImage->GetBinContent(binno1) + dist);
+      
+      //fImage->Fill(i,fA[index[i]]);
     }
-    if(fVerbose) cout<<"end of loop"<<endl;
-    
-    delete cone;
-  }// end of loop over events
+
+
+    //if(fVerbose) cout<<"end of loop"<<endl;
    
+    delete cone;
+   
+    cout<<"---------------------"<<endl;
+     
+  }// end of loop over events
+  
+  fArray->Clear("C");
+   t.Stop(); 
+    t.Print();
   SaveHistogram(fImage);
-  SaveToFile(fGraph);
+  //SaveToFile(fGraph);
   delete reco;
    
   return kTRUE;
@@ -247,18 +267,20 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
 
 //------------------------------------
 Int_t CCMLEM::AddIsectionPoint(TString dir, Double_t x, Double_t y, Double_t z){
-  if(fVerbose)
-    cout<<dir<<"\t"<<x<<"\t"<<y<<"\t"<<z<<endl;
-  dir.ToLower();
+  //if(fVerbose)
+   // cout<<dir<<"\t"<<x<<"\t"<<y<<"\t"<<z<<endl;
+ /* dir.ToLower();
   if(dir!="hor" && dir!="ver"){
     if(fVerbose) cout<<"Unknown direction of intrsecting line: "<<dir<<endl;
     return 0;
-  }
+  }*/
+ 
   if(fabs(y)>fDimY/2. || fabs(z)>fDimZ/2.){
-    if(fVerbose) cout<<"point outside of image range..."<<endl;
+    //if(fVerbose) cout<<"point outside of image range..."<<endl;
     return 0;
   }
-    
+  //Double_t fArray[fNIpoints];
+ 
   IsectionPoint* tmppoint;
   Int_t added = 0;
   Int_t pixelZ, pixelY;
@@ -274,18 +296,21 @@ Int_t CCMLEM::AddIsectionPoint(TString dir, Double_t x, Double_t y, Double_t z){
       tmppoint = (IsectionPoint*)fArray->ConstructedAt(fNIpoints++);
       pixelY = fImage->GetYaxis()->FindBin(yplus);
       tmppoint->SetBinPoint(fImage->GetBin(pixelZ,pixelY), x, y, z);
-      if(fVerbose) tmppoint->Print();
-      fGraph->SetPoint(fGraph->GetN(), z, y);
+      //if(fVerbose) tmppoint->Print();
+     //fGraph->SetPoint(fGraph->GetN(), z, y);
       added++;
+     
     }
     if(fabs(yminus)<=fDimY/2){
       tmppoint = (IsectionPoint*)fArray->ConstructedAt(fNIpoints++);
       pixelY = fImage->GetYaxis()->FindBin(yminus);
       tmppoint->SetBinPoint(fImage->GetBin(pixelZ,pixelY), x, y, z);
-      if(fVerbose) tmppoint->Print();
-      fGraph->SetPoint(fGraph->GetN(), z, y);
+      //if(fVerbose) tmppoint->Print();
+      //fGraph->SetPoint(fGraph->GetN(), z, y);
       added++;
+      
     }
+  
   }
   if(dir=="ver"){ // adding point from intersections with vertical lines
     pixelY = fImage->GetYaxis()->FindBin(y);
@@ -297,21 +322,25 @@ Int_t CCMLEM::AddIsectionPoint(TString dir, Double_t x, Double_t y, Double_t z){
       tmppoint = (IsectionPoint*)fArray->ConstructedAt(fNIpoints++);
       pixelZ = fImage->GetXaxis()->FindBin(zplus);
       tmppoint->SetBinPoint(fImage->GetBin(pixelZ,pixelY), x, y, z);
-      if(fVerbose) tmppoint->Print();
-      fGraph->SetPoint(fGraph->GetN(), z, y);
+      //if(fVerbose) tmppoint->Print();
+     //fGraph->SetPoint(fGraph->GetN(), z, y);
       added++;
+      
     }
     if(fabs(zminus)<=fDimZ/2){
       tmppoint = (IsectionPoint*)fArray->ConstructedAt(fNIpoints++);
       pixelZ = fImage->GetXaxis()->FindBin(zminus);
       tmppoint->SetBinPoint(fImage->GetBin(pixelZ,pixelY), x, y, z);
-      if(fVerbose) tmppoint->Print();
-      fGraph->SetPoint(fGraph->GetN(), z, y);
+      //if(fVerbose) tmppoint->Print();
+      //fGraph->SetPoint(fGraph->GetN(), z, y);
       added++;
+      
     }
+
   }
-  if(fVerbose)  cout<<added<<" points added..."<<endl<<endl;;
+  //if(fVerbose)  cout<<added<<" points added..."<<endl<<endl;;
   return added;
+  
 }
 
 //------------------------------------
