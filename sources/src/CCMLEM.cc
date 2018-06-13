@@ -251,7 +251,7 @@ Int_t CCMLEM::AddIsectionPoint(TString dir, Double_t x, Double_t y, Double_t z){
     cout<<dir<<"\t"<<x<<"\t"<<y<<"\t"<<z<<endl;
   dir.ToLower();
   if(dir!="hor" && dir!="ver"){
-    if(fVerbose) cout<<"Unknown direction of intrsecting line: "<<dir<<endl;
+    if(fVerbose) cout<<"Unknown direction of intersecting line: "<<dir<<endl;
     return 0;
   }
   if(fabs(y)>fDimY/2. || fabs(z)>fDimZ/2.){
