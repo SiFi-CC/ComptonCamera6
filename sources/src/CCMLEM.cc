@@ -107,7 +107,8 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
    TStopwatch t;
     t.Start(); 
   for(Int_t i=iStart; i<iStop; i++){
-   
+
+    fNIpoints = 0;
     //if(fVerbose) 
     cout<<"CCMLEM::Reconstruct(...) event "<< i<<endl<<endl;;
     ComptonCone *cone = reco->ReconstructCone(i);
@@ -210,50 +211,50 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
     
     for(Int_t i=0; i<fNIpoints; i++){
        temp = (IsectionPoint*)fArray->At(i);
-      
        fA[i] = temp->GetBin();
     }
 
     TMath::Sort(fNIpoints, fA, index, kFALSE);
     
-  /*TVector3 *tmpvec1;
+    TVector3 *tmpvec1;
     TVector3 *tmpvec2;
     Double_t dist;
     Int_t binno1, binno2;
-    */
-    for(int i=0; i<fNIpoints; i++) {
-      cout << index[i] << " " << fA[index[i]] <<endl;
-    }
-    /*tmppoint1 = (IsectionPoint*)fArray->At(i);
+    
+    for(int i=0; i<fNIpoints-1; i=i+2) {
+      //cout << index[i] << " " << fA[index[i]] <<endl;
+      cout<<" index["<<i<<"]="<<index[i]<<", index["<<i+1<<"]="<<index[i+1]<<endl;
+      tmppoint1 = (IsectionPoint*)fArray->At(index[i]);
+      tmppoint2 = (IsectionPoint*)fArray->At(index[i+1]);
+      if(tmppoint1==NULL || tmppoint2==NULL){
+	cout<<"Something went wrong"<<tmppoint1<<"\t"<<tmppoint2<<endl;
+      }
       tmpvec1 = tmppoint1->GetPointCoordinates();
       binno1 = tmppoint1->GetBin();
-      tmppoint2 = (IsectionPoint*)fArray->At(i+1);
       tmpvec2 = tmppoint2->GetPointCoordinates();
       binno2 = tmppoint2->GetBin();
-      
+      cout<<" binno1="<<binno1<<", binno2="<<binno2<<endl<<endl;
       dist = ((*tmpvec1)-(*tmpvec2)).Mag();
-
-        if(dist > maxdist){
-        //cout<<"Event "<<i<<": distance exceeds pixel diagonal "<<dist/maxdist<<" times"<<endl;
+      if(dist > maxdist){
+	//cout<<"Event "<<i<<": distance exceeds pixel diagonal "<<dist/maxdist<<" times"<<endl;
 	continue;
       }
-      /*if(binno1!=binno2){
-        cout<<binno1<<"!="<<binno2<<" ->Bin numbers are different when they should not!"<<endl;
+      if(binno1!=binno2){
+	cout<<binno1<<"!="<<binno2<<" ->Bin numbers are different when they should not!"<<endl;
+	i--;
       }
-      
       fImage->SetBinContent(binno1, fImage->GetBinContent(binno1) + dist);
       
-      fImage->Fill(i,fA[index[i]]);
+      //      fImage->Fill(i,fA[index[i]]);
     }
-*/
-
-    //if(fVerbose) cout<<"end of loop"<<endl;
-   
+    
+        //if(fVerbose) cout<<"end of loop"<<endl;
+    
     delete cone;
    
     cout<<"---------------------"<<endl;
      
-  }// end of loop over events
+}// end of loop over events
   
   fArray->Clear("C");
    t.Stop(); 
