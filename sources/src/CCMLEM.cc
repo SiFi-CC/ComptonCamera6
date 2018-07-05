@@ -279,7 +279,7 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   fSM->Clear("C");
   t.Stop(); 
   t.Print();
-  SaveHistogram(fImage[0]);
+  SaveToFile(fImage[0]);
   
   for(int iter=1; iter<fIter+1; iter++){
     cout << iter << endl;
@@ -287,8 +287,9 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   }
 
   TCanvas* can = new TCanvas("MLEM","MLEM",1200,1200);
-  can->Divide((int)(sqrt(fIter)+1), (int)(sqrt(fIter)+1));
+  can->Divide((int)(sqrt(fIter))+1, (int)(sqrt(fIter))+1);
   for(int cidx=1; cidx<fIter+1; cidx++){
+    can->cd(cidx);
     fImage[cidx-1]->Draw("colz");
   }
   
@@ -440,32 +441,12 @@ Bool_t CCMLEM::Iterate(Int_t nstart, Int_t nstop, Int_t iter){
   return kTRUE;
 }
 //------------------------------------
-Bool_t CCMLEM::SaveHistogram(TH2F *h){
-  TString name = "../sources/results/" + fName + ".root";
-  TFile *file = new TFile(name,"UPDATE");
-  h->Write();
-  file->Close();
-  if(fVerbose) cout << "\nHistogram " << h->GetName() << 
-                       " saved in the file " << name << endl;
-  return kTRUE;
-} 
-//------------------------------------
 Bool_t CCMLEM::SaveToFile(TObject *ob){
   TString name = "../sources/results/" + fName + ".root";
   TFile *file = new TFile(name,"UPDATE");
   ob->Write();
   file->Close();
   if(fVerbose) cout << ob->ClassName()<<" " << ob->GetName() << 
-                       " saved in the file " << name << endl;
-  return kTRUE;
-} 
-//------------------------------------
-Bool_t CCMLEM::SaveHistogram(TH1F *h){
-  TString name = "../sources/results/" + fName + ".root";
-  TFile *file = new TFile(name,"UPDATE");
-  h->Write();
-  file->Close();
-  if(fVerbose) cout << "\nHistogram " << h->GetName() << 
                        " saved in the file " << name << endl;
   return kTRUE;
 } 

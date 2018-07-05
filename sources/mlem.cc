@@ -6,7 +6,7 @@ using namespace std;
 
 int main(int argc, char *argv[]){
   
-  //expected arguments: startevent, stopevent
+  //expected arguments: startevent, stopevent, verbose
 
   TString tmps;
   Int_t nstart, nstop;
@@ -34,7 +34,7 @@ int main(int argc, char *argv[]){
   Int_t gen = 4;
   
   CCMLEM *rec = new CCMLEM(Form("../sources/results/CCSimulation_gen%i.root",gen),
-			   Form("CCMLEM_gen%i",gen),1,verbose,80,80,80,80);
+			   Form("CCMLEM_gen%i",gen),3,verbose,80,80,80,80);
  
   rec->Reconstruct(nstart,nstop);
   

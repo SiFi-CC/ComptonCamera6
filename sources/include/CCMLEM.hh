@@ -20,8 +20,6 @@ public:
   ~CCMLEM();
   Bool_t Iterate(Int_t nstart, Int_t nstop, Int_t iter);
   Bool_t Reconstruct(Int_t iStart, Int_t iStop);
-  Bool_t SaveHistogram(TH2F *h);
-  Bool_t SaveHistogram(TH1F *h);
 
   Bool_t SaveToFile(TGraph *h);
   Bool_t SaveToFile(TObject *h);
