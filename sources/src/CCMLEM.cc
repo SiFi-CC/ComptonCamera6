@@ -7,6 +7,7 @@
 #include "TClonesArray.h"
 #include "TStopwatch.h"
 #include "TMath.h"
+#include "TCanvas.h"
 #include "SMMLEM.hh"
 //#include "TMatrixDSparse.h"
 //#include "TMatrix.h"
@@ -286,7 +287,7 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   }
 
   TCanvas* can = new TCanvas("MLEM","MLEM",1200,1200);
-  can->Divide((int)(sqrt(fIter)+1), (int)(sqrt(iter)+1));
+  can->Divide((int)(sqrt(fIter)+1), (int)(sqrt(fIter)+1));
   for(int cidx=1; cidx<fIter+1; cidx++){
     fImage[cidx-1]->Draw("colz");
   }
@@ -431,7 +432,7 @@ Bool_t CCMLEM::Iterate(Int_t nstart, Int_t nstop, Int_t iter){
       continue;
     }
     addvalue=dist*hlastiter->GetBinContent(binno)/denominator[eventno];
-    hthisiter->SetBinContent(binno,hthisiter->GetBinContent(binno)+addvalue)
+    hthisiter->SetBinContent(binno,hthisiter->GetBinContent(binno)+addvalue);
   }
 
   SaveToFile(hthisiter);
