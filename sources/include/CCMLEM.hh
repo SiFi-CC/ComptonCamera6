@@ -19,7 +19,8 @@
 class CCMLEM : public TObject{
   
 public:
-  CCMLEM(TString inputName, TString name, Int_t iter, Bool_t verbose, Double_t dimZ, Double_t dimY, Int_t nbinsz, Int_t nbinsy);
+  CCMLEM(TString inputName, TString name, Int_t iter, Bool_t verbose, 
+	 Double_t dimZ, Double_t dimY, Int_t nbinsz, Int_t nbinsy);
   ~CCMLEM();
  
   
@@ -27,6 +28,7 @@ public:
   Bool_t SaveHistogram(TH2F *h);
  
   Bool_t SaveToFile(TGraph *h);
+  Bool_t SaveToFile(TObject *h);
   ///Sets name of the CCReconstruction object.
   void SetName(TString name){ fName = name; };
   ///Sets path to the file containing simulation results.

@@ -284,6 +284,14 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
     cout << iter << endl;
     Iterate(iStart,iStop,iter);
   }
+
+  TCanvas* can = new TCanvas("MLEM","MLEM",1200,1200);
+  can->Divide((int)(sqrt(fIter)+1), (int)(sqrt(iter)+1));
+  for(int cidx=1; cidx<fIter+1; cidx++){
+    fImage[cidx-1]->Draw("colz");
+  }
+  
+  SaveToFile(can);
    //SaveToFile(fGraph);
   //delete reco;
    
@@ -396,7 +404,7 @@ Bool_t CCMLEM::Iterate(Int_t nstart, Int_t nstop, Int_t iter){
   Int_t eventno_prev=0;
   Int_t entry;
   Int_t binno;
-  Double_t dist;
+  Double_t dist, addvalue;
   SMMLEM* temp;
   //Double_t weightSum[binno];
   Double_t denominator[nstop];
@@ -411,51 +419,22 @@ Bool_t CCMLEM::Iterate(Int_t nstart, Int_t nstop, Int_t iter){
     denominator[eventno]= denominator[eventno]+dist*hlastiter->GetBinContent(binno);
   }
   
- Int_t totalbin = hthisiter->GetBin(fNbinsZ,fNbinsY);
- Double_t value_prev = 0;
- Double_t value_this = 0;
- Double_t value_sum = 0;
-  
- for(int nbins=1; nbins<totalbin+1; nbins++){
-   value_prev = 0;
-   value_this = 0;
-   value_sum = 0;
-   for(int i=0; i<nstop; i++){
-     for(entry=0; entry<nSMentries; entry++){
-       temp = (SMMLEM*)fSM->At(entry);
-       binno=temp->GetBin();
-       eventno=temp->GetEvent();
-       if(eventno==i && binno==nbins){
-         dist=temp->GetDist();
-         break;
-       }
-       else
-	 dist = 0;
-     }
-     if(dist>1E-10){
-       value_prev = dist*hlastiter->GetBinContent(nbins);
-       value_this = value_prev/denominator[i];
-       value_sum += value_this;
-       cout << value_prev << "\t" << value_this << "\t" << value_sum << endl;
-     }
-   }
-   hthisiter->SetBinContent(nbins,value_sum);
- }
- 
- /*
-  for(int i=0; i<nstop+1; i++){
-    for(entry=0; entry<totalbin; entry++){
-      temp = (SMMLEM*)fSM->At(entry);
-      binno=temp->GetBin();
-      eventno=temp->GetEvent();
-      dist=temp->GetDist();
-      weightSum[binno]+= (dist*hlastiter->GetBinContent(binno)/denominator[eventno]);
-    
+  for(entry=0; entry<nSMentries; entry++){
+    addvalue=0;
+    temp = (SMMLEM*)fSM->At(entry);
+    binno=temp->GetBin();
+    eventno=temp->GetEvent();
+    dist=temp->GetDist();
+    if(denominator[eventno]==0){
+      cout<<"denominator zero here!"<<endl;
+      temp->Print();
+      continue;
     }
-   
+    addvalue=dist*hlastiter->GetBinContent(binno)/denominator[eventno];
+    hthisiter->SetBinContent(binno,hthisiter->GetBinContent(binno)+addvalue)
   }
-  */  
-  SaveHistogram(hthisiter);
+
+  SaveToFile(hthisiter);
   
   return kTRUE;
 }
@@ -466,6 +445,16 @@ Bool_t CCMLEM::SaveHistogram(TH2F *h){
   h->Write();
   file->Close();
   if(fVerbose) cout << "\nHistogram " << h->GetName() << 
+                       " saved in the file " << name << endl;
+  return kTRUE;
+} 
+//------------------------------------
+Bool_t CCMLEM::SaveToFile(TObject *ob){
+  TString name = "../sources/results/" + fName + ".root";
+  TFile *file = new TFile(name,"UPDATE");
+  ob->Write();
+  file->Close();
+  if(fVerbose) cout << ob->ClassName()<<" " << ob->GetName() << 
                        " saved in the file " << name << endl;
   return kTRUE;
 } 
