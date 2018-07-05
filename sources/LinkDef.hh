@@ -15,5 +15,6 @@
 #pragma link C++ class CMReconstruction;
 #pragma link C++ class CCMLEM;
 #pragma link C++ class IsectionPoint;
+#pragma link C++ class SMMLEM;
 
 #endif
