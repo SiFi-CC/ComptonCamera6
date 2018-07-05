@@ -114,7 +114,7 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
     fNIpoints = 0;
     fpoints = 0;
     //if(fVerbose) 
-    if(fVerbose)  cout<<"CCMLEM::Reconstruct(...) event "<< i<<endl<<endl;;
+    cout<<"CCMLEM::Reconstruct(...) event "<< i<<endl<<endl;;
     ComptonCone *cone = reco->ReconstructCone(i);
     interactionPoint = cone->GetApex();
     //cout << "interactionPoint :\n\t";
@@ -238,7 +238,7 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
     SMMLEM* temp;
     for(int h=0; h<fNIpoints; h=h+2) {
      
-      if(fVerbose)  cout<<" index["<<h<<"]="<<index[h]<<", index["<<h+1<<"]="<<index[h+1]<<endl;
+      cout<<" index["<<h<<"]="<<index[h]<<", index["<<h+1<<"]="<<index[h+1]<<endl;
       tmppoint1 = (IsectionPoint*)fArray->At(index[h]);
       tmppoint2 = (IsectionPoint*)fArray->At(index[h+1]);
       if(tmppoint1==NULL || tmppoint2==NULL){
@@ -248,7 +248,7 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
       binno1 = tmppoint1->GetBin();
       tmpvec2 = tmppoint2->GetPointCoordinates();
       binno2 = tmppoint2->GetBin();
-      if(fVerbose)  cout<<" binno1="<<binno1<<", binno2="<<binno2<<endl<<endl;
+      cout<<" binno1="<<binno1<<", binno2="<<binno2<<endl<<endl;
       dist = ((*tmpvec1)-(*tmpvec2)).Mag();
       if(dist > maxdist){
 	//cout<<"Event "<<i<<": distance exceeds pixel diagonal "<<dist/maxdist<<" times"<<endl;
@@ -275,6 +275,7 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   }// end of loop over events
   
   fArray->Clear("C");
+  fSM->Clear("C");
   t.Stop(); 
   t.Print();
   SaveHistogram(fImage[0]);
@@ -389,7 +390,6 @@ Bool_t CCMLEM::Iterate(Int_t nstart, Int_t nstop, Int_t iter){
   TH2F* hlastiter = (TH2F*)fImage[lastiter];
   fImage[lastiter+1]=(TH2F*)hlastiter->Clone();
   TH2F* hthisiter = fImage[lastiter+1];
-  hthisiter->Reset();
   hthisiter->SetName(Form("%s_iter%i",fImage[0]->GetName(), lastiter+1));
   hthisiter->SetTitle(Form("%s_iter%i",fImage[0]->GetTitle(), lastiter+1));
   Int_t eventno;
@@ -403,7 +403,6 @@ Bool_t CCMLEM::Iterate(Int_t nstart, Int_t nstop, Int_t iter){
   for(int i=0; i<nstop+1; i++)
     denominator[i]=0;
   Int_t nSMentries = fSM->GetEntries();
-  cout<<"nSMentries = "<<nSMentries <<endl;
   for(entry=0; entry<nSMentries; entry++){
     temp = (SMMLEM*)fSM->At(entry);
     binno=temp->GetBin();
@@ -417,14 +416,24 @@ Bool_t CCMLEM::Iterate(Int_t nstart, Int_t nstop, Int_t iter){
  Double_t value_prev = 0;
  Double_t value_this = 0;
  Double_t value_sum = 0;
-  
+ for(int i=0; i<nstop+1; i++){
+   for(entry=0; entry<nSMentries; entry++){
+     temp = (SMMLEM*)fSM->At(entry);
+     binno=temp->GetBin();
+     eventno=temp->GetEvent();
+   }
+ }
+ if(eventno==i && binno==nbins){
+       dist=temp->GetDist();
+       break;
+       } 
  for(int nbins=1; nbins<totalbin+1; nbins++){
    value_prev = 0;
    value_this = 0;
    value_sum = 0;
    for(int i=0; i<nstop+1; i++){
-     for(entry=0; entry<nSMentries; entry++){
-       temp = (SMMLEM*)fSM->At(entry);
+     //for(entry=0; entry<nSMentries; entry++){
+       temp = (SMMLEM*)fSM->At(i);
        binno=temp->GetBin();
        eventno=temp->GetEvent();
        if(eventno==i && binno==nbins){
@@ -433,7 +442,7 @@ Bool_t CCMLEM::Iterate(Int_t nstart, Int_t nstop, Int_t iter){
        }
        else
 	 dist = 0;
-     }
+    // }
      if(dist>1E-10){
        value_prev = dist*hlastiter->GetBinContent(nbins);
        value_this = value_prev/denominator[i];
@@ -454,13 +463,7 @@ Bool_t CCMLEM::Iterate(Int_t nstart, Int_t nstop, Int_t iter){
       weightSum[binno]+= (dist*hlastiter->GetBinContent(binno)/denominator[eventno]);
     
     }
-<<<<<<< HEAD
-    addvalue=dist*hlastiter->GetBinContent(binno)/denominator[eventno];
-    cout<<"addvalue="<<addvalue<<endl;
-    hthisiter->SetBinContent(binno,hthisiter->GetBinContent(binno)+addvalue);
-=======
    
->>>>>>> 8c1860cdedf536f5c3925c5ede7db5aea21eaf31
   }
   */  
   SaveHistogram(hthisiter);
