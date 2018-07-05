@@ -7,7 +7,6 @@
 #include "TClonesArray.h"
 #include "TStopwatch.h"
 #include "TMath.h"
-#include "TCanvas.h"
 #include "SMMLEM.hh"
 //#include "TMatrixDSparse.h"
 //#include "TMatrix.h"
@@ -276,24 +275,15 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   }// end of loop over events
   
   fArray->Clear("C");
-  fSM->Clear("C");
+  //fSM->Clear("C");
   t.Stop(); 
   t.Print();
-  SaveToFile(fImage[0]);
+  SaveHistogram(fImage[0]);
   
   for(int iter=1; iter<fIter+1; iter++){
-    cout << iter << endl;
+    //cout << iter << endl;
     Iterate(iStart,iStop,iter);
   }
-
-  TCanvas* can = new TCanvas("MLEM","MLEM",1200,1200);
-  can->Divide((int)(sqrt(fIter))+1, (int)(sqrt(fIter))+1);
-  for(int cidx=1; cidx<fIter+1; cidx++){
-    can->cd(cidx);
-    fImage[cidx-1]->Draw("colz");
-  }
-  
-  SaveToFile(can);
    //SaveToFile(fGraph);
   //delete reco;
    
@@ -406,11 +396,11 @@ Bool_t CCMLEM::Iterate(Int_t nstart, Int_t nstop, Int_t iter){
   Int_t eventno_prev=0;
   Int_t entry;
   Int_t binno;
-  Double_t dist, addvalue;
+  Double_t dist;
   SMMLEM* temp;
   //Double_t weightSum[binno];
-  Double_t denominator[nstop];
-  for(int i=0; i<nstop; i++)
+  Double_t denominator[nstop+1];
+  for(int i=0; i<nstop+1; i++)
     denominator[i]=0;
   Int_t nSMentries = fSM->GetEntries();
   for(entry=0; entry<nSMentries; entry++){
@@ -421,32 +411,72 @@ Bool_t CCMLEM::Iterate(Int_t nstart, Int_t nstop, Int_t iter){
     denominator[eventno]= denominator[eventno]+dist*hlastiter->GetBinContent(binno);
   }
   
-  for(entry=0; entry<nSMentries; entry++){
-    addvalue=0;
-    temp = (SMMLEM*)fSM->At(entry);
-    binno=temp->GetBin();
-    eventno=temp->GetEvent();
-    dist=temp->GetDist();
-    if(denominator[eventno]==0){
-      cout<<"denominator zero here!"<<endl;
-      temp->Print();
-      continue;
+ Int_t totalbin = hthisiter->GetBin(fNbinsZ,fNbinsY);
+ cout << totalbin << endl;
+ Double_t value_prev = 0;
+ Double_t value_this = 0;
+ Double_t value_sum = 0;
+  
+ for(int nbins=1; nbins<totalbin+1; nbins++){
+   value_prev = 0;
+   value_this = 0;
+   value_sum = 0;
+   for(int i=0; i<nstop+1; i++){
+     for(entry=0; entry<nSMentries; entry++){
+       temp = (SMMLEM*)fSM->At(entry);
+       binno=temp->GetBin();
+       eventno=temp->GetEvent();
+       if(eventno==i && binno==nbins){
+         dist=temp->GetDist();
+         break;
+       }
+       else
+	 dist = 0;
+     }
+     if(dist>1E-10){
+       value_prev = dist*hlastiter->GetBinContent(nbins);
+       value_this = value_prev/denominator[i];
+       value_sum += value_this;
+       //cout << value_prev << "\t" << value_this << "\t" << value_sum << endl;
+     }
+   }
+   hthisiter->SetBinContent(nbins,value_sum);
+ }
+ 
+ /*
+  for(int i=0; i<nstop+1; i++){
+    for(entry=0; entry<totalbin; entry++){
+      temp = (SMMLEM*)fSM->At(entry);
+      binno=temp->GetBin();
+      eventno=temp->GetEvent();
+      dist=temp->GetDist();
+      weightSum[binno]+= (dist*hlastiter->GetBinContent(binno)/denominator[eventno]);
+    
     }
-    addvalue=dist*hlastiter->GetBinContent(binno)/denominator[eventno];
-    hthisiter->SetBinContent(binno,hthisiter->GetBinContent(binno)+addvalue);
+   
   }
-
-  SaveToFile(hthisiter);
+  */  
+  SaveHistogram(hthisiter);
   
   return kTRUE;
 }
 //------------------------------------
-Bool_t CCMLEM::SaveToFile(TObject *ob){
+Bool_t CCMLEM::SaveHistogram(TH2F *h){
   TString name = "../sources/results/" + fName + ".root";
   TFile *file = new TFile(name,"UPDATE");
-  ob->Write();
+  h->Write();
   file->Close();
-  if(fVerbose) cout << ob->ClassName()<<" " << ob->GetName() << 
+  if(fVerbose) cout << "\nHistogram " << h->GetName() << 
+                       " saved in the file " << name << endl;
+  return kTRUE;
+} 
+//------------------------------------
+Bool_t CCMLEM::SaveHistogram(TH1F *h){
+  TString name = "../sources/results/" + fName + ".root";
+  TFile *file = new TFile(name,"UPDATE");
+  h->Write();
+  file->Close();
+  if(fVerbose) cout << "\nHistogram " << h->GetName() << 
                        " saved in the file " << name << endl;
   return kTRUE;
 } 
