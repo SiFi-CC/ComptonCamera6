@@ -54,7 +54,7 @@ CCMLEM::CCMLEM(TString inputName, TString name, Int_t iter, Bool_t verbose, Doub
   
   fArray = new TClonesArray("IsectionPoint",1000);
   fNIpoints = 0;
-  fSM = new TClonesArray("SMMLEM",1000);
+  fSM = new TClonesArray("SMMLEM",1000000);
   fpoints = 0;
   cout<<"CCMLEM: I will work in fVerbose="<<fVerbose<<" mode"<<endl;
 
@@ -418,7 +418,6 @@ Bool_t CCMLEM::Iterate(Int_t nstart, Int_t nstop, Int_t iter){
     eventno=temp->GetEvent();
     dist=temp->GetDist();
     addvalue=dist*hlastiter->GetBinContent(binno)/denominator[eventno];
-    cout<<"addvalue="<<addvalue<<endl;
     hthisiter->SetBinContent(binno,hthisiter->GetBinContent(binno)+addvalue);
   }
   
