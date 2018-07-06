@@ -396,9 +396,8 @@ Bool_t CCMLEM::Iterate(Int_t nstart, Int_t nstop, Int_t iter){
   Int_t eventno_prev=0;
   Int_t entry;
   Int_t binno;
-  Double_t dist;
+  Double_t dist, addvalue;
   SMMLEM* temp;
-  //Double_t weightSum[binno];
   Double_t denominator[nstop+1];
   for(int i=0; i<nstop+1; i++)
     denominator[i]=0;
@@ -413,36 +412,27 @@ Bool_t CCMLEM::Iterate(Int_t nstart, Int_t nstop, Int_t iter){
   }
   
   for(entry=0; entry<nSMentries; entry++){
-      temp = (SMMLEM*)fSM->At(entry);
-      binno=temp->GetBin();
-      eventno=temp->GetEvent();
-      dist=temp->GetDist();
-      addvalue=dist*hlastiter->GetBinContent(binno)/denominator[eventno];
-      cout<<"addvalue="<<addvalue<<endl;
-      hthisiter->SetBinContent(binno,hthisiter->GetBinContent(binno)+addvalue);
+    addvalue = 0;
+    temp = (SMMLEM*)fSM->At(entry);
+    binno=temp->GetBin();
+    eventno=temp->GetEvent();
+    dist=temp->GetDist();
+    addvalue=dist*hlastiter->GetBinContent(binno)/denominator[eventno];
+    cout<<"addvalue="<<addvalue<<endl;
+    hthisiter->SetBinContent(binno,hthisiter->GetBinContent(binno)+addvalue);
   }
   
-  SaveHistogram(hthisiter);
+  SaveToFile(hthisiter);
   
   return kTRUE;
 }
 //------------------------------------
-Bool_t CCMLEM::SaveHistogram(TH2F *h){
+Bool_t CCMLEM::SaveToFile(TObject *ob){
   TString name = "../sources/results/" + fName + ".root";
   TFile *file = new TFile(name,"UPDATE");
-  h->Write();
+  ob->Write();
   file->Close();
-  if(fVerbose) cout << "\nHistogram " << h->GetName() << 
-                       " saved in the file " << name << endl;
-  return kTRUE;
-} 
-//------------------------------------
-Bool_t CCMLEM::SaveHistogram(TH1F *h){
-  TString name = "../sources/results/" + fName + ".root";
-  TFile *file = new TFile(name,"UPDATE");
-  h->Write();
-  file->Close();
-  if(fVerbose) cout << "\nHistogram " << h->GetName() << 
+  if(fVerbose) cout << ob->ClassName()<<" " << ob->GetName() << 
                        " saved in the file " << name << endl;
   return kTRUE;
 } 
