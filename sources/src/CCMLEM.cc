@@ -277,7 +277,7 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   fArray->Clear("C");
   t.Stop(); 
   t.Print();
-  SaveHistogram(fImage[0]);
+  SaveToFile(fImage[0]);
   
   for(int iter=1; iter<fIter+1; iter++){
     //cout << iter << endl;
