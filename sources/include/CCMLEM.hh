@@ -40,9 +40,6 @@ private:
   TFile     *fFile;
   TTree     *fTree;
   TH2F      *fImage[100];
-  //TH2F      *fImage1;
-  //TH1F      *fIntz;
-  //TH1F      *fInty;
   TGraph    *fGraph;
   TGraph    *g;
   TVector3  *fPoint0;
