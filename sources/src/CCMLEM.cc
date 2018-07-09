@@ -6,6 +6,7 @@
 #include "IsectionPoint.hh"
 #include "TClonesArray.h"
 #include "TStopwatch.h"
+#include "TCanvas.h"
 #include "TMath.h"
 #include "SMMLEM.hh"
 //#include "TMatrixDSparse.h"
@@ -110,9 +111,9 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   const Double_t maxdist = sqrt(pow(fPixelSizeY,2)+pow(fPixelSizeZ,2));
   TStopwatch t;
   t.Start(); 
+  fpoints = 0;
   for(Int_t i=iStart; i<iStop; i++){
     fNIpoints = 0;
-    fpoints = 0;
     //if(fVerbose) 
     if(fVerbose)  cout<<"CCMLEM::Reconstruct(...) event "<< i<<endl<<endl;;
     ComptonCone *cone = reco->ReconstructCone(i);
@@ -255,12 +256,13 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
 	continue;
       }
       if(binno1!=binno2){
-	cout<<binno1<<"!="<<binno2<<" ->Bin numbers are different when they should not!"<<endl;
+	if(fVerbose) cout<<binno1<<"!="<<binno2<<" ->Bin numbers are different when they should not!"<<endl;
 	//i--;
       }
       
       
       fImage[0]->SetBinContent(binno1, fImage[0]->GetBinContent(binno1) + dist);
+      if(fVerbose) cout<<"fpoints = "<<fpoints<<endl;
       temp = (SMMLEM*)fSM->ConstructedAt(fpoints++);
       temp->SetEvBinDist(i, binno1, dist);
       if(fVerbose) temp->Print();
@@ -270,7 +272,7 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
    
     delete cone;
    
-    cout<<"----------------------------------------------------------------"<<endl;
+    if(fVerbose) cout<<"----------------------------------------------------------------"<<endl;
      
   }// end of loop over events
   
@@ -279,11 +281,34 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   t.Print();
   SaveToFile(fImage[0]);
   
+  TH1D* hProZ[100];
+  TH1D* hProY[100];
+
   for(int iter=1; iter<fIter+1; iter++){
-    //cout << iter << endl;
     Iterate(iStart,iStop,iter);
   }
-   //SaveToFile(fGraph);
+  TCanvas* can  = new TCanvas("MLEM2D","MLEM2D",1000,1000);
+  TCanvas* canz = new TCanvas("MLEM1DZ","MLEM1DZ",1000,1000);
+  TCanvas* cany = new TCanvas("MLEM1DY","MLEM1DY",1000,1000);
+  can->Divide((int)sqrt(fIter)+1, (int)sqrt(fIter)+1);
+  canz->Divide((int)sqrt(fIter)+1, (int)sqrt(fIter)+1);
+  cany->Divide((int)sqrt(fIter)+1, (int)sqrt(fIter)+1);
+  for(int iter=0; iter<fIter+1; iter++){
+    can->cd(iter+1);
+    gPad->SetLogz(1);
+    fImage[iter]->Draw("colz");
+    hProZ[iter]=fImage[iter]->ProjectionX();
+    hProY[iter]=fImage[iter]->ProjectionY();
+    canz->cd(iter+1);
+    hProZ[iter]->Draw();
+    cany->cd(iter+1);
+    hProY[iter]->Draw();
+  }
+  SaveToFile(can);
+  SaveToFile(canz);
+  SaveToFile(cany);
+  
+
   //delete reco;
    
   return kTRUE;
@@ -431,7 +456,7 @@ Bool_t CCMLEM::SaveToFile(TObject *ob){
   TFile *file = new TFile(name,"UPDATE");
   ob->Write();
   file->Close();
-  if(fVerbose) cout << ob->ClassName()<<" " << ob->GetName() << 
+  cout << ob->ClassName()<<" " << ob->GetName() << 
                        " saved in the file " << name << endl;
   return kTRUE;
 } 
