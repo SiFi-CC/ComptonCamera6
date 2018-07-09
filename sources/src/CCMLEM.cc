@@ -8,9 +8,7 @@
 #include "TStopwatch.h"
 #include "TCanvas.h"
 #include "TMath.h"
-#include "SMMLEM.hh"
-//#include "TMatrixDSparse.h"
-//#include "TMatrix.h"
+#include "SMElement.hh"
 using namespace std;
 
 ClassImp(CCMLEM);
@@ -55,7 +53,7 @@ CCMLEM::CCMLEM(TString inputName, TString name, Int_t iter, Bool_t verbose, Doub
   
   fArray = new TClonesArray("IsectionPoint",1000);
   fNIpoints = 0;
-  fSM = new TClonesArray("SMMLEM",1000000);
+  fSM = new TClonesArray("SMElement",1000000);
   fpoints = 0;
   cout<<"CCMLEM: I will work in fVerbose="<<fVerbose<<" mode"<<endl;
 
@@ -87,7 +85,7 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
  */
   Double_t pixelX = 0.;
   Double_t pixelY, pixelZ;
-  //Double_t abit = 1.E-3;
+ 
 
   Int_t j,k;
   
@@ -101,34 +99,25 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   Double_t A = fDimY/2.;  
   Double_t B = fDimZ/2.;
   
-  //fArray->SetOwner(kTRUE); 
-  //fArray->Clear("C");
+  
   fNIpoints = 0;
-  //IsectionPoint* tmppoint;
+  fpoints = 0;
   IsectionPoint* tmppoint1;
   IsectionPoint* tmppoint2;
 
   const Double_t maxdist = sqrt(pow(fPixelSizeY,2)+pow(fPixelSizeZ,2));
   TStopwatch t;
   t.Start(); 
-  fpoints = 0;
+  
   for(Int_t i=iStart; i<iStop; i++){
     fNIpoints = 0;
-    //if(fVerbose) 
+     
     if(fVerbose)  cout<<"CCMLEM::Reconstruct(...) event "<< i<<endl<<endl;;
     ComptonCone *cone = reco->ReconstructCone(i);
     interactionPoint = cone->GetApex();
-    //cout << "interactionPoint :\n\t";
-    //interactionPoint.Print();
     coneAxis = cone->GetAxis();
-    //cout << "coneAxis :\n\t";
-    //coneAxis.Print();
     uvec = coneAxis.Unit();
-    //cout<< "uvec :\n\t";
-   // uvec.Print();
     coneTheta = cone->GetAngle();
-    //cout<<"coneTheta :\n\t";
-    //cout<<coneTheta<<endl;
     Double_t K = cos(coneTheta);
     Double_t a, b, c1, c2, c3, c4, c, z1, z2;
     Double_t d, e, f1, f2, f3, f4, f, y1, y2;  
@@ -236,7 +225,7 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
     TVector3 *tmpvec2;
     Double_t dist;
     Int_t binno1, binno2;
-    SMMLEM* temp;
+    SMElement* temp;
     for(int h=0; h<fNIpoints; h=h+2) {
      
       if(fVerbose)  cout<<" index["<<h<<"]="<<index[h]<<", index["<<h+1<<"]="<<index[h+1]<<endl;
@@ -252,18 +241,18 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
       if(fVerbose)  cout<<" binno1="<<binno1<<", binno2="<<binno2<<endl<<endl;
       dist = ((*tmpvec1)-(*tmpvec2)).Mag();
       if(dist > maxdist){
-	//cout<<"Event "<<i<<": distance exceeds pixel diagonal "<<dist/maxdist<<" times"<<endl;
+	//cout<<"Event "<<h<<": distance exceeds pixel diagonal "<<dist/maxdist<<" times"<<endl;
 	continue;
       }
       if(binno1!=binno2){
 	if(fVerbose) cout<<binno1<<"!="<<binno2<<" ->Bin numbers are different when they should not!"<<endl;
-	//i--;
+	//h--;
       }
       
       
       fImage[0]->SetBinContent(binno1, fImage[0]->GetBinContent(binno1) + dist);
       if(fVerbose) cout<<"fpoints = "<<fpoints<<endl;
-      temp = (SMMLEM*)fSM->ConstructedAt(fpoints++);
+      temp = (SMElement*)fSM->ConstructedAt(fpoints++);
       temp->SetEvBinDist(i, binno1, dist);
       if(fVerbose) temp->Print();
 
@@ -309,7 +298,7 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   SaveToFile(cany);
   
 
-  //delete reco;
+  delete reco;
    
   return kTRUE;
 }
@@ -330,7 +319,7 @@ Int_t CCMLEM::AddIsectionPoint(TString dir, Double_t x, Double_t y, Double_t z){
  
   Int_t i;
   IsectionPoint* tmppoint;
-  //SMMLEM* temp;
+  //SMElement* temp;
   Int_t added = 0;
   Int_t pixelZ, pixelY;
   Double_t yplus, yminus;
@@ -340,8 +329,7 @@ Int_t CCMLEM::AddIsectionPoint(TString dir, Double_t x, Double_t y, Double_t z){
     if(pixelZ>fNbinsZ) pixelZ=fNbinsZ; //inclusion of upper edges of histo
     yplus = y +0.5*fPixelSizeY;
     yminus = y -0.5*fPixelSizeY;
-    //fIntz->Fill(z);
-    //fInty->Fill(y);
+   
     if(fabs(yplus)<=fDimY/2){
       tmppoint = (IsectionPoint*)fArray->ConstructedAt(fNIpoints++);
       pixelY = fImage[0]->GetYaxis()->FindBin(yplus);
@@ -355,7 +343,6 @@ Int_t CCMLEM::AddIsectionPoint(TString dir, Double_t x, Double_t y, Double_t z){
       tmppoint = (IsectionPoint*)fArray->ConstructedAt(fNIpoints++);
       pixelY = fImage[0]->GetYaxis()->FindBin(yminus);
       tmppoint->SetBinPoint(fImage[0]->GetBin(pixelZ,pixelY), x, y, z);
-      
       //if(fVerbose) tmppoint->Print();
       //fGraph->SetPoint(fGraph->GetN(), z, y);
       added++;
@@ -368,14 +355,12 @@ Int_t CCMLEM::AddIsectionPoint(TString dir, Double_t x, Double_t y, Double_t z){
     if(pixelY>fNbinsY) pixelY=fNbinsY; //inclusion of upper edges of histo
     zplus = z +0.5*fPixelSizeZ;
     zminus = z -0.5*fPixelSizeZ;
-    //fInty->Fill(y);
-    //fIntz->Fill(z);
+   
     if(fabs(zplus)<=fDimZ/2){
       tmppoint = (IsectionPoint*)fArray->ConstructedAt(fNIpoints++);
       
       pixelZ = fImage[0]->GetXaxis()->FindBin(zplus);
       tmppoint->SetBinPoint(fImage[0]->GetBin(pixelZ,pixelY), x, y, z);
-      
      //if(fVerbose) tmppoint->Print();
      //fGraph->SetPoint(fGraph->GetN(), z, y);
       added++;
@@ -385,8 +370,7 @@ Int_t CCMLEM::AddIsectionPoint(TString dir, Double_t x, Double_t y, Double_t z){
       tmppoint = (IsectionPoint*)fArray->ConstructedAt(fNIpoints++);
       
       pixelZ = fImage[0]->GetXaxis()->FindBin(zminus);
-      tmppoint->SetBinPoint(fImage[0]->GetBin(pixelZ,pixelY), x, y, z);
-      
+      tmppoint->SetBinPoint(fImage[0]->GetBin(pixelZ,pixelY), x, y, z); 
       //if(fVerbose) tmppoint->Print();
       //fGraph->SetPoint(fGraph->GetN(), z, y);
       added++;
@@ -403,9 +387,7 @@ Int_t CCMLEM::AddIsectionPoint(TString dir, Double_t x, Double_t y, Double_t z){
 Bool_t CCMLEM::Iterate(Int_t nstart, Int_t nstop, Int_t iter){
  
   int lastiter = iter-1;
-  //while(fImage[lastiter]!=NULL)
-    //lastiter++;
-  //lastiter--;
+
   if(fImage[lastiter]==NULL){
     cout << "Error in CCMELM::Iterate(). Last iteration NULL" << endl;
     return kFALSE;
@@ -422,14 +404,14 @@ Bool_t CCMLEM::Iterate(Int_t nstart, Int_t nstop, Int_t iter){
   Int_t entry;
   Int_t binno;
   Double_t dist, addvalue;
-  SMMLEM* temp;
+  SMElement* temp;
   Double_t denominator[nstop+1];
   for(int i=0; i<nstop+1; i++)
     denominator[i]=0;
   Int_t nSMentries = fSM->GetEntries();
-  cout<<"nSMentries = "<<nSMentries <<endl;
+  //cout<<"nSMentries = "<<nSMentries <<endl;
   for(entry=0; entry<nSMentries; entry++){
-    temp = (SMMLEM*)fSM->At(entry);
+    temp = (SMElement*)fSM->At(entry);
     binno=temp->GetBin();
     eventno=temp->GetEvent();
     dist=temp->GetDist();
@@ -438,7 +420,7 @@ Bool_t CCMLEM::Iterate(Int_t nstart, Int_t nstop, Int_t iter){
   
   for(entry=0; entry<nSMentries; entry++){
     addvalue = 0;
-    temp = (SMMLEM*)fSM->At(entry);
+    temp = (SMElement*)fSM->At(entry);
     binno=temp->GetBin();
     eventno=temp->GetEvent();
     dist=temp->GetDist();
