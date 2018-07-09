@@ -6,35 +6,33 @@ using namespace std;
 
 int main(int argc, char *argv[]){
   
-  //expected arguments: startevent, stopevent, verbose
+  //expected arguments: startevent, stopevent, verbose, niter
 
   TString tmps;
-  Int_t nstart, nstop;
-  Int_t verbose;
+  Int_t nstart, nstop, niter, verbose;
   cout<<"argc = "<<argc<<endl;
-  if(argc<3){
-    cout<<"I will analyze events 0-1000"<<endl;
-    nstart = 0; 
-    nstop = 1000;
+  if(argc!=5){
+    cout<<"Please run the program like this:\n ./mlem <nstart> <nstop> <verbose> <niter>"<<
+	"\n where:\n\t nstart - number of first event to process (int),\n\t nstop - number of last event to process (int),\n\t verbose - verbose flag (1/0),\n\t niter - number of iterations in MLEM (int)"<< endl;
+    return 0;
   }
-  else if(argc>3){
-    tmps = argv[3];
-    verbose = tmps.Atoi();
-  }
-  if(argc>2){
-    tmps = argv[1];
-    nstart = tmps.Atoi();
-    tmps = argv[2];
-    nstop = tmps.Atoi();
-  }
+  tmps = argv[3];
+  verbose = tmps.Atoi();
   
-  cout<<"I will analyze events "<<nstart<<"-"<<nstop<<endl;
+  tmps = argv[1];
+  nstart = tmps.Atoi();
+  tmps = argv[2];
+  nstop = tmps.Atoi();
+  tmps = argv[4];
+  niter = tmps.Atoi();
+  
+  cout<<"I will analyze events "<<nstart<<"-"<<nstop<<" with "<<
+    niter<<" MLEM  iterations..."<<endl;
      
-  Int_t nev = 10;
   Int_t gen = 4;
   
   CCMLEM *rec = new CCMLEM(Form("../sources/results/CCSimulation_gen%i.root",gen),
-			   Form("CCMLEM_gen%i",gen),3,verbose,80,80,80,80);
+			   Form("CCMLEM_gen%i",gen),niter,verbose,80,80,80,80);
  
   rec->Reconstruct(nstart,nstop);
   
