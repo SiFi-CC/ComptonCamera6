@@ -30,7 +30,7 @@ int main(int argc, char *argv[]){
   
   cout<<"I will analyze events "<<nstart<<"-"<<nstop<<endl;
      
-  Int_t nev = 10;
+  
   Int_t gen = 4;
   
   CCMLEM *rec = new CCMLEM(Form("../sources/results/CCSimulation_gen%i.root",gen),
