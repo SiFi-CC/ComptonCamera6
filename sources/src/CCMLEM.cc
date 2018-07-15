@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <string>
 #include "CCReconstruction.hh"
 #include "IsectionPoint.hh"
 #include "TClonesArray.h"
@@ -17,25 +18,21 @@ ClassImp(CCMLEM);
 
 //--------------------
 
-CCMLEM::CCMLEM(TString inputName, TString name, Int_t iter, Bool_t verbose, Double_t dimZ, Double_t dimY, Int_t nbinsz, Int_t nbinsy){
+CCMLEM::CCMLEM(){
   
-  SetInputName(inputName);
-  SetName(name);
-  SetIter(iter);
-  fVerbose = verbose;
-  fDimZ = dimZ;
-  fDimY = dimY;
-  fXofRecoPlane = 0;
-  fNbinsZ = nbinsz;
-  fNbinsY = nbinsy;
-  fPixelSizeZ = fDimZ/fNbinsZ;
-  fPixelSizeY = fDimY/fNbinsY;
+  
   
   fPoint0 = new TVector3;
   fPoint1 = new TVector3;
   fPoint2 = new TVector3;
   fVersor1 = new TVector3;
   fVersor2 = new TVector3;
+  
+  
+  
+  Config();
+  TString name = "../sources/results/" + fName + ".root";
+  TFile *file = new TFile(name,"RECREATE");
   
   fFile = new TFile(fInputName,"READ");
   fTree = (TTree*)fFile->Get("data");
@@ -61,6 +58,7 @@ CCMLEM::CCMLEM(TString inputName, TString name, Int_t iter, Bool_t verbose, Doub
 //----------------------------------------
 CCMLEM::~CCMLEM(){
   if(fFile) fFile->Close();
+  if(file) file->Close();
 }
 //------------------------------------------
 Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
@@ -266,9 +264,9 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   }// end of loop over events
   
   fArray->Clear("C");
-  t.Stop(); 
-  t.Print();
-  SaveToFile(fImage[0]);
+  file->cd();
+  fImage[0]->Write();
+  //SaveToFile(fImage[0]);
   
   TH1D* hProZ[100];
   TH1D* hProY[100];
@@ -276,7 +274,7 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   for(int iter=1; iter<fIter+1; iter++){
     Iterate(iStart,iStop,iter);
   }
-  TCanvas* can  = new TCanvas("MLEM2D","MLEM2D",1000,1000);
+ /* TCanvas* can  = new TCanvas("MLEM2D","MLEM2D",1000,1000);
   TCanvas* canz = new TCanvas("MLEM1DZ","MLEM1DZ",1000,1000);
   TCanvas* cany = new TCanvas("MLEM1DY","MLEM1DY",1000,1000);
   can->Divide((int)sqrt(fIter)+1, (int)sqrt(fIter)+1);
@@ -296,7 +294,9 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   SaveToFile(can);
   SaveToFile(canz);
   SaveToFile(cany);
-  
+  */
+  t.Stop(); 
+  t.Print();
 
   delete reco;
    
@@ -428,11 +428,136 @@ Bool_t CCMLEM::Iterate(Int_t nstart, Int_t nstop, Int_t iter){
     hthisiter->SetBinContent(binno,hthisiter->GetBinContent(binno)+addvalue);
   }
   
-  SaveToFile(hthisiter);
+  file->cd();
+  hthisiter->Write();
+ //SaveToFile(hthisiter);
   
   return kTRUE;
 }
 //------------------------------------
+Bool_t CCMLEM::Config(void){
+  
+  //TString dummy;
+  //TString inputName;
+  string nextline;
+  
+  TString config_name = "../sources/results/config.txt";
+  ifstream config(config_name);
+  if(!config.is_open()){
+   cout << "##### Could not open configuration file!" << endl;
+   return kFALSE;
+  }
+  TString ReadLine(std::istream& config);  //Read a line from stream upto newline skipping any whitespace.
+  getline(config, nextline);
+ 
+  config >> fInputName;
+  ifstream input("../sources/results/"+fInputName, std::ios::in);
+  if(!(input.is_open())){
+    cout << "##### Could not open input file! " << endl;
+    return kFALSE;
+  }
+  
+  config >> fXofRecoPlane >> fYofRecoPlane >> fZofRecoPlane;
+  if(fXofRecoPlane<-50 || fYofRecoPlane<-50 || fZofRecoPlane<-50){
+    cout << "##### Please check the center of image plane!" << endl;
+    return kFALSE;
+  }
+  
+  config >> fDimZ >> fDimY;
+  if(fDimZ<0 || fDimY<0){
+    cout << "##### impossible size dimensions!" << endl;
+    return kFALSE;
+  }
+  
+  config >> fNbinsZ >> fNbinsY;
+  if(fNbinsZ<-1 || fNbinsY<-1){
+    cout << "##### impossible no. of bins!" << endl;
+    return kFALSE;
+  }
+  
+  /*config >> Smear;
+  if(Smear!=kTRUE){
+    cout << "##### Error in Smearing" << endl;
+    return kFALSE;
+  }
+  */
+  config >> fSigmaX >> fSigmaY >> fSigmaZ;
+  if(fSigmaX<-0.1 || fSigmaY<-0.1 || fSigmaZ<-0.1){
+    cout << "##### Unexpected values of sigma" << endl;
+    return kFALSE;
+  }
+  
+  config >> fSigmaE;
+  if(fSigmaE<0){
+    cout << "##### Unexpected value of Energy Sigma!" << endl;
+    return kFALSE;
+  }
+  
+  config >> fIter;
+  if(fIter<0){
+    cout << "##### impossible no. of iterations!" << endl;
+    return kFALSE;
+  }
+  
+ /* config >> Freshoutput;
+  if(Freshoutput!=kTRUE){
+    cout << "##### Error in Freshoutput" << endl;
+    return kFALSE;
+  }
+*/
+  
+  config.close();
+
+  return kTRUE;
+}
+//------------------------------------
+Bool_t CCMLEM::Drawhisto(void){
+  
+  TH1D* hProZ[100];
+  TH1D* hProY[100];
+  TCanvas* can  = new TCanvas("MLEM2D","MLEM2D",1000,1000);
+  TCanvas* canz = new TCanvas("MLEM1DZ","MLEM1DZ",1000,1000);
+  TCanvas* cany = new TCanvas("MLEM1DY","MLEM1DY",1000,1000);
+  can->Divide((int)sqrt(fIter)+1, (int)sqrt(fIter)+1);
+  canz->Divide((int)sqrt(fIter)+1, (int)sqrt(fIter)+1);
+  cany->Divide((int)sqrt(fIter)+1, (int)sqrt(fIter)+1);
+  for(int iter=0; iter<fIter+1; iter++){
+    can->cd(iter+1);
+    gPad->SetLogz(1);
+    fImage[iter]->Draw("colz");
+    hProZ[iter]=fImage[iter]->ProjectionX();
+    hProY[iter]=fImage[iter]->ProjectionY();
+    canz->cd(iter+1);
+    hProZ[iter]->Draw();
+    cany->cd(iter+1);
+    hProY[iter]->Draw();
+  }
+  file->cd();
+  can->Write();
+  canz->Write();
+  cany->Write();
+  
+  return kTRUE;
+}
+//------------------------------------
+/*Bool_t CCMELM::Smear(){
+  
+  
+  
+  
+  
+ return kTRUE; 
+}
+
+Bool_t CCMELM::Freshoutput(){
+  
+  
+  
+  
+  return kTRUE;
+}
+*/
+//-------------------------------------------
 Bool_t CCMLEM::SaveToFile(TObject *ob){
   TString name = "../sources/results/" + fName + ".root";
   TFile *file = new TFile(name,"UPDATE");
