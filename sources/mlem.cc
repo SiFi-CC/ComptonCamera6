@@ -9,6 +9,7 @@ int main(int argc, char *argv[]){
   //expected arguments: startevent, stopevent, verbose, niter
 
   TString tmps;
+  
   Int_t nstart, nstop, niter, verbose;
   cout<<"argc = "<<argc<<endl;
   if(argc!=5){
@@ -31,15 +32,13 @@ int main(int argc, char *argv[]){
      
   Int_t gen = 4;
   
-  CCMLEM *rec = new CCMLEM(Form("../sources/results/CCSimulation_gen%i.root",gen),
-			   Form("CCMLEM_gen%i",gen),niter,verbose,80,80,80,80);
+  CCMLEM *rec = new CCMLEM();
  
   rec->Reconstruct(nstart,nstop);
   
   
   
-  delete rec;
+  delete rec; 
  
   return 1;
 }
-  
