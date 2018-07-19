@@ -4,12 +4,13 @@
 #include "TString.h"
 #include "TVector3.h"
 #include "TFile.h"
-#include "TTree.h"
 #include "TMath.h"
 #include "TH2F.h"
 #include "TH1F.h"
 #include "ComptonCone.hh"
 #include "DetPlane.hh"
+#include "InputReader.hh"
+#include "InputReaderSimple.hh"
 
 ///Class for image reconstruction from events simulated in class CCSimulations.
 ///This class usues simple back projection algorithm based on ComptonCone
@@ -19,35 +20,30 @@
 class CCReconstruction : public TObject{
   
 public:
-  CCReconstruction(TString inputName, TString name, Int_t iter, Bool_t verbose);
+  CCReconstruction(TString inputName, TString name, Bool_t verbose);
   ~CCReconstruction();
   
-  TVector3 ConnectPoints(TVector3 point1, TVector3 point2);
-  Double_t CalculateTheta(Double_t e1, Double_t e2);
-  void RebuildSetupTxt(void);
+  bool         SetInputReader(TString inputName);
+  TVector3     ConnectPoints(TVector3 point1, TVector3 point2);
+  Double_t     CalculateTheta(Double_t e1, Double_t e2);
+  void         RebuildSetupTxt(void);
   ComptonCone* ReconstructCone(Int_t i);
-  Bool_t ReconstructImage(Int_t iStart, Int_t iStop);
-  void   Clear(void);
-  Bool_t SaveHistogram(TH1F *h);
-  Bool_t SaveHistogram(TH2F *h);
-  void Print(void);
+  Bool_t       ReconstructImage(Int_t iStart, Int_t iStop);
+  void         Clear(void);
+  Bool_t       SaveHistogram(TH1F *h);
+  Bool_t       SaveHistogram(TH2F *h);
+  void         Print(void);
   
   ///Sets name of the CCReconstruction object. 
   void SetName(TString name)          { fName = name; }; 
   ///Sets path to the file containing simulation results.
   void SetInputName(TString inputName){ fInputName = inputName; };
-  ///Sets number or iterations for MLEM (not used in this version).
-  void SetIter(Int_t iter)            { fIter = iter; };
   
 private:
   TString   fInputName;		///< Path to the file with simulation data
   TString   fName;		///< Name of the CCReconstruction object
   Bool_t    fVerbose;		///< Verbose level for print-outs on screen
-  Int_t     fNev;		///< Number of events to be reconstructed 
-  Int_t     fIter;		///< Number of iterations for MLEM (not used in this version)
   Int_t     fGenVersion;	///< Version of gamma generator 
-  TFile     *fFile;		///< ROOT file containing simulation data
-  TTree     *fTree;		///< ROOT tree containing simulation data
   TH2F      *fImage;		///< Reconstructed image histogramgram
   TH1F      *fNpixels;		///< Distribution of filled pixels in the reconstructed image
   TVector3  *fPoint0;		///< Coordinates of the gamma origin
@@ -60,6 +56,7 @@ private:
   Double_t  fEnergy2;		///< Energy after Compton scattering
   DetPlane  fScatterer;		///< Scatterer detection plane
   DetPlane  fAbsorber;		///< Absorber detection plane
+  InputReader *fReader;
   
   ClassDef(CCReconstruction,0)
 };

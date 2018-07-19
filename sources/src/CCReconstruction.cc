@@ -16,38 +16,50 @@ const double kMe  = 0.510999;	// MeV/c2
 ///\param name (TString) - name of the object
 ///\param iter (Int_t) - number of iterations for MLEM (not used for now)
 ///\param verbose (Bool_t) - verbose level for print-outs on the screen.
-CCReconstruction::CCReconstruction(TString inputName, TString name, Int_t iter, Bool_t verbose){
+CCReconstruction::CCReconstruction(TString inputName, TString name, Bool_t verbose){
   
   SetInputName(inputName);
   SetName(name);
-  SetIter(iter);
   fVerbose = verbose;
   TString tmp = name(20,22);
   fGenVersion = tmp.Atoi();
+  
+  if(!SetInputReader(inputName)){
+    throw "##### Exception in CCReconstruction constructor!";
+  }
   
   fPoint0 = new TVector3;
   fPoint1 = new TVector3;
   fPoint2 = new TVector3;
   fVersor1 = new TVector3;
   fVersor2 = new TVector3;
-  
-  fFile = new TFile(fInputName,"READ");
-  fTree = (TTree*)fFile->Get("data");
-  
-  fTree->SetBranchAddress("point0",&fPoint0);
-  fTree->SetBranchAddress("point1",&fPoint1);
-  fTree->SetBranchAddress("point2",&fPoint2);
-  fTree->SetBranchAddress("versor1",&fVersor1);
-  fTree->SetBranchAddress("versor2",&fVersor2);
-  fTree->SetBranchAddress("energy0",&fEnergy0);
-  fTree->SetBranchAddress("energy1",&fEnergy1);
-  fTree->SetBranchAddress("energy2",&fEnergy2);
-  fNev = fTree->GetEntries();
 }
 //------------------------------------------------------------------
 ///Default destructor.
 CCReconstruction::~CCReconstruction(){
-  if(fFile) fFile->Close();
+  delete fReader;
+}
+//------------------------------------------------------------------
+bool CCReconstruction::SetInputReader(TString inputName){
+  
+  TFile *file = new TFile(inputName,"READ");
+  if(!file->IsOpen()){
+   cout << "##### Error in CCReconstruction::SetInputReader!" << endl;
+   cout << "Could not open requested file" << endl;
+   return false;
+  }
+  
+  if(file->Get("data")){
+   file->Close();
+   fReader = new InputReaderSimple(inputName);
+  }
+  else{
+    cout << "##### Error in CCReconstruction::SetInputReader()!" << endl;
+    cout << "Unknown data format" << endl;
+    return false;
+  }
+  
+  return true;
 }
 //------------------------------------------------------------------
 ///Calculates coordinates of versor connecting two given points.
@@ -140,7 +152,15 @@ ComptonCone* CCReconstruction::ReconstructCone(Int_t i){
   Double_t epsilon = 1.E-8;
   
   Clear();
-  fTree->GetEntry(i);
+  fReader->LoadEvent(i);
+  fPoint0  = fReader->GetSourcePosition();
+  fPoint1  = fReader->GetScatPosition();
+  fPoint2  = fReader->GetAbsPosition();
+  fVersor1 = fReader->GetPrimaryGammaDir();
+  fVersor2 = fReader->GetScatGammaDir();
+  fEnergy0 = fReader->GetEnSource();
+  fEnergy1 = fReader->GetEnScat();
+  fEnergy2 = fReader->GetEnAbs();
   
   //----- energy check
   Double_t en = fEnergy1 + fEnergy2;
@@ -200,7 +220,7 @@ ComptonCone* CCReconstruction::ReconstructCone(Int_t i){
     cout << "\ttheta = " << theta << " radians\t" << theta*TMath::RadToDeg()<<" deg\n\t";
     }
     
-  if(i%1000==0) cout << i << " events out of " << fNev << " processed\n" << endl;
+  //if(i%1000==0) cout << i << " events out of " << fNev << " processed\n" << endl;
   
   return cone;
 }
@@ -315,6 +335,5 @@ Bool_t CCReconstruction::SaveHistogram(TH2F *h){
 void CCReconstruction::Print(void){
   cout << "\nCCReconstruction::Print() for the object: " << fName << endl;
   cout << "\tData reconstruction form the file: " << fInputName << endl;
-  cout << "\tNumber of iterationf for MLEM: " << fIter << endl;
 }
 //------------------------------------------------------------------

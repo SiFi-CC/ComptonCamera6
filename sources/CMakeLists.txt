@@ -39,12 +39,14 @@ add_executable(mask mask.cc)
 add_executable(reconstruction reconstruction.cc)
 add_executable(cmreco cmreco.cc)
 add_executable(mlem mlem.cc)
+add_executable(tests tests.cc)
 
 target_link_libraries(camera ComptonCamera6)
 target_link_libraries(mask ComptonCamera6)
 target_link_libraries(reconstruction ComptonCamera6)
 target_link_libraries(cmreco ComptonCamera6)
 target_link_libraries(mlem ComptonCamera6)
+target_link_libraries(tests ComptonCamera6)
 
 #---Locating Doxygen and generating documentation 
 find_package(Doxygen)

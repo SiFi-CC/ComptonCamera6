@@ -16,5 +16,7 @@
 #pragma link C++ class CCMLEM;
 #pragma link C++ class IsectionPoint;
 #pragma link C++ class SMElement;
+#pragma link C++ class InputReader;
+#pragma link C++ class InputReaderSimple;
 
 #endif

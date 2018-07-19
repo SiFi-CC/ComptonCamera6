@@ -66,7 +66,7 @@ CCMLEM::~CCMLEM(){
 //------------------------------------------
 Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
 
-  CCReconstruction *reco = new CCReconstruction(fInputName, fName, fIter, fVerbose);
+  CCReconstruction *reco = new CCReconstruction(fInputName, fName, fVerbose);
 
 //image histogram
   fImage[0] = new TH2F("image","image",fNbinsZ,-fDimZ/2.,fDimZ/2.,fNbinsY,-fDimY/2.,fDimY/2.);
