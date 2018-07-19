@@ -17,28 +17,26 @@ class CCMLEM : public TObject{
 public:
   CCMLEM();
   ~CCMLEM();
-  Bool_t Iterate(Int_t nstart, Int_t nstop, Int_t iter);
+  Bool_t Iterate(Int_t nstop, Int_t iter);
   Bool_t Reconstruct(Int_t iStart, Int_t iStop);
 
   Bool_t SaveToFile(TGraph *h);
   Bool_t SaveToFile(TObject *h);
+  Bool_t Freshoutput(TObject *h);
   Bool_t Config(void);
-  Bool_t Smear();
-  Bool_t Freshoutput();
   Bool_t Drawhisto(void);
-  ///Sets name of the CCReconstruction object.
+  Double_t Smear(double val, double sigma);
+  
   void SetName(TString name){ fName = name; };
-  ///Sets path to the file containing simulation results.
   void SetInputName(TString inputName){ fInputName = inputName; };
   void SetIter(Int_t iter){ fIter = iter; };
+  void Print(void);
   
   Int_t AddIsectionPoint(TString dir, Double_t x, Double_t y, Double_t z);
   
 private:
   TString   fInputName;
   TString   fName;
-  TString   fPath;
-  Int_t     fNev;
   Bool_t    fVerbose;
   Int_t     fIter;
   TFile     *fFile;
@@ -47,6 +45,7 @@ private:
   TH2F      *fImage[100];
   TGraph    *fGraph;
   TGraph    *g;
+  TObject   *h;
   TVector3  *fPoint0;
   TVector3  *fPoint1;
   TVector3  *fPoint2;
@@ -57,10 +56,14 @@ private:
   Double_t  fEnergy2;
   Double_t  fDimZ;
   Double_t  fDimY;
+  Double_t  fVal;
+  Double_t  fSigma;
   Int_t     fNbinsZ;
   Int_t     fNbinsY;
   Int_t     fNIpoints;
   Int_t     fpoints;
+  Int_t     fStart;
+  Int_t     fStop;
   Double_t  fPixelSizeZ;
   Double_t  fPixelSizeY;
   Double_t  fXofRecoPlane;
