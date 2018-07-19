@@ -13,11 +13,11 @@ InputReader::~InputReader(){
   if(fFile->IsOpen()) fFile->Close();
 }
 //------------------------------------------------------------------
-InputReader::InputReader(TString path, bool verbose){
+InputReader::InputReader(TString path){
+  Clear();
   if(!SetInputFile(path)){
-    throw "##### Error in InputReader constructor!";
+    throw "##### Exception in InputReader constructor!";
   }
-  SetVerbose(verbose);
 }
 //------------------------------------------------------------------
 bool InputReader::SetInputFile(TString path){
@@ -46,9 +46,6 @@ bool InputReader::AccessTree(TString name){
 //------------------------------------------------------------------
 bool InputReader::LoadEvent(int i){
   
-  if(fVerbose)
-    cout << "Reading event number " << i << endl;
-  
   int imax = fTree->GetEntries();
   if(i>imax){
    cout << "##### Error in InputReader::LoadEvent()!" << endl;
@@ -61,28 +58,23 @@ bool InputReader::LoadEvent(int i){
 }
 //------------------------------------------------------------------
 TVector3* InputReader::GetSourcePosition(void){
-  TVector3 *vec = new TVector3(-100,-100,-100);
-  return vec;
+  return NULL;
 }
 //------------------------------------------------------------------
 TVector3* InputReader::GetScatPosition(void){
-  TVector3 *vec = new TVector3(-100,-100,-100);
-  return vec;
+  return NULL;
 }
 //------------------------------------------------------------------
 TVector3* InputReader::GetAbsPosition(void){
-  TVector3 *vec = new TVector3(-100,-100,-100);
-  return vec;
+  return NULL;
 }
 //------------------------------------------------------------------
 TVector3* InputReader::GetPrimaryGammaDir(void){
-  TVector3 *vec = new TVector3(-100,-100,-100);
-  return vec;
+  return NULL;
 }
 //------------------------------------------------------------------
 TVector3* InputReader::GetScatGammaDir(void){
-  TVector3 *vec = new TVector3(-100,-100,-100);
-  return vec;
+  return NULL;
 }
 //------------------------------------------------------------------
 double InputReader::GetEnSource(void){
@@ -98,7 +90,6 @@ double InputReader::GetEnAbs(void){
 }
 //------------------------------------------------------------------
 void InputReader::Clear(void){
- fVerbose  = false;
  fFile     = NULL;
  fTree     = NULL;
 }
@@ -108,7 +99,6 @@ void InputReader::Print(void){
   cout << "This is Print() for InputReader class object" << endl;
   if(fFile!=NULL){
     cout << "Opened file: " << fFile->GetName() << endl;
-    cout << "Verbose level: " << fVerbose << endl;
   }
   else{
     cout << "It's empty!" << endl;

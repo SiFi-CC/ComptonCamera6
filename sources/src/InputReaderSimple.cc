@@ -10,10 +10,10 @@ InputReaderSimple::InputReaderSimple()
 }
 //------------------------------------------------------------------
 InputReaderSimple::InputReaderSimple(TString path)
-                     :InputReader(path,true){
+                     :InputReader(path){
 
-  if(!AccessTree()){
-   throw "##### Error in InputReaderSimple constructor!"; 
+  if(!AccessTree("data")){
+   throw "##### Exception in InputReaderSimple constructor!"; 
   }
 }
 //------------------------------------------------------------------
@@ -21,9 +21,9 @@ InputReaderSimple::~InputReaderSimple(){
   if(fFile->IsOpen()) fFile->Close();
 }
 //------------------------------------------------------------------
-bool InputReaderSimple::AccessTree(void){
+bool InputReaderSimple::AccessTree(TString name){
  
-  fTree = (TTree*)fFile->Get("data");
+  fTree = (TTree*)fFile->Get(name);
   
   if(fTree==NULL){
     cout << "##### Error in InputReaderSimple::AccessTree()!" << endl;

@@ -1,41 +1,35 @@
 #include "InputReader.hh"
 #include "InputReaderSimple.hh"
+#include "InputReaderGeant.hh"
 
 int main(){
- /*
+  
+  TString fname = "../sources/results/CCSimulation_gen5.root";
+  int istart = 10;
+  int istop  = 100;
+  
+  cout << "===== Test of InputReader class" << endl;
+  
   InputReader *in;
   
   try{
-    in = new InputReader("../sources/results/results.root",false);
+    in = new InputReader(fname);
   }
   catch(const char *message){
    cout << message << endl;
    return 0;
   }
+
+  in->Print();
   
-  in->AccessTree("tree_ft");
-  in->Print(); 
-  
-  in->LoadEvent(1);*/
-  //double x = in->GetValue();
-  //for(int i=0; i<100; i++){
-   //in->LoadEvent(i+1); 
-  //}
-  
-  //TVector3 point1;
-  //TVector3 point2;
-  //double en1, en2;
-  //in->ReadEvent(1,point1,point2,en1,en2);
-  
-  //point1.Print();
-  //point2.Print();
-  //cout << en1 << "\t" << en2 << endl;
   //-----
 
+  cout << "===== Test of InputReaderSimple class" << endl;
+  
   InputReaderSimple *ins;
   
   try{  
-    ins = new InputReaderSimple("../sources/results/CCSimulation_gen5.root");
+    ins = new InputReaderSimple(fname);
   }
   catch(const char *message){
    cout << message << endl;
@@ -43,15 +37,46 @@ int main(){
   }
   
   ins->Print();
-  TVector3 *p0;
   
-  for(int i=0; i<100; i++){
+  TVector3 *point0;
+  TVector3 *point1;
+  TVector3 *point2;
+  TVector3 *versor1;
+  TVector3 *versor2;
+  double   energy0;
+  double   energy1;
+  double   energy2;
+  
+  for(int i=istart; i<istop; i++){
     ins->LoadEvent(i);
-    p0 = ins->GetSourcePosition();
-    p0->Print();
+    point0 = ins->GetSourcePosition();
+    point1 = ins->GetScatPosition();
+    point2 = ins->GetAbsPosition();
+    versor1 = ins->GetPrimaryGammaDir();
+    versor2 = ins->GetScatGammaDir();
+    energy0 = ins->GetEnSource();
+    energy1 = ins->GetEnScat();
+    energy2 = ins->GetEnAbs();
   }
+  
   //-----
-  //delete in;
+  
+  cout << "===== Test of InputReaderGeant class" << endl;
+  
+  InputReaderGeant *ing;
+  
+  try{
+    ing = new InputReaderGeant(fname); 
+  }
+  catch(const char *message){
+    cout << message << endl;
+    return 0;
+  }
+  
+  ing->Print();
+  
+  //-----
+  delete in;
   delete ins;
   
   return 1;

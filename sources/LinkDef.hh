@@ -18,5 +18,6 @@
 #pragma link C++ class SMElement;
 #pragma link C++ class InputReader;
 #pragma link C++ class InputReaderSimple;
+#pragma link C++ class InputReaderGeant;
 
 #endif

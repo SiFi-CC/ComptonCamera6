@@ -11,6 +11,7 @@
 #include "DetPlane.hh"
 #include "InputReader.hh"
 #include "InputReaderSimple.hh"
+#include "InputReaderGeant.hh"
 
 ///Class for image reconstruction from events simulated in class CCSimulations.
 ///This class usues simple back projection algorithm based on ComptonCone

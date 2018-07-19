@@ -14,11 +14,12 @@ class InputReader : public TObject{
   
 public:
    InputReader();
-   InputReader(TString path, bool verbose);
+   InputReader(TString path);
   ~InputReader();
   
-  bool virtual LoadEvent(int i);
-  bool virtual AccessTree(TString name);
+  bool     LoadEvent(int i);
+  void     Clear(void);
+  void     Print(void);
   TVector3 virtual *GetSourcePosition(void);
   TVector3 virtual *GetScatPosition(void);
   TVector3 virtual *GetAbsPosition(void);
@@ -27,18 +28,13 @@ public:
   double   virtual GetEnSource(void);
   double   virtual GetEnScat(void);
   double   virtual GetEnAbs(void);
-  bool         SetInputFile(TString path);
-  void         SetVerbose(bool verbose) { fVerbose = verbose; };
-  void         Clear(void);
-  void         Print(void);
   
 protected:
-  bool    fVerbose;
   TFile   *fFile;
   TTree   *fTree;
   
-private:
-  vector <double> fBranches;
+  bool    virtual AccessTree(TString name);
+  bool    SetInputFile(TString path);
   
   ClassDef(InputReader,0)
 };

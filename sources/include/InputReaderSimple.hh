@@ -13,9 +13,7 @@ public:
   InputReaderSimple();
   InputReaderSimple(TString path);
   ~InputReaderSimple();
-  
-  bool AccessTree(void);
-  bool ReadEvent(int i, TVector3 &point1, TVector3 &point2, double &energy1, double &energy2);
+ 
   TVector3 *GetSourcePosition(void);
   TVector3 *GetScatPosition(void);
   TVector3 *GetAbsPosition(void);
@@ -34,6 +32,8 @@ private:
   double   fEnergy0;
   double   fEnergy1;
   double   fEnergy2;
+  
+  bool     AccessTree(TString name);
   
   ClassDef(InputReaderSimple,0)
 };

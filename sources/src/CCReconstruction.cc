@@ -53,6 +53,10 @@ bool CCReconstruction::SetInputReader(TString inputName){
    file->Close();
    fReader = new InputReaderSimple(inputName);
   }
+  else if(file->Get("G4SimulationData_Reconstruction")){
+    file->Close();
+    fReader = new InputReaderGeant(inputName);
+  }
   else{
     cout << "##### Error in CCReconstruction::SetInputReader()!" << endl;
     cout << "Unknown data format" << endl;
