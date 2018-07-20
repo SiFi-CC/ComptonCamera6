@@ -63,6 +63,7 @@ int main(){
   
   cout << "===== Test of InputReaderGeant class" << endl;
   
+  fname = "../SimulationResults/test.root";
   InputReaderGeant *ing;
   
   try{

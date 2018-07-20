@@ -12,7 +12,7 @@ project(ComptonCamera6)
 
 #--- You need to tell CMake where to find the ROOT installation.
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
-
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} $ENV{ROOTSYS} ${CMAKE_CURRENT_SOURCE_DIR} )
 
 #---Locate the ROOT package and defines a number of variables (e.g. ROOT_INCLUDE_DIRS)
 find_package(ROOT REQUIRED COMPONENTS RIO Geom)
@@ -24,14 +24,20 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 
 
 #---Define useful ROOT functions and macros (e.g. ROOT_GENERATE_DICTIONARY)
+include(makeRootDict)
 include(${ROOT_USE_FILE})
+include_directories(${ROOT_INCLUDE_DIRS})
+include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 ROOT_GENERATE_DICTIONARY(G__ComptonCamera6 ${headers} LINKDEF LinkDef.hh)
 
+MAKE_ROOT_DICT(DICTNAME StructLib LINKDEF StructLinkDef.hh SOURCES src/DR_GenerallStructs.cc INCLUDES include/Structinclude.hh include/DR_GenerallStructs.hh LIBRARIES ${ROOT_LIBRARIES})
 
 #---Create a shared library with generated dictionary
 add_library(ComptonCamera6 SHARED camera.cc ${sources} G__ComptonCamera6.cxx)
-target_link_libraries(ComptonCamera6 ${ROOT_LIBRARIES})
+target_link_libraries(ComptonCamera6 ${ROOT_LIBRARIES} StructLib)
+
 
 #---Create  a main program using the library
 add_executable(camera camera.cc)
@@ -47,6 +53,7 @@ target_link_libraries(reconstruction ComptonCamera6)
 target_link_libraries(cmreco ComptonCamera6)
 target_link_libraries(mlem ComptonCamera6)
 target_link_libraries(tests ComptonCamera6)
+
 
 #---Locating Doxygen and generating documentation 
 find_package(Doxygen)

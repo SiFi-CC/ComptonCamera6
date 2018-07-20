@@ -45,8 +45,6 @@ bool InputReaderSimple::AccessTree(TString name){
   fTree->SetBranchAddress("energy0",&fEnergy0);
   fTree->SetBranchAddress("energy1",&fEnergy1);
   fTree->SetBranchAddress("energy2",&fEnergy2);
-  
-  int Nentries = fTree->GetEntries();
  
   cout << "\n\nIn InputReaderSimple::AccessTree()." << endl;
   cout << fTree->GetName() << " tree accessed.\n" << endl;

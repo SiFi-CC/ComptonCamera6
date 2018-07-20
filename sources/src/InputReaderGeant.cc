@@ -30,5 +30,20 @@ bool InputReaderGeant::AccessTree(TString name){
     cout << "Could not access the tree!" << endl;
     return false;
   }
+  
+  fTree->SetBranchAddress("EventNumber",&fEventNumber);
+  fTree->SetBranchAddress("Identified",&fIdentified);
+  fTree->SetBranchAddress("RecoEnergy_e",&fRecoEnergy_e);
+  fTree->SetBranchAddress("RecoEnergy_p",&fRecoEnergy_p);
+  fTree->SetBranchAddress("RecoPosition_e",&fRecoPosition_e);
+  fTree->SetBranchAddress("RecoPosition_p",&fRecoPosition_p);
+  fTree->SetBranchAddress("RecoDirection_scatter",&fRecoDirection_scatter);
+  fTree->SetBranchAddress("RecoClusterPositions",&fRecoClusterPositions);
+  fTree->SetBranchAddress("RecoClusterEnergies",&fRecoClusterEnergies);
+
+  cout << "\n\nIn InputReaderGeant::AccessTree()." << endl;
+  cout << fTree->GetName() << " tree accessed.\n" << endl;
+  
+  return true;
 }
 //------------------------------------------------------------------
