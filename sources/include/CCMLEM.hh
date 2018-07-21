@@ -22,9 +22,8 @@ public:
 
   Bool_t SaveToFile(TGraph *h);
   Bool_t SaveToFile(TObject *h);
-  Bool_t Freshoutput(TObject *h);
   Bool_t Config(void);
-  Bool_t Drawhisto(void);
+  Bool_t DrawHisto(void);
   Double_t Smear(double val, double sigma);
   
   void SetName(TString name){ fName = name; };
@@ -38,26 +37,16 @@ private:
   TString   fInputName;
   TString   fName;
   Bool_t    fVerbose;
+  Bool_t    fFreshOutput;
   Int_t     fIter;
-  TFile     *fFile;
-  TFile     *file;
+  TFile     *fOutputFile;
   TTree     *fTree;
   TH2F      *fImage[100];
   TGraph    *fGraph;
   TGraph    *g;
-  TObject   *h;
-  TVector3  *fPoint0;
-  TVector3  *fPoint1;
-  TVector3  *fPoint2;
-  TVector3  *fVersor1;
-  TVector3  *fVersor2;
-  Double_t  fEnergy0;
-  Double_t  fEnergy1;
-  Double_t  fEnergy2;
   Double_t  fDimZ;
   Double_t  fDimY;
-  Double_t  fVal;
-  Double_t  fSigma;
+  Double_t  fSmear;
   Int_t     fNbinsZ;
   Int_t     fNbinsY;
   Int_t     fNIpoints;
