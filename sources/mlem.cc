@@ -30,7 +30,7 @@ int main(int argc, char *argv[]){
   cout<<"I will analyze events "<<nstart<<"-"<<nstop<<" with "<<
     niter<<" MLEM  iterations..."<<endl;
      
-  Int_t gen = 4;
+  
   
   CCMLEM *rec = new CCMLEM();
  
