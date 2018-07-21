@@ -20,37 +20,13 @@ ClassImp(CCMLEM);
 //--------------------
 
 CCMLEM::CCMLEM(){
-  
-  
-  
-  fPoint0 = new TVector3;
-  fPoint1 = new TVector3;
-  fPoint2 = new TVector3;
-  fVersor1 = new TVector3;
-  fVersor2 = new TVector3;
-  
-  
+
   
   Config();
   TString name = "../sources/results/" + fName + ".root";
-  TFile *file = new TFile(name,"RECREATE");
-  //ofstream outfile ("../sources/results/" + fOutputName + ".root");
-  Freshoutput(h);
-  
-  fFile = new TFile(fInputName,"READ");
-  fTree = (TTree*)fFile->Get("data");
-  
-  fTree->SetBranchAddress("point0",&fPoint0);
-  fTree->SetBranchAddress("point1",&fPoint1);
-  fTree->SetBranchAddress("point2",&fPoint2);
-  fTree->SetBranchAddress("versor1",&fVersor1);
-  fTree->SetBranchAddress("versor2",&fVersor2);
-  fTree->SetBranchAddress("energy0",&fEnergy0);
-  fTree->SetBranchAddress("energy1",&fEnergy1);
-  fTree->SetBranchAddress("energy2",&fEnergy2);
-
-  
-  
+  TString option = (fFreshOutput ? "RECREATE" : "UPDATE");
+  TFile *fOutputFile = new TFile(name,option);
+ 
   fArray = new TClonesArray("IsectionPoint",1000);
   fNIpoints = 0;
   fSM = new TClonesArray("SMElement",1000000);
@@ -60,14 +36,24 @@ CCMLEM::CCMLEM(){
 }
 //----------------------------------------
 CCMLEM::~CCMLEM(){
-  if(fFile) fFile->Close();
-  if(file) file->Close();
+  if(fOutputFile) fOutputFile->Close();
 }
 //------------------------------------------
 Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
 
-  CCReconstruction *reco = new CCReconstruction(fInputName, fName, fVerbose);
-
+  Int_t gen = 4;
+  
+  CCReconstruction *reco;
+  
+  try{
+    reco =  new CCReconstruction(Form("../sources/results/CCSimulation_gen%i.root",gen),
+			        Form("CCReconstruction_gen%i",gen),kFALSE);
+  }
+  catch(const char *message){
+    cout << message << endl;
+    return 0;
+  }
+  
 //image histogram
   fImage[0] = new TH2F("image","image",fNbinsZ,-fDimZ/2.,fDimZ/2.,fNbinsY,-fDimY/2.,fDimY/2.);
   fImage[0]->GetXaxis()->SetTitle("z [mm]");
@@ -226,6 +212,8 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
     TVector3 *tmpvec2;
     Double_t dist;
     Int_t binno1, binno2;
+    //Double_t x, y, z;
+    Double_t resolutionX(), resolutionY(), resolutionZ();
     SMElement* temp;
     for(int h=0; h<fNIpoints; h=h+2) {
      
@@ -236,8 +224,12 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
 	cout<<"Something went wrong"<<tmppoint1<<"\t"<<tmppoint2<<endl;
       }
       tmpvec1 = tmppoint1->GetPointCoordinates();
+      //tmpvec1->SetXYZ(Smear(tmpvec1->GetX(), resolutionX()),
+	//	      Smear(tmpvec1->GetY(), resolutionY()),Smear(tmpvec1->GetZ(), resolutionZ()));
       binno1 = tmppoint1->GetBin();
       tmpvec2 = tmppoint2->GetPointCoordinates();
+      //tmpvec2->SetXYZ(Smear(tmpvec2->GetX(), resolutionX()),
+	//	      Smear(tmpvec2->GetY(), resolutionY()),Smear(tmpvec2->GetZ(), resolutionZ()));
       binno2 = tmppoint2->GetBin();
       if(fVerbose)  cout<<" binno1="<<binno1<<", binno2="<<binno2<<endl<<endl;
       dist = ((*tmpvec1)-(*tmpvec2)).Mag();
@@ -267,9 +259,8 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   }// end of loop over events
   
   fArray->Clear("C");
-  file->cd();
-  fImage[0]->Write();
-  //SaveToFile(fImage[0]);
+  
+  SaveToFile(fImage[0]);
   
   TH1D* hProZ[100];
   TH1D* hProY[100];
@@ -386,7 +377,6 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter){
   Int_t eventno_prev=0;
   Int_t entry;
   Int_t binno;
-  //Int_t nstop;
   Double_t dist, addvalue;
   SMElement* temp;
   Double_t denominator[nstop+1];
@@ -412,9 +402,8 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter){
     hthisiter->SetBinContent(binno,hthisiter->GetBinContent(binno)+addvalue);
   }
   
-  file->cd();
-  hthisiter->Write();
- //SaveToFile(hthisiter);
+  
+  SaveToFile(hthisiter);
   
   return kTRUE;
 }
@@ -433,7 +422,7 @@ Bool_t CCMLEM::Config(void){
   
     TString ReadLine(std::istream& config);  //Read a line from stream upto newline skipping any whitespace.
     getline(config, nextline);
- 
+   // TString fInputName = "../sources/results/CCSimulation_gen4.root";
     config >> fInputName;
    
     while(fInputName){
@@ -455,7 +444,11 @@ Bool_t CCMLEM::Config(void){
         cout << "##### impossible no. of bins!" << endl;
         return kFALSE;
       }
-  
+      config >> fSmear;
+      if(fSmear<-1){
+	cout<< "##### Please check smearing!" << endl;
+	return kFALSE;
+      }	
       config >> fSigmaX >> fSigmaY >> fSigmaZ;
       if(fSigmaX<-0.1 || fSigmaY<-0.1 || fSigmaZ<-0.1){
         cout << "##### Unexpected values of sigma" << endl;
@@ -473,15 +466,19 @@ Bool_t CCMLEM::Config(void){
         cout << "##### impossible no. of iterations!" << endl;
         return kFALSE;
       }
-
-     config >> fStart >> fStop;
-     if(fStart<0 || fStop<1){
+      config >> fFreshOutput;
+      if(fFreshOutput<-1){
+	cout<< "##### Please check freshoutput!" << endl;
+	return kFALSE;
+      }
+      config >> fStart >> fStop;
+      if(fStart<0 || fStop<1){
         cout << "##### impossible no. of events!" << endl;
         return kFALSE;
       }
       
-     config >> fVerbose;
-     if(fVerbose<-1){
+      config >> fVerbose;
+      if(fVerbose<-1){
         cout << "##### Please check verbose!" << endl;
         return kFALSE;
       }
@@ -493,7 +490,7 @@ Bool_t CCMLEM::Config(void){
   return kTRUE;
 }
 //------------------------------------
-Bool_t CCMLEM::Drawhisto(void){
+Bool_t CCMLEM::DrawHisto(void){
   
   TH1D* hProZ[100];
   TH1D* hProY[100];
@@ -515,13 +512,10 @@ Bool_t CCMLEM::Drawhisto(void){
     cany->cd(iter+1);
     hProY[iter]->Draw();
   }
-  file->cd();
-  can->Write();
-  canz->Write();
-  cany->Write();
-  /*SaveToFile(can);
+  
+  SaveToFile(can);
   SaveToFile(canz);
-  SaveToFile(cany);*/
+  SaveToFile(cany);
   return kTRUE;
 }
 //------------------------------------
@@ -539,21 +533,12 @@ void CCMLEM::Print(void){
  cout << "\tPos resolution: \t"<<fSigmaX<< ", "<<fSigmaY<<", "<<fSigmaZ<<endl;
  cout << "\tEnergy resolution: \t"<<fSigmaE<<endl;
  cout << "\tNo. of MLEM iterations: \t"<<fIter<<endl;
+ cout << "\tFreshOutput level: \t"<<fFreshOutput<<endl;
  cout << "\tNo. of first and last event: \t"<<fStart<<", "<<fStop<<endl;
- cout << "\tVerbose flag: \t"<<fVerbose<<endl;
+ cout << "\tVerbose level: \t"<<fVerbose<<endl;
 }
-//-------------------------------------------
-Bool_t CCMLEM::Freshoutput(TObject *ob){
-  TString name = "../sources/results/" + fName + ".root";
-  TFile *file = new TFile(name,"RECREATE");
-  ob->Write();
-  file->Close();
-  cout << ob->ClassName()<<" " << ob->GetName() << 
-                       " saved in the file " << name << endl;
-  return kTRUE;
-} 
 //------------------------------------
-/*Bool_t CCMLEM::SaveToFile(TGraph *h){
+Bool_t CCMLEM::SaveToFile(TGraph *h){
   TString name = "../sources/results/" + fName + ".root";
   TFile *file = new TFile(name,"UPDATE");
   h->Write();
@@ -572,5 +557,5 @@ Bool_t CCMLEM::SaveToFile(TObject *ob){
                        " saved in the file " << name << endl;
   return kTRUE;
 } 
-*/
+
 
