@@ -38,6 +38,7 @@ private:
   TString   fName;
   Bool_t    fVerbose;
   Bool_t    fFreshOutput;
+  Bool_t    fSmear;
   Int_t     fIter;
   TFile     *fOutputFile;
   TTree     *fTree;
@@ -46,7 +47,6 @@ private:
   TGraph    *g;
   Double_t  fDimZ;
   Double_t  fDimY;
-  Double_t  fSmear;
   Int_t     fNbinsZ;
   Int_t     fNbinsY;
   Int_t     fNIpoints;
@@ -59,9 +59,9 @@ private:
   Double_t  fYofRecoPlane;
   Double_t  fZofRecoPlane;
   Double_t  fSigmaE;
-  Double_t  fSigmaX;
-  Double_t  fSigmaY;
-  Double_t  fSigmaZ;
+  Double_t  fResolutionX;
+  Double_t  fResolutionY;
+  Double_t  fResolutionZ;
   TClonesArray*  fArray;
   TClonesArray* fSM;
   
