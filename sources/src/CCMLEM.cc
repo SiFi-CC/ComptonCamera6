@@ -11,6 +11,7 @@
 #include "TMath.h"
 #include "SMElement.hh"
 #include "TRandom.h"
+
 using namespace std;
 
 ClassImp(CCMLEM);
@@ -212,7 +213,6 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
     TVector3 *tmpvec2;
     Double_t dist;
     Int_t binno1, binno2;
-    //Double_t x, y, z;
     Double_t resolutionX(), resolutionY(), resolutionZ();
     SMElement* temp;
     for(int h=0; h<fNIpoints; h=h+2) {
@@ -224,12 +224,10 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
 	cout<<"Something went wrong"<<tmppoint1<<"\t"<<tmppoint2<<endl;
       }
       tmpvec1 = tmppoint1->GetPointCoordinates();
-      //tmpvec1->SetXYZ(Smear(tmpvec1->GetX(), resolutionX()),
-	//	      Smear(tmpvec1->GetY(), resolutionY()),Smear(tmpvec1->GetZ(), resolutionZ()));
+      tmpvec1->SetXYZ(Smear(tmpvec1->X(), resolutionX()),
+		      Smear(tmpvec1->Y(), resolutionY()),Smear(tmpvec1->Z(), resolutionZ()));
       binno1 = tmppoint1->GetBin();
       tmpvec2 = tmppoint2->GetPointCoordinates();
-      //tmpvec2->SetXYZ(Smear(tmpvec2->GetX(), resolutionX()),
-	//	      Smear(tmpvec2->GetY(), resolutionY()),Smear(tmpvec2->GetZ(), resolutionZ()));
       binno2 = tmppoint2->GetBin();
       if(fVerbose)  cout<<" binno1="<<binno1<<", binno2="<<binno2<<endl<<endl;
       dist = ((*tmpvec1)-(*tmpvec2)).Mag();
@@ -422,7 +420,7 @@ Bool_t CCMLEM::Config(void){
   
     TString ReadLine(std::istream& config);  //Read a line from stream upto newline skipping any whitespace.
     getline(config, nextline);
-   // TString fInputName = "../sources/results/CCSimulation_gen4.root";
+    TString fInputName = "../sources/results/CCSimulation_gen4.root";
     config >> fInputName;
    
     while(fInputName){
@@ -449,8 +447,8 @@ Bool_t CCMLEM::Config(void){
 	cout<< "##### Please check smearing!" << endl;
 	return kFALSE;
       }	
-      config >> fSigmaX >> fSigmaY >> fSigmaZ;
-      if(fSigmaX<-0.1 || fSigmaY<-0.1 || fSigmaZ<-0.1){
+      config >> fResolutionX >> fResolutionY >> fResolutionZ;
+      if(fResolutionX<-0.1 || fResolutionY<-0.1 || fResolutionZ<-0.1){
         cout << "##### Unexpected values of sigma" << endl;
         return kFALSE;
       }
@@ -530,7 +528,8 @@ void CCMLEM::Print(void){
  cout << "\tCenter of reco plane: "<<fXofRecoPlane << ", " << fYofRecoPlane <<", " << fZofRecoPlane << endl;
  cout << "\tSize of image: \t"<<fDimZ<< ", "<<fDimY<<endl;
  cout << "\tNo. of bins: \t"<<fNbinsZ<< ", "<<fNbinsY<<endl;
- cout << "\tPos resolution: \t"<<fSigmaX<< ", "<<fSigmaY<<", "<<fSigmaZ<<endl;
+ cout << "\tSmear level: \t"<<fSmear<<endl;
+ cout << "\tPos resolution: \t"<<fResolutionX<< ", "<<fResolutionY<<", "<<fResolutionZ<<endl;
  cout << "\tEnergy resolution: \t"<<fSigmaE<<endl;
  cout << "\tNo. of MLEM iterations: \t"<<fIter<<endl;
  cout << "\tFreshOutput level: \t"<<fFreshOutput<<endl;
