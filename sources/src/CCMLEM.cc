@@ -81,7 +81,7 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   TVector3 coneAxis;
   Double_t coneTheta;
   TVector3 uvec;
- 
+  Double_t resolutionX(), resolutionY(), resolutionZ();
   Double_t F = fXofRecoPlane;
   Double_t z,y;
   Double_t A = fDimY/2.;  
@@ -103,7 +103,11 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
     if(fVerbose)  cout<<"CCMLEM::Reconstruct(...) event "<< i<<endl<<endl;;
     ComptonCone *cone = reco->ReconstructCone(i);
     interactionPoint = cone->GetApex();
+    interactionPoint.SetXYZ(Smear(interactionPoint.X(), resolutionX()),
+		      Smear(interactionPoint.Y(), resolutionY()),Smear(interactionPoint.Z(), resolutionZ()));
     coneAxis = cone->GetAxis();
+    coneAxis.SetXYZ(Smear(coneAxis.X(), resolutionX()),
+		      Smear(coneAxis.Y(), resolutionY()),Smear(coneAxis.Z(), resolutionZ()));
     uvec = coneAxis.Unit();
     coneTheta = cone->GetAngle();
     Double_t K = cos(coneTheta);
@@ -213,7 +217,6 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
     TVector3 *tmpvec2;
     Double_t dist;
     Int_t binno1, binno2;
-    Double_t resolutionX(), resolutionY(), resolutionZ();
     SMElement* temp;
     for(int h=0; h<fNIpoints; h=h+2) {
      
@@ -224,8 +227,6 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
 	cout<<"Something went wrong"<<tmppoint1<<"\t"<<tmppoint2<<endl;
       }
       tmpvec1 = tmppoint1->GetPointCoordinates();
-      tmpvec1->SetXYZ(Smear(tmpvec1->X(), resolutionX()),
-		      Smear(tmpvec1->Y(), resolutionY()),Smear(tmpvec1->Z(), resolutionZ()));
       binno1 = tmppoint1->GetBin();
       tmpvec2 = tmppoint2->GetPointCoordinates();
       binno2 = tmppoint2->GetBin();
