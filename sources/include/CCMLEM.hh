@@ -16,15 +16,17 @@ class CCMLEM : public TObject{
   
 public:
   CCMLEM();
+  CCMLEM(TString path);
   ~CCMLEM();
   Bool_t Iterate(Int_t nstop, Int_t iter);
-  Bool_t Reconstruct(Int_t iStart, Int_t iStop);
+  Bool_t Reconstruct(void);
 
-  Bool_t SaveToFile(TGraph *h);
-  Bool_t SaveToFile(TObject *h);
-  Bool_t Config(void);
+  //Bool_t SaveToFile(TGraph *h);
+  Bool_t SaveToFile(TObject *ob);
+  Bool_t Config(TString path);
   Bool_t DrawHisto(void);
   Double_t Smear(double val, double sigma);
+  bool SetInputReader(void);
   
   void SetName(TString name){ fName = name; };
   void SetInputName(TString inputName){ fInputName = inputName; };
@@ -41,7 +43,6 @@ private:
   Bool_t    fSmear;
   Int_t     fIter;
   TFile     *fOutputFile;
-  TTree     *fTree;
   TH2F      *fImage[100];
   TGraph    *fGraph;
   TGraph    *g;
@@ -64,7 +65,7 @@ private:
   Double_t  fResolutionZ;
   TClonesArray*  fArray;
   TClonesArray* fSM;
-  
+  InputReader *fReader;
   
   ClassDef(CCMLEM,0)
 };
