@@ -8,35 +8,23 @@ int main(int argc, char *argv[]){
   
   //expected arguments: startevent, stopevent, verbose, niter
 
-  TString tmps;
-  
-  Int_t nstart, nstop, niter, verbose;
-  cout<<"argc = "<<argc<<endl;
-  if(argc!=5){
-    cout<<"Please run the program like this:\n ./mlem <nstart> <nstop> <verbose> <niter>"<<
-	"\n where:\n\t nstart - number of first event to process (int),\n\t nstop - number of last event to process (int),\n\t verbose - verbose flag (1/0),\n\t niter - number of iterations in MLEM (int)"<< endl;
+  if(argc!=2){
+    cout << "To run type: ./mlem path_to_config" << endl;
     return 0;
   }
-  tmps = argv[3];
-  verbose = tmps.Atoi();
   
-  tmps = argv[1];
-  nstart = tmps.Atoi();
-  tmps = argv[2];
-  nstop = tmps.Atoi();
-  tmps = argv[4];
-  niter = tmps.Atoi();
+  TString path(argv[1]);
   
-  cout<<"I will analyze events "<<nstart<<"-"<<nstop<<" with "<<
-    niter<<" MLEM  iterations..."<<endl;
-     
+  CCMLEM *rec;
   
+  try{
+    rec = new CCMLEM(path);
+  } catch(const char *message){
+    cout << message << endl;
+    return 0;
+  }
   
-  CCMLEM *rec = new CCMLEM();
- 
-  rec->Reconstruct(nstart,nstop);
-  
-  
+  rec->Reconstruct();
   
   delete rec; 
  
