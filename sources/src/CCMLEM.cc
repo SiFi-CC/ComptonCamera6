@@ -11,28 +11,38 @@
 #include "TMath.h"
 #include "SMElement.hh"
 #include "TRandom.h"
+#include "InputReader.hh"
 
 using namespace std;
 
 ClassImp(CCMLEM);
 
 
-
 //--------------------
-
-CCMLEM::CCMLEM(){
-
+CCMLEM::CCMLEM(TString path){
   
-  Config();
+  if(!Config(path)){
+    throw "##### Exception in CCMLEM constructor!";
+  }
+  
+  if(!SetInputReader()){
+    throw "##### Exception in CCMLEM constructor!";
+  }
+  
+  fName = "CCMLEM";
   TString name = "../sources/results/" + fName + ".root";
+  cout << name << endl;
   TString option = (fFreshOutput ? "RECREATE" : "UPDATE");
-  TFile *fOutputFile = new TFile(name,option);
- 
+  fOutputFile = new TFile(name,option);
+  
   fArray = new TClonesArray("IsectionPoint",1000);
   fNIpoints = 0;
   fSM = new TClonesArray("SMElement",1000000);
   fpoints = 0;
-  cout<<"CCMLEM: I will work in fVerbose="<<fVerbose<<" mode"<<endl;
+}
+//--------------------
+
+CCMLEM::CCMLEM(){
 
 }
 //----------------------------------------
@@ -40,15 +50,44 @@ CCMLEM::~CCMLEM(){
   if(fOutputFile) fOutputFile->Close();
 }
 //------------------------------------------
-Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
+bool CCMLEM::SetInputReader(void){
+  
+  TFile *file = new TFile(fInputName,"READ");
+  if(!file->IsOpen()){
+   cout << "##### Error in CCMLEM::SetInputReader!" << endl;
+   cout << "Could not open requested file" << endl;
+   return false;
+  }
+  
+  if(file->Get("data")){
+   file->Close();
+   fReader = new InputReaderSimple(fInputName);
+  }
+  else if(file->Get("G4SimulationData_Reconstruction")){
+    file->Close();
+    fReader = new InputReaderGeant(fInputName);
+  }
+  else{
+    cout << "##### Error in CCMLEM::SetInputReader()!" << endl;
+    cout << "Unknown data format" << endl;
+    return false;
+  }
+  
+  if(fVerbose){
+    fReader->Print();
+  }
+  
+  return true;
+}
+//------------------------------------------
+Bool_t CCMLEM::Reconstruct(void){
 
   Int_t gen = 4;
   
   CCReconstruction *reco;
   
   try{
-    reco =  new CCReconstruction(Form("../sources/results/CCSimulation_gen%i.root",gen),
-			        Form("CCReconstruction_gen%i",gen),kFALSE);
+    reco =  new CCReconstruction(fInputName,Form("CCReconstruction_gen%i",gen),kFALSE);
   }
   catch(const char *message){
     cout << message << endl;
@@ -74,19 +113,19 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   Double_t pixelX = 0.;
   Double_t pixelY, pixelZ;
  
-
+  fPixelSizeZ = fDimZ/fNbinsZ;
+  fPixelSizeY = fDimY/fNbinsY;
   Int_t j,k;
   
   TVector3 interactionPoint;
   TVector3 coneAxis;
   Double_t coneTheta;
-  TVector3 uvec;
-  Double_t resolutionX(), resolutionY(), resolutionZ();
+  
   Double_t F = fXofRecoPlane;
   Double_t z,y;
   Double_t A = fDimY/2.;  
   Double_t B = fDimZ/2.;
-  
+  Double_t Energy1, Energy2;
   
   fNIpoints = 0;
   fpoints = 0;
@@ -97,18 +136,27 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   TStopwatch t;
   t.Start(); 
   
-  for(Int_t i=iStart; i<iStop; i++){
+  for(Int_t i=fStart; i<fStop; i++){
     fNIpoints = 0;
      
-    if(fVerbose)  cout<<"CCMLEM::Reconstruct(...) event "<< i<<endl<<endl;;
+    if(fVerbose)  cout<<"CCMLEM::Reconstruct(...) event "<< i<<endl<<endl;
+   /* fReader->LoadEvent(i);
+    
+    Energy1 = fReader->GetEnScat();
+    Energy2 = fReader->GetEnAbs();
+    
+*/
     ComptonCone *cone = reco->ReconstructCone(i);
     interactionPoint = cone->GetApex();
-    interactionPoint.SetXYZ(Smear(interactionPoint.X(), resolutionX()),
-		      Smear(interactionPoint.Y(), resolutionY()),Smear(interactionPoint.Z(), resolutionZ()));
     coneAxis = cone->GetAxis();
-    coneAxis.SetXYZ(Smear(coneAxis.X(), resolutionX()),
-		      Smear(coneAxis.Y(), resolutionY()),Smear(coneAxis.Z(), resolutionZ()));
-    uvec = coneAxis.Unit();
+    
+    if(fSmear){
+    interactionPoint.SetXYZ(Smear(interactionPoint.X(), fResolutionX),
+		      Smear(interactionPoint.Y(), fResolutionY),Smear(interactionPoint.Z(), fResolutionZ));
+    coneAxis.SetXYZ(Smear(coneAxis.X(), fResolutionX),
+		      Smear(coneAxis.Y(), fResolutionY),Smear(coneAxis.Z(), fResolutionZ));
+    }
+   
     coneTheta = cone->GetAngle();
     Double_t K = cos(coneTheta);
     Double_t a, b, c1, c2, c3, c4, c, z1, z2;
@@ -118,25 +166,25 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
     if(fVerbose) cout<<"Loop over horizontal lines..."<<endl;
     for (j=0; j<=fNbinsY; j++){
       
-      a = 2*(pow(-uvec.Z(),2) - pow(K,2));
+      a = 2*(pow(-coneAxis.Z(),2) - pow(K,2));
       
-      b = 2*((-uvec.Z())*((interactionPoint.Z())*(-uvec.Z()) - y*((-uvec.Y())) + (interactionPoint.Y())*
-			  (-uvec.Y()) + (interactionPoint.X())*(-uvec.X()) + F - (-uvec.X())*F) - (interactionPoint.Z())*pow(K,2));
+      b = 2*((-coneAxis.Z())*((interactionPoint.Z())*(-coneAxis.Z()) - y*((-coneAxis.Y())) + (interactionPoint.Y())*
+			  (-coneAxis.Y()) + (interactionPoint.X())*(-coneAxis.X()) + F - (-coneAxis.X())*F) - (interactionPoint.Z())*pow(K,2));
       
-      c1 = pow(interactionPoint.Y(),2) + pow(interactionPoint.X(),2) + ((-2)*pow(interactionPoint.Y(),2)*pow(-uvec.Z(),2)) +  
-	((-2)*pow(interactionPoint.X(),2)*pow(-uvec.Z(),2)) + ((-2)*pow(interactionPoint.Y(),2)*pow(-uvec.Y(),2)) + 
-	((-4)*(interactionPoint.Y())*(interactionPoint.X())*(-uvec.Y())*(-uvec.X())) + ((-2)*pow(interactionPoint.X(),2)*
-											pow(-uvec.X(),2));
+      c1 = pow(interactionPoint.Y(),2) + pow(interactionPoint.X(),2) + ((-2)*pow(interactionPoint.Y(),2)*pow(-coneAxis.Z(),2)) +  
+	((-2)*pow(interactionPoint.X(),2)*pow(-coneAxis.Z(),2)) + ((-2)*pow(interactionPoint.Y(),2)*pow(-coneAxis.Y(),2)) + 
+	((-4)*(interactionPoint.Y())*(interactionPoint.X())*(-coneAxis.Y())*(-coneAxis.X())) + ((-2)*pow(interactionPoint.X(),2)*
+											pow(-coneAxis.X(),2));
       
       c2 = (-2)*(interactionPoint.X())*F + 4*(interactionPoint.X())*F*
-	pow(-uvec.Z(),2) - 4*(interactionPoint.Y())*(-uvec.Y())*F - 4*(interactionPoint.X())*
-	(-uvec.X())*F + 4*(interactionPoint.Y())*(-uvec.Y())*(-uvec.X())*F + 
-	4*(interactionPoint.X())*pow(-uvec.X(),2)*F - pow(F,2) - 2*pow(-uvec.Z(),2)*
-	pow(F,2) + 4*(-uvec.X())*pow(F,2) - 2*pow(-uvec.X(),2)*pow(F,2);
+	pow(-coneAxis.Z(),2) - 4*(interactionPoint.Y())*(-coneAxis.Y())*F - 4*(interactionPoint.X())*
+	(-coneAxis.X())*F + 4*(interactionPoint.Y())*(-coneAxis.Y())*(-coneAxis.X())*F + 
+	4*(interactionPoint.X())*pow(-coneAxis.X(),2)*F - pow(F,2) - 2*pow(-coneAxis.Z(),2)*
+	pow(F,2) + 4*(-coneAxis.X())*pow(F,2) - 2*pow(-coneAxis.X(),2)*pow(F,2);
       
-      c3 = pow(y,2)*(1 - 2*pow(-uvec.Z(),2) - 2*pow(-uvec.Y(),2)) + y*
-	((interactionPoint.Y())*((-2) + 4*pow(-uvec.Z(),2) + 4*pow(-uvec.Y(),2)) + 4*(-uvec.Y())*((interactionPoint.X())*(-uvec.X()) + 
-												  F - (-uvec.X())*F));
+      c3 = pow(y,2)*(1 - 2*pow(-coneAxis.Z(),2) - 2*pow(-coneAxis.Y(),2)) + y*
+	((interactionPoint.Y())*((-2) + 4*pow(-coneAxis.Z(),2) + 4*pow(-coneAxis.Y(),2)) + 4*(-coneAxis.Y())*((interactionPoint.X())*(-coneAxis.X()) + 
+												  F - (-coneAxis.X())*F));
       
       c4 = (pow(y,2) - 2*y*(interactionPoint.Y()) + pow(interactionPoint.Y(),2) + pow((interactionPoint.X() - F),2))*
 	((-1) + 2*pow(K,2));
@@ -162,25 +210,25 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
     if(fVerbose) cout<<"Loop over vertical lines..."<<endl;
     for (k=0; k<=fNbinsZ; k++){
       
-      d = 2*(pow(-uvec.Y(),2) - pow(K,2));
+      d = 2*(pow(-coneAxis.Y(),2) - pow(K,2));
       
-      e = 2*((-uvec.Y())*((interactionPoint.Z())*(-uvec.Z()) - z*((-uvec.Z())) + (interactionPoint.Y())*
-			  (-uvec.Y()) + (interactionPoint.X())*(-uvec.X()) + F - (-uvec.X())*F) - (interactionPoint.Y())*pow(K,2));
+      e = 2*((-coneAxis.Y())*((interactionPoint.Z())*(-coneAxis.Z()) - z*((-coneAxis.Z())) + (interactionPoint.Y())*
+			  (-coneAxis.Y()) + (interactionPoint.X())*(-coneAxis.X()) + F - (-coneAxis.X())*F) - (interactionPoint.Y())*pow(K,2));
       
-      f1 = pow(interactionPoint.Z(),2) + pow(interactionPoint.X(),2) + ((-2)*pow(interactionPoint.Z(),2)*pow(-uvec.Z(),2)) +  
-	((-2)*pow(interactionPoint.Z(),2)*pow(-uvec.Y(),2)) + ((-2)*pow(interactionPoint.X(),2)*pow(-uvec.Y(),2)) + 
-	((-4)*(interactionPoint.Z())*(interactionPoint.X())*(-uvec.Z())*(-uvec.X())) + ((-2)*pow(interactionPoint.X(),2)*
-											pow(-uvec.X(),2));
+      f1 = pow(interactionPoint.Z(),2) + pow(interactionPoint.X(),2) + ((-2)*pow(interactionPoint.Z(),2)*pow(-coneAxis.Z(),2)) +  
+	((-2)*pow(interactionPoint.Z(),2)*pow(-coneAxis.Y(),2)) + ((-2)*pow(interactionPoint.X(),2)*pow(-coneAxis.Y(),2)) + 
+	((-4)*(interactionPoint.Z())*(interactionPoint.X())*(-coneAxis.Z())*(-coneAxis.X())) + ((-2)*pow(interactionPoint.X(),2)*
+											pow(-coneAxis.X(),2));
       
       f2 = (-2)*(interactionPoint.X())*F + 4*(interactionPoint.X())*F*
-	pow(-uvec.Y(),2) - 4*(interactionPoint.Z())*(-uvec.Z())*F - 4*(interactionPoint.X())*
-	(-uvec.X())*F + 4*(interactionPoint.Z())*(-uvec.Z())*(-uvec.X())*F + 
-	4*(interactionPoint.X())*pow(-uvec.X(),2)*F - pow(F,2) - 2*pow(-uvec.Y(),2)*
-	pow(F,2) + 4*(-uvec.X())*pow(F,2) - 2*pow(-uvec.X(),2)*pow(F,2);
+	pow(-coneAxis.Y(),2) - 4*(interactionPoint.Z())*(-coneAxis.Z())*F - 4*(interactionPoint.X())*
+	(-coneAxis.X())*F + 4*(interactionPoint.Z())*(-coneAxis.Z())*(-coneAxis.X())*F + 
+	4*(interactionPoint.X())*pow(-coneAxis.X(),2)*F - pow(F,2) - 2*pow(-coneAxis.Y(),2)*
+	pow(F,2) + 4*(-coneAxis.X())*pow(F,2) - 2*pow(-coneAxis.X(),2)*pow(F,2);
       
-      f3 = pow(z,2)*(1 - 2*pow(-uvec.Z(),2) - 2*pow(-uvec.Y(),2)) + z*
-	((interactionPoint.Z())*((-2) + 4*pow(-uvec.Z(),2) + 4*pow(-uvec.Y(),2)) + 4*(-uvec.Z())*((interactionPoint.X())*(-uvec.X()) + 
-												  F - (-uvec.X())*F));
+      f3 = pow(z,2)*(1 - 2*pow(-coneAxis.Z(),2) - 2*pow(-coneAxis.Y(),2)) + z*
+	((interactionPoint.Z())*((-2) + 4*pow(-coneAxis.Z(),2) + 4*pow(-coneAxis.Y(),2)) + 4*(-coneAxis.Z())*((interactionPoint.X())*(-coneAxis.X()) + 
+												  F - (-coneAxis.X())*F));
       
       f4 = (pow(z,2) - 2*z*(interactionPoint.Z()) + pow(interactionPoint.Z(),2) + pow((interactionPoint.X() - F),2))*
 	((-1) + 2*pow(K,2));
@@ -265,7 +313,7 @@ Bool_t CCMLEM::Reconstruct(Int_t iStart,Int_t iStop){
   TH1D* hProY[100];
 
   for(int iter=1; iter<fIter+1; iter++){
-    Iterate(iStop, iter);
+    Iterate(fStop, iter);
   }
  
   t.Stop(); 
@@ -407,83 +455,73 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter){
   return kTRUE;
 }
 //------------------------------------
-Bool_t CCMLEM::Config(void){
-  
-  
-  string nextline;
-  
-  TString config_name = "../sources/results/config.txt";
-  ifstream config(config_name);
-  if(!(config.is_open())){
+Bool_t CCMLEM::Config(TString path){
 
+  ifstream config(path);
+
+  if(!(config.is_open())){
     cout << "##### Could not open configuration file!" << endl;
     return kFALSE;
+  }
   
-    TString ReadLine(std::istream& config);  //Read a line from stream upto newline skipping any whitespace.
-    getline(config, nextline);
-    TString fInputName = "../sources/results/CCSimulation_gen4.root";
-    config >> fInputName;
-   
-    while(fInputName){
-      
+  cout << "\n\nIn CCMLEM::Config(). Reading config file..." << endl;
+  
+  TString comment;
+  
+  while(!config.eof()){
+    comment.ReadLine(config);
+    if(comment.Contains("Name of input file")){
+      config >> fInputName;
+    }
+    else if(comment.Contains("Center of reco plane")){
       config >> fXofRecoPlane >> fYofRecoPlane >> fZofRecoPlane;
-      if(fXofRecoPlane<0 || fYofRecoPlane<0 || fZofRecoPlane<0){
-        cout << "##### Please check the center of image plane!" << endl;
-        return kFALSE;
-      }
-  
+    }
+    else if(comment.Contains("Size of image")){
       config >> fDimZ >> fDimY;
-      if(fDimZ<1 || fDimY<1){
-        cout << "##### impossible size dimensions!" << endl;
-        return kFALSE;
-      }
-  
+    }
+    else if(comment.Contains("No. of bins")){
       config >> fNbinsZ >> fNbinsY;
-      if(fNbinsZ<2 || fNbinsY<2){
-        cout << "##### impossible no. of bins!" << endl;
-        return kFALSE;
-      }
+    }
+    else if(comment.Contains("Smear")){
       config >> fSmear;
-      if(fSmear<-1){
-	cout<< "##### Please check smearing!" << endl;
-	return kFALSE;
-      }	
+    }
+    else if(comment.Contains("Pos resolution")){
       config >> fResolutionX >> fResolutionY >> fResolutionZ;
-      if(fResolutionX<-0.1 || fResolutionY<-0.1 || fResolutionZ<-0.1){
-        cout << "##### Unexpected values of sigma" << endl;
-        return kFALSE;
-      }
-  
+    }
+    else if(comment.Contains("Energy resolution")){
       config >> fSigmaE;
-      if(fSigmaE<0){
-        cout << "##### Unexpected value of Energy Sigma!" << endl;
-        return kFALSE;
-      }
-  
-      config >> fIter;
-      if(fIter<0){
-        cout << "##### impossible no. of iterations!" << endl;
-        return kFALSE;
-      }
+    }
+    else if(comment.Contains("No. of MLEM iterations")){
+      config >> fIter; 
+    }
+    else if(comment.Contains("Fresh output")){
       config >> fFreshOutput;
-      if(fFreshOutput<-1){
-	cout<< "##### Please check freshoutput!" << endl;
-	return kFALSE;
-      }
+    }
+    else if(comment.Contains("No. of first and last event")){
       config >> fStart >> fStop;
-      if(fStart<0 || fStop<1){
-        cout << "##### impossible no. of events!" << endl;
-        return kFALSE;
-      }
-      
+    }
+    else if(comment.Contains("Verbose flag")){
       config >> fVerbose;
-      if(fVerbose<-1){
-        cout << "##### Please check verbose!" << endl;
-        return kFALSE;
-      }
-    
+    }
+    else{
+      cout << "##### Warining in CCMLEM::Config()! Unknown syntax!" << endl;
     }
   }
+  
+  if(fVerbose){
+    cout << "Name of the input file: " << fInputName << endl;
+    cout << "Center of reco plane: " << fXofRecoPlane << " " << fYofRecoPlane << " " << fZofRecoPlane << endl;
+    cout << "Size of image: " << fDimZ << " x " << fDimY << " mm" << endl;
+    cout << "Number of bins: " << fNbinsZ << " x " << fNbinsY << endl;
+    cout << "Smear flag: " << fSmear << endl;
+    cout << "Position resolution: " << fResolutionX << " " << fResolutionY << " " << fResolutionZ << endl;
+    cout << "Energy resolution: " << fSigmaE << endl;
+    cout << "Number of MLEM iterations: " << fIter << endl;
+    cout << "Fresh output flag: " << fFreshOutput << endl;
+    cout << "Number of first and last event for reconstruction: " << fStart << " " << fStop << endl;
+    cout << "Verbose flag: "<< fVerbose << endl << endl;
+  }
+  
   config.close();
 
   return kTRUE;
@@ -518,7 +556,7 @@ Bool_t CCMLEM::DrawHisto(void){
   return kTRUE;
 }
 //------------------------------------
-Double_t Smear(double val, double sigma){ 
+Double_t CCMLEM::Smear(double val, double sigma){ 
  
   return gRandom->Gaus(val, sigma);
 }
@@ -538,23 +576,21 @@ void CCMLEM::Print(void){
  cout << "\tVerbose level: \t"<<fVerbose<<endl;
 }
 //------------------------------------
-Bool_t CCMLEM::SaveToFile(TGraph *h){
-  TString name = "../sources/results/" + fName + ".root";
+/*Bool_t CCMLEM::SaveToFile(TGraph *h){
   TFile *file = new TFile(name,"UPDATE");
   h->Write();
   file->Close();
   if(fVerbose) cout << "\nObject " << h->GetName() << 
                        " saved in the file " << name << endl;
   return kTRUE;
-}
+}*/
 //--------------------------------------
 Bool_t CCMLEM::SaveToFile(TObject *ob){
-  TString name = "../sources/results/" + fName + ".root";
-  TFile *file = new TFile(name,"UPDATE");
+  fOutputFile->cd();
+  //fOutputFile->Print();
   ob->Write();
-  file->Close();
   cout << ob->ClassName()<<" " << ob->GetName() << 
-                       " saved in the file " << name << endl;
+                       " saved in the file " << fOutputFile->GetName() << endl;
   return kTRUE;
 } 
 
