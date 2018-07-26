@@ -51,15 +51,15 @@ bool InputReaderGeant::AccessTree(TString name){
 //------------------------------------------------------------------
 bool InputReaderGeant::AccessSetup(void){
 
-  TString fname = fFile->GetName();
+  TString fname  = fFile->GetName();
   G4Input *input = new G4Input(fname,false);
   
-  fScatDimX = input->GetScattererXLength();
-  fScatDimY = input->GetScattererYLength();
-  fScatDimZ = input->GetScattererZLength();
-  fAbsDimX  = input->GetAbsorberXLength();
-  fAbsDimY  = input->GetAbsorberYLength();
-  fAbsDimZ  = input->GetAbsorberZLength();
+  fScatDimX     = input->GetScattererXLength();
+  fScatDimY     = input->GetScattererYLength();
+  fScatDimZ     = input->GetScattererZLength();
+  fAbsDimX      = input->GetAbsorberXLength();
+  fAbsDimY      = input->GetAbsorberYLength();
+  fAbsDimZ      = input->GetAbsorberZLength();
   fScatPosition = input->GetScattererPosition();
   fAbsPosition  = input->GetAbsorberPosition();
   
@@ -78,35 +78,35 @@ bool InputReaderGeant::AccessSetup(void){
   return true;
 }
 //------------------------------------------------------------------
-TVector3* InputReaderGeant::GetSourcePosition(void){
+TVector3* InputReaderGeant::GetPositionPrimary(void){
  return NULL; 
 }
 //------------------------------------------------------------------
-TVector3* InputReaderGeant::GetScatPosition(void){
+TVector3* InputReaderGeant::GetPositionScattering(void){
   return NULL;
 }
 //------------------------------------------------------------------
-TVector3* InputReaderGeant::GetAbsPosition(void){
+TVector3* InputReaderGeant::GetPositionAbsorption(void){
   return NULL;
 }
 //------------------------------------------------------------------
-TVector3* InputReaderGeant::GetPrimaryGammaDir(void){
+TVector3* InputReaderGeant::GetGammaDirPrimary(void){
   return NULL;
 }
 //------------------------------------------------------------------
-TVector3* InputReaderGeant::GetScatGammaDir(void){
+TVector3* InputReaderGeant::GetGammaDirScattered(void){
   return NULL;
 }
 //------------------------------------------------------------------
-double InputReaderGeant::GetEnSource(void){
+double InputReaderGeant::GetEnergyPrimary(void){
   return -100;
 }
 //------------------------------------------------------------------
-double InputReaderGeant::GetEnScat(void){
+double InputReaderGeant::GetEnergyLoss(void){
   return -100;
 }
 //------------------------------------------------------------------
-double InputReaderGeant::GetEnAbs(void){
+double InputReaderGeant::GetEnergyScattered(void){
   return -100;
 }
 //------------------------------------------------------------------

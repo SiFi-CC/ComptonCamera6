@@ -157,14 +157,14 @@ ComptonCone* CCReconstruction::ReconstructCone(Int_t i){
   
   Clear();
   fReader->LoadEvent(i);
-  fPoint0  = fReader->GetSourcePosition();
-  fPoint1  = fReader->GetScatPosition();
-  fPoint2  = fReader->GetAbsPosition();
-  fVersor1 = fReader->GetPrimaryGammaDir();
-  fVersor2 = fReader->GetScatGammaDir();
-  fEnergy0 = fReader->GetEnSource();
-  fEnergy1 = fReader->GetEnScat();
-  fEnergy2 = fReader->GetEnAbs();
+  fPoint0  = fReader->GetPositionPrimary();
+  fPoint1  = fReader->GetPositionScattering();
+  fPoint2  = fReader->GetPositionAbsorption();
+  fVersor1 = fReader->GetGammaDirPrimary();
+  fVersor2 = fReader->GetGammaDirScattered();
+  fEnergy0 = fReader->GetEnergyPrimary();
+  fEnergy1 = fReader->GetEnergyLoss();
+  fEnergy2 = fReader->GetEnergyScattered();
   
   //----- energy check
   Double_t en = fEnergy1 + fEnergy2;

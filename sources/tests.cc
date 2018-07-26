@@ -49,14 +49,14 @@ int main(){
   
   for(int i=istart; i<istop; i++){
     ins->LoadEvent(i);
-    point0 = ins->GetSourcePosition();
-    point1 = ins->GetScatPosition();
-    point2 = ins->GetAbsPosition();
-    versor1 = ins->GetPrimaryGammaDir();
-    versor2 = ins->GetScatGammaDir();
-    energy0 = ins->GetEnSource();
-    energy1 = ins->GetEnScat();
-    energy2 = ins->GetEnAbs();
+    point0 = ins->GetPositionPrimary();
+    point1 = ins->GetPositionScattering();
+    point2 = ins->GetPositionAbsorption();
+    versor1 = ins->GetGammaDirPrimary();
+    versor2 = ins->GetGammaDirScattered();
+    energy0 = ins->GetEnergyPrimary();
+    energy1 = ins->GetEnergyLoss();
+    energy2 = ins->GetEnergyScattered();
   }
   
   //-----
