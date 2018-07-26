@@ -57,35 +57,35 @@ bool InputReader::LoadEvent(int i){
   return true; 
 }
 //------------------------------------------------------------------
-TVector3* InputReader::GetSourcePosition(void){
+TVector3* InputReader::GetPositionPrimary(void){
   return NULL;
 }
 //------------------------------------------------------------------
-TVector3* InputReader::GetScatPosition(void){
+TVector3* InputReader::GetPositionScattering(void){
   return NULL;
 }
 //------------------------------------------------------------------
-TVector3* InputReader::GetAbsPosition(void){
+TVector3* InputReader::GetPositionAbsorption(void){
   return NULL;
 }
 //------------------------------------------------------------------
-TVector3* InputReader::GetPrimaryGammaDir(void){
+TVector3* InputReader::GetGammaDirPrimary(void){
   return NULL;
 }
 //------------------------------------------------------------------
-TVector3* InputReader::GetScatGammaDir(void){
+TVector3* InputReader::GetGammaDirScattered(void){
   return NULL;
 }
 //------------------------------------------------------------------
-double InputReader::GetEnSource(void){
+double InputReader::GetEnergyPrimary(void){
   return -100;
 }
 //------------------------------------------------------------------
-double InputReader::GetEnScat(void){
+double InputReader::GetEnergyLoss(void){
   return -100;
 }
 //------------------------------------------------------------------
-double InputReader::GetEnAbs(void){
+double InputReader::GetEnergyScattered(void){
   return -100;
 }
 //------------------------------------------------------------------

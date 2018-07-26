@@ -14,14 +14,14 @@ public:
   InputReaderSimple(TString path);
   ~InputReaderSimple();
  
-  TVector3 *GetSourcePosition(void);
-  TVector3 *GetScatPosition(void);
-  TVector3 *GetAbsPosition(void);
-  TVector3 *GetPrimaryGammaDir(void);
-  TVector3 *GetScatGammaDir(void);
-  double   GetEnSource(void);
-  double   GetEnScat(void);
-  double   GetEnAbs(void);
+  TVector3 *GetPositionPrimary(void);
+  TVector3 *GetPositionScattering(void);
+  TVector3 *GetPositionAbsorption(void);
+  TVector3 *GetGammaDirPrimary(void);
+  TVector3 *GetGammaDirScattered(void);
+  double   GetEnergyPrimary(void);
+  double   GetEnergyLoss(void);
+  double   GetEnergyScattered(void);
   
 private:
   TVector3 *fPoint0;

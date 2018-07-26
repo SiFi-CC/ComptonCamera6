@@ -20,14 +20,14 @@ public:
   bool     LoadEvent(int i);
   void     Clear(void);
   void     Print(void);
-  TVector3 virtual *GetSourcePosition(void);
-  TVector3 virtual *GetScatPosition(void);
-  TVector3 virtual *GetAbsPosition(void);
-  TVector3 virtual *GetPrimaryGammaDir(void);
-  TVector3 virtual *GetScatGammaDir(void);
-  double   virtual GetEnSource(void);
-  double   virtual GetEnScat(void);
-  double   virtual GetEnAbs(void);
+  TVector3 virtual *GetPositionPrimary(void);
+  TVector3 virtual *GetPositionScattering(void);
+  TVector3 virtual *GetPositionAbsorption(void);
+  TVector3 virtual *GetGammaDirPrimary(void);
+  TVector3 virtual *GetGammaDirScattered(void);
+  double   virtual GetEnergyPrimary(void);
+  double   virtual GetEnergyLoss(void);
+  double   virtual GetEnergyScattered(void);
   
 protected:
   TFile   *fFile;

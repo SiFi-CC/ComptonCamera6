@@ -52,35 +52,35 @@ bool InputReaderSimple::AccessTree(TString name){
   return true;
 }
 //------------------------------------------------------------------
-TVector3* InputReaderSimple::GetSourcePosition(void){
+TVector3* InputReaderSimple::GetPositionPrimary(void){
   return fPoint0;
 }
 //------------------------------------------------------------------
-TVector3* InputReaderSimple::GetScatPosition(void){
+TVector3* InputReaderSimple::GetPositionScattering(void){
   return fPoint1;
 }
 //------------------------------------------------------------------
-TVector3* InputReaderSimple::GetAbsPosition(void){
+TVector3* InputReaderSimple::GetPositionAbsorption(void){
   return fPoint2;
 }
 //------------------------------------------------------------------
-TVector3* InputReaderSimple::GetPrimaryGammaDir(void){
+TVector3* InputReaderSimple::GetGammaDirPrimary(void){
   return fVersor1;
 }
 //------------------------------------------------------------------
-TVector3* InputReaderSimple::GetScatGammaDir(void){
+TVector3* InputReaderSimple::GetGammaDirScattered(void){
   return fVersor2;
 }
 //------------------------------------------------------------------
-double InputReaderSimple::GetEnSource(void){
+double InputReaderSimple::GetEnergyPrimary(void){
   return fEnergy0;
 }
 //------------------------------------------------------------------
-double InputReaderSimple::GetEnScat(void){
+double InputReaderSimple::GetEnergyLoss(void){
   return fEnergy1;
 }
 //------------------------------------------------------------------
-double InputReaderSimple::GetEnAbs(void){
+double InputReaderSimple::GetEnergyScattered(void){
   return fEnergy2;
 }
 //------------------------------------------------------------------
