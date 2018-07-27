@@ -9,7 +9,7 @@ int main(void){
   
   CCSimulation *sim = new CCSimulation(Form("CCSimulation_gen%i",gen),kFALSE);
   sim->SetGenVersion(gen);
-  sim->BuildSetup(50,80,80,100,300,300);
+  sim->BuildSetup(200,80,80,250,300,300);
   sim->Loop(nev);
   delete sim;
    

@@ -79,6 +79,6 @@ int main(){
   //-----
   delete in;
   delete ins;
-  
+
   return 1;
 }

@@ -5,8 +5,6 @@
 using namespace std;
 
 int main(int argc, char *argv[]){
-  
-  //expected arguments: startevent, stopevent, verbose, niter
 
   if(argc!=2){
     cout << "To run type: ./mlem path_to_config" << endl;
