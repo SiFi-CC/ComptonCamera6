@@ -1,5 +1,5 @@
 # Name of the input file  
-CCSimulation_gen4.root
+CCSimulation_gen5.root
 # Center of reco plane
 0 0 0
 # Size of image

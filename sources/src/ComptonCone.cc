@@ -28,6 +28,35 @@ ComptonCone::ComptonCone(TString name, TVector3 apex, TVector3 axis, Double_t an
   SetAngle(angle);
 }
 //------------------------------------------------------------------
+///Standard constructor. Allows to build ComptonCone based on required 
+///positions in the detector and registered energies. 
+///\param posScat (TVector3*) - position of Compton scattering, i.e. interaction
+///point in the scatterer
+///\param posAbs (TVector3*) - position of absorption, i.e. interaction point in 
+///the absorber
+///\param enPrimary (Double_t) - energy of primary gamma [MeV]
+///\param enScat (Double_t) - energy of gamma after Compton scattering [MeV]
+ComptonCone::ComptonCone(TVector3 *posScat, TVector3 *posAbs, Double_t enPrimary, Double_t enScat){
+  
+  //----- Calculating angle theta
+  const double me = 0.510999;             // MeV/c2
+  Double_t costheta = 1. - me*(1./enScat - 1./enPrimary);
+  Double_t theta = TMath::ACos(costheta); //rad
+  
+  //----- Calculating cone axis
+  TVector3 axis;
+  axis.SetX(posScat->X() - posAbs->X());
+  axis.SetY(posScat->Y() - posAbs->Y());
+  axis.SetZ(posScat->Z() - posAbs->Z());
+  axis.SetMag(1);
+  
+  //----- Setting values of private class members
+  SetName("cone");
+  SetAngle(theta);
+  SetAxis(axis);
+  SetApex(*posScat);
+}
+//------------------------------------------------------------------
 ///Default destructor.
 ComptonCone::~ComptonCone(){
 }

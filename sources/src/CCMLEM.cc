@@ -3,30 +3,26 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include "CCReconstruction.hh"
 #include "IsectionPoint.hh"
 #include "TClonesArray.h"
-#include "TStopwatch.h"
 #include "TCanvas.h"
-#include "TMath.h"
 #include "SMElement.hh"
 #include "TRandom.h"
-#include "InputReader.hh"
 
 using namespace std;
 
 ClassImp(CCMLEM);
 
 //--------------------
+///Standard constructor (recommended).
+///\param path (TString) - full path to the configuration file.
 CCMLEM::CCMLEM(TString path){
   
   Clear();
   
-  if(!Config(path)){
-    throw "##### Exception in CCMLEM constructor!";
-  }
-  
-  if(!SetInputReader()){
+  bool stat_config = ReadConfig(path);
+  bool stat_reader = SetInputReader();
+  if(!stat_config || !stat_reader){
     throw "##### Exception in CCMLEM constructor!";
   }
   
@@ -34,6 +30,7 @@ CCMLEM::CCMLEM(TString path){
   TString fname = fInputName;
   fname.Insert(len-5,"_MLEM");
   TString outputName = "../sources/results/" + fname;
+  outputName.ReplaceAll("CCSimulation","CCReconstruction");
   TString option = (fFreshOutput ? "RECREATE" : "UPDATE");
   fOutputFile = new TFile(outputName,option);
   
@@ -43,17 +40,20 @@ CCMLEM::CCMLEM(TString path){
   fPoints   = 0;
 }
 //--------------------
-
+///Default constructor.
 CCMLEM::CCMLEM(){
   cout << "##### Warning in CCMLEM constructor!" << endl;
   cout << "You are using default constructor!" << endl;
   Clear();
 }
 //----------------------------------------
+///Default destructor.
 CCMLEM::~CCMLEM(){
   if(fOutputFile) fOutputFile->Close();
 }
 //------------------------------------------
+///Based on the given input simulation file creates suitable
+///InputReader object - either for simple input or Geant4 input. 
 Bool_t CCMLEM::SetInputReader(void){
   
   TString fullName = "../sources/results/"+fInputName;
@@ -87,18 +87,6 @@ Bool_t CCMLEM::SetInputReader(void){
 }
 //------------------------------------------
 Bool_t CCMLEM::Reconstruct(void){
-
-  Int_t gen = 4;
-  
-  CCReconstruction *reco;
-  
-  try{
-    reco =  new CCReconstruction("../sources/results/"+fInputName,Form("CCReconstruction_gen%i",gen),kFALSE);
-  }
-  catch(const char *message){
-    cout << message << endl;
-    return 0;
-  }
   
   //image histogram
   fImage[0] = new TH2F("image","image",fNbinsZ,-fDimZ/2.,fDimZ/2.,fNbinsY,-fDimY/2.,fDimY/2.);
@@ -129,7 +117,8 @@ Bool_t CCMLEM::Reconstruct(void){
   TVector3 interactionPoint;
   TVector3 coneAxis;
   Double_t coneTheta;
-  Double_t Energy1, Energy2;
+  Double_t energy1, energy2;
+  TVector3 *point1, *point2;
   
   fNIpoints = 0;
   fPoints   = 0;
@@ -146,15 +135,16 @@ Bool_t CCMLEM::Reconstruct(void){
     fNIpoints = 0;
      
     if(fVerbose)  cout<<"CCMLEM::Reconstruct(...) event "<< i<<endl<<endl;
-   /* fReader->LoadEvent(i);
     
-    Energy1 = fReader->GetEnScat();
-    Energy2 = fReader->GetEnAbs();
+    fReader->LoadEvent(i);
+    energy1 = fReader->GetEnergyPrimary();
+    energy2 = fReader->GetEnergyScattered();
+    point1 =  fReader->GetPositionScattering();
+    point2 =  fReader->GetPositionAbsorption();
     
-*/
-    ComptonCone *cone = reco->ReconstructCone(i);
-    interactionPoint = cone->GetApex();
-    coneAxis = cone->GetAxis();
+    ComptonCone *cone = new ComptonCone(point1,point2,energy1,energy2);
+    interactionPoint  = cone->GetApex();
+    coneAxis          = cone->GetAxis();
     
     if(fSmear){
     interactionPoint.SetXYZ(Smear(interactionPoint.X(), fResolutionX),
@@ -255,9 +245,7 @@ Bool_t CCMLEM::Reconstruct(void){
       
     } //end of loop over vertical lines
     
-   
     Int_t index[fNIpoints]; 
-    
     Int_t fA[fNIpoints];
     IsectionPoint *tempp;
     
@@ -273,6 +261,7 @@ Bool_t CCMLEM::Reconstruct(void){
     Double_t dist;
     Int_t binno1, binno2;
     SMElement* temp;
+    
     for(int h=0; h<fNIpoints; h=h+2) {
      
       if(fVerbose)  cout<<" index["<<h<<"]="<<index[h]<<", index["<<h+1<<"]="<<index[h+1]<<endl;
@@ -295,8 +284,7 @@ Bool_t CCMLEM::Reconstruct(void){
 	if(fVerbose) cout<<binno1<<"!="<<binno2<<" ->Bin numbers are different when they should not!"<<endl;
 	//h--;
       }
-      
-      
+       
       fImage[0]->SetBinContent(binno1, fImage[0]->GetBinContent(binno1) + dist);
       if(fVerbose) cout<<"fPoints = "<<fPoints<<endl;
       temp = (SMElement*)fSM->ConstructedAt(fPoints++);
@@ -325,8 +313,6 @@ Bool_t CCMLEM::Reconstruct(void){
  
   t.Stop(); 
   t.Print();
-
-  delete reco;
    
   return kTRUE;
 }
@@ -462,7 +448,10 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter){
   return kTRUE;
 }
 //------------------------------------
-Bool_t CCMLEM::Config(TString path){
+///Reads configuration file and sets values of private class
+///members according to read information.
+///\param path (TString) - full path to the configuration file.
+Bool_t CCMLEM::ReadConfig(TString path){
 
   ifstream config(path);
 
@@ -576,6 +565,7 @@ Double_t CCMLEM::Smear(double val, double sigma){
   return gRandom->Gaus(val,sigma);
 }
 //-------------------------------------------
+///Prints details of the CCMLEM class obejct.
 void CCMLEM::Print(void){
  cout << "\nCCMLEM::Print()" << endl;
  cout << setw(35) << "Name of input file: \t" << "../sources/results/" + fInputName << endl;
@@ -593,6 +583,7 @@ void CCMLEM::Print(void){
  cout << setw(35) << "Verbose level: \t" << fVerbose << endl << endl;
 }
 //--------------------------------------
+///Sets default values of the private class members.
 void CCMLEM::Clear(void){
   fInputName    = "dummy";
   fXofRecoPlane = -1000;
@@ -623,6 +614,8 @@ void CCMLEM::Clear(void){
   fGraph        = NULL;
 }
 //--------------------------------------
+///Saves object in the output file.
+///\param ob (TObject*) - saved object.
 Bool_t CCMLEM::SaveToFile(TObject *ob){
   fOutputFile->cd();
   ob->Write();

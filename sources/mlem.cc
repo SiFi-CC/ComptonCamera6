@@ -1,4 +1,3 @@
- 
 #include "CCMLEM.hh"
 #include "IsectionPoint.hh"
 #include <iostream>

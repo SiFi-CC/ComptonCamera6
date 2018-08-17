@@ -21,6 +21,7 @@ public:
   
   ComptonCone();
   ComptonCone(TString name, TVector3 apex, TVector3 axis, Double_t angle);
+  ComptonCone(TVector3 *posScat, TVector3 *posAbs, Double_t enPrimary, Double_t enScat);
   ~ComptonCone();
   
   void     Print(void);

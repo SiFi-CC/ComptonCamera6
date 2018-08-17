@@ -9,9 +9,10 @@
 #include "TH2F.h"
 #include "TH1F.h"
 #include "ComptonCone.hh"
-#include "CCReconstruction.hh"
 #include "TGraph.h"
 #include "TStopwatch.h"
+#include "InputReader.hh"
+
 class CCMLEM : public TObject{
   
 public:
@@ -23,7 +24,7 @@ public:
   Bool_t   Reconstruct(void);
   Int_t    AddIsectionPoint(TString dir, Double_t x, Double_t y, Double_t z);
   Double_t Smear(double val, double sigma);
-  Bool_t   Config(TString path);
+  Bool_t   ReadConfig(TString path);
   Bool_t   SetInputReader(void);
   Bool_t   DrawHisto(void);
   Bool_t   SaveToFile(TObject *ob);
