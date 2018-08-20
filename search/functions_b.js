@@ -1,9 +1,25 @@
 var searchData=
 [
-  ['_7eccreconstruction',['~CCReconstruction',['../classCCReconstruction.html#af7f5105383779aa1afd2efad9b841c7e',1,'CCReconstruction']]],
-  ['_7eccsimulation',['~CCSimulation',['../classCCSimulation.html#abbf47d6343ba723f469aade835e0f52b',1,'CCSimulation']]],
-  ['_7ecomptoncone',['~ComptonCone',['../classComptonCone.html#acea7cd0965c25944ed31a32e6febbf76',1,'ComptonCone']]],
-  ['_7edetplane',['~DetPlane',['../classDetPlane.html#acbe9b962b31280f23256322dbac4f16c',1,'DetPlane']]],
-  ['_7ephysicsbase',['~PhysicsBase',['../classPhysicsBase.html#a159e9222d9efcd30de67b853214b8e0d',1,'PhysicsBase']]],
-  ['_7etrack',['~Track',['../classTrack.html#a416e75e66accc8eb9e3fafc3e8555216',1,'Track']]]
+  ['savegeometrytxt',['SaveGeometryTxt',['../classCCSimulation.html#a81674f49e36de2dd82aa2b78c31748ee',1,'CCSimulation']]],
+  ['savehistogram',['SaveHistogram',['../classCCReconstruction.html#a403fb5a9550ebcbbc25cbdb34fa8bc0b',1,'CCReconstruction::SaveHistogram(TH1F *h)'],['../classCCReconstruction.html#a7bf26d8967394492da998d2dcb7c85dd',1,'CCReconstruction::SaveHistogram(TH2F *h)']]],
+  ['savetofile',['SaveToFile',['../classCCMLEM.html#a423a310ba29f06907775e518eee2285b',1,'CCMLEM']]],
+  ['setangle',['SetAngle',['../classComptonCone.html#a06839ac63ad1ce62d7291be7ccce8d7b',1,'ComptonCone']]],
+  ['setapex',['SetApex',['../classComptonCone.html#a76a2d59da95b2d7d63d2b0110574c991',1,'ComptonCone']]],
+  ['setaxis',['SetAxis',['../classComptonCone.html#ab054757a2e84b291a270876c6cc068a5',1,'ComptonCone']]],
+  ['setbin',['SetBin',['../classIsectionPoint.html#a3dae4dd2861c0417a0717867335ed772',1,'IsectionPoint']]],
+  ['setbinpoint',['SetBinPoint',['../classIsectionPoint.html#aa789aa77bde64fee7a9ca99b79eed966',1,'IsectionPoint']]],
+  ['setdimensions',['SetDimensions',['../classDetPlane.html#ac957caff16c9f2bc5f0b89f2e337a4f8',1,'DetPlane']]],
+  ['setenergy',['SetEnergy',['../classTrack.html#a591727ac6b34a04bfe8ac68378084343',1,'Track']]],
+  ['setgapy',['SetGapY',['../classCCSimulation.html#af946f477e2bc98cced80cd0e45e93e32',1,'CCSimulation']]],
+  ['setgapz',['SetGapZ',['../classCCSimulation.html#a98cfbaad73f554d0195efe02377171ec',1,'CCSimulation']]],
+  ['setgenversion',['SetGenVersion',['../classCCSimulation.html#a1fd14dd99da9028cfbd71b0d52ea3c8c',1,'CCSimulation']]],
+  ['setinputfile',['SetInputFile',['../classInputReader.html#a9d53df483d36fcf20669c8f4ab169ede',1,'InputReader']]],
+  ['setinputname',['SetInputName',['../classCCReconstruction.html#abaf2e1f08632085de7dee6b5e5784c17',1,'CCReconstruction']]],
+  ['setinputreader',['SetInputReader',['../classCCMLEM.html#a4e12906ed98cb95aef06fd281757b6f2',1,'CCMLEM']]],
+  ['setname',['SetName',['../classCCReconstruction.html#a41243a9c9ea0b9d6098f962863ebf596',1,'CCReconstruction::SetName()'],['../classCCSimulation.html#a7e3f9780c08ba76608382bb87a7f52ad',1,'CCSimulation::SetName()'],['../classComptonCone.html#aad700e9a17021eff55e59ee2e196e524',1,'ComptonCone::SetName()'],['../classDetPlane.html#a60d0305c309f3d220ce5c37c9d617bcf',1,'DetPlane::SetName()'],['../classPhysicsBase.html#a294b9f4719037e8fcf5062006dfc218b',1,'PhysicsBase::SetName()'],['../classTrack.html#ad57cb64496ba44beafd7d5acb2017642',1,'Track::SetName()']]],
+  ['setplane',['SetPlane',['../classDetPlane.html#ab8e02a2a0085ce52afbd7d3e169378e4',1,'DetPlane']]],
+  ['setpoint',['SetPoint',['../classTrack.html#a8137cc329aeaff58cdebee3c53fa8cb4',1,'Track']]],
+  ['setpointcoordinates',['SetPointCoordinates',['../classIsectionPoint.html#a6c6d4d8b5ab4d6ecc7b8cacf946ff7b6',1,'IsectionPoint']]],
+  ['setradius',['SetRadius',['../classCCSimulation.html#acf5bd1fcb65d3c5b480c759e39aa9ebe',1,'CCSimulation']]],
+  ['setversor',['SetVersor',['../classTrack.html#a90a7edac8f6ceb28859f9d855aba6b21',1,'Track']]]
 ];

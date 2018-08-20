@@ -82,8 +82,8 @@ Inheritance diagram for CCReconstruction:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a1ee2640d8267531bf0fe2aa9f138eb41"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#a1ee2640d8267531bf0fe2aa9f138eb41">CCReconstruction</a> (TString inputName, TString name, Int_t iter, Bool_t verbose)</td></tr>
-<tr class="separator:a1ee2640d8267531bf0fe2aa9f138eb41"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af71afafdfc4c48542065fcf502370c63"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#af71afafdfc4c48542065fcf502370c63">CCReconstruction</a> (TString inputName, TString name, Bool_t verbose)</td></tr>
+<tr class="separator:af71afafdfc4c48542065fcf502370c63"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af7f5105383779aa1afd2efad9b841c7e"><td class="memItemLeft" align="right" valign="top"><a id="af7f5105383779aa1afd2efad9b841c7e"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#af7f5105383779aa1afd2efad9b841c7e">~CCReconstruction</a> ()</td></tr>
 <tr class="memdesc:af7f5105383779aa1afd2efad9b841c7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default destructor. <br /></td></tr>
@@ -112,10 +112,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#abaf2e1f08632085de7dee6b5e5784c17">SetInputName</a> (TString inputName)</td></tr>
 <tr class="memdesc:abaf2e1f08632085de7dee6b5e5784c17"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets path to the file containing simulation results. <br /></td></tr>
 <tr class="separator:abaf2e1f08632085de7dee6b5e5784c17"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab1d892e31954c9686bfe3c6561880191"><td class="memItemLeft" align="right" valign="top"><a id="ab1d892e31954c9686bfe3c6561880191"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#ab1d892e31954c9686bfe3c6561880191">SetIter</a> (Int_t iter)</td></tr>
-<tr class="memdesc:ab1d892e31954c9686bfe3c6561880191"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets number or iterations for MLEM (not used in this version). <br /></td></tr>
-<tr class="separator:ab1d892e31954c9686bfe3c6561880191"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21e5593d886d4f7ee09b073f859e718b"><td class="memItemLeft" align="right" valign="top"><a id="a21e5593d886d4f7ee09b073f859e718b"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>SetInputReader</b> (TString inputName)</td></tr>
+<tr class="separator:a21e5593d886d4f7ee09b073f859e718b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a41243a9c9ea0b9d6098f962863ebf596"><td class="memItemLeft" align="right" valign="top"><a id="a41243a9c9ea0b9d6098f962863ebf596"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#a41243a9c9ea0b9d6098f962863ebf596">SetName</a> (TString name)</td></tr>
 <tr class="memdesc:a41243a9c9ea0b9d6098f962863ebf596"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets name of the <a class="el" href="classCCReconstruction.html">CCReconstruction</a> object. <br /></td></tr>
@@ -139,10 +138,6 @@ Double_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 Double_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#a0896ed0a09aeb8576d3ab39fa496818b">fEnergy2</a></td></tr>
 <tr class="memdesc:a0896ed0a09aeb8576d3ab39fa496818b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Energy after Compton scattering. <br /></td></tr>
 <tr class="separator:a0896ed0a09aeb8576d3ab39fa496818b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acc66e26d83cb1aff7022af8928e7782f"><td class="memItemLeft" align="right" valign="top"><a id="acc66e26d83cb1aff7022af8928e7782f"></a>
-TFile *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#acc66e26d83cb1aff7022af8928e7782f">fFile</a></td></tr>
-<tr class="memdesc:acc66e26d83cb1aff7022af8928e7782f"><td class="mdescLeft">&#160;</td><td class="mdescRight">ROOT file containing simulation data. <br /></td></tr>
-<tr class="separator:acc66e26d83cb1aff7022af8928e7782f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab7a7f1d556ec9d20a50ba8c55fb9512a"><td class="memItemLeft" align="right" valign="top"><a id="ab7a7f1d556ec9d20a50ba8c55fb9512a"></a>
 Int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#ab7a7f1d556ec9d20a50ba8c55fb9512a">fGenVersion</a></td></tr>
 <tr class="memdesc:ab7a7f1d556ec9d20a50ba8c55fb9512a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Version of gamma generator. <br /></td></tr>
@@ -155,18 +150,10 @@ TH2F *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cl
 TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#a2a6fdd7eb1727f67172759fe6ea46995">fInputName</a></td></tr>
 <tr class="memdesc:a2a6fdd7eb1727f67172759fe6ea46995"><td class="mdescLeft">&#160;</td><td class="mdescRight">Path to the file with simulation data. <br /></td></tr>
 <tr class="separator:a2a6fdd7eb1727f67172759fe6ea46995"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0f41a1259bcb8fbe9239d6b2ca8a93da"><td class="memItemLeft" align="right" valign="top"><a id="a0f41a1259bcb8fbe9239d6b2ca8a93da"></a>
-Int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#a0f41a1259bcb8fbe9239d6b2ca8a93da">fIter</a></td></tr>
-<tr class="memdesc:a0f41a1259bcb8fbe9239d6b2ca8a93da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of iterations for MLEM (not used in this version) <br /></td></tr>
-<tr class="separator:a0f41a1259bcb8fbe9239d6b2ca8a93da"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aee6b63e4396d25011ea0692a8d131277"><td class="memItemLeft" align="right" valign="top"><a id="aee6b63e4396d25011ea0692a8d131277"></a>
 TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#aee6b63e4396d25011ea0692a8d131277">fName</a></td></tr>
 <tr class="memdesc:aee6b63e4396d25011ea0692a8d131277"><td class="mdescLeft">&#160;</td><td class="mdescRight">Name of the <a class="el" href="classCCReconstruction.html">CCReconstruction</a> object. <br /></td></tr>
 <tr class="separator:aee6b63e4396d25011ea0692a8d131277"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a468e591e484d62a713f46e43b72361dd"><td class="memItemLeft" align="right" valign="top"><a id="a468e591e484d62a713f46e43b72361dd"></a>
-Int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#a468e591e484d62a713f46e43b72361dd">fNev</a></td></tr>
-<tr class="memdesc:a468e591e484d62a713f46e43b72361dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of events to be reconstructed. <br /></td></tr>
-<tr class="separator:a468e591e484d62a713f46e43b72361dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5b69f3609eb2e0068f54a7ed07cc3c5e"><td class="memItemLeft" align="right" valign="top"><a id="a5b69f3609eb2e0068f54a7ed07cc3c5e"></a>
 TH1F *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#a5b69f3609eb2e0068f54a7ed07cc3c5e">fNpixels</a></td></tr>
 <tr class="memdesc:a5b69f3609eb2e0068f54a7ed07cc3c5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Distribution of filled pixels in the reconstructed image. <br /></td></tr>
@@ -183,14 +170,13 @@ TVector3 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href
 TVector3 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#ad5edf1c4631783fa46e9b001b703e4b9">fPoint2</a></td></tr>
 <tr class="memdesc:ad5edf1c4631783fa46e9b001b703e4b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Coordinates of the interaction point in absorber. <br /></td></tr>
 <tr class="separator:ad5edf1c4631783fa46e9b001b703e4b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae4a06d9f5c223669c048d656ae2ee04b"><td class="memItemLeft" align="right" valign="top"><a id="ae4a06d9f5c223669c048d656ae2ee04b"></a>
+<a class="el" href="classInputReader.html">InputReader</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>fReader</b></td></tr>
+<tr class="separator:ae4a06d9f5c223669c048d656ae2ee04b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a30212538f48ab5719eb0fb0499057cec"><td class="memItemLeft" align="right" valign="top"><a id="a30212538f48ab5719eb0fb0499057cec"></a>
 <a class="el" href="classDetPlane.html">DetPlane</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#a30212538f48ab5719eb0fb0499057cec">fScatterer</a></td></tr>
 <tr class="memdesc:a30212538f48ab5719eb0fb0499057cec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scatterer detection plane. <br /></td></tr>
 <tr class="separator:a30212538f48ab5719eb0fb0499057cec"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a938bcee89624a60f7e555aebc941745b"><td class="memItemLeft" align="right" valign="top"><a id="a938bcee89624a60f7e555aebc941745b"></a>
-TTree *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#a938bcee89624a60f7e555aebc941745b">fTree</a></td></tr>
-<tr class="memdesc:a938bcee89624a60f7e555aebc941745b"><td class="mdescLeft">&#160;</td><td class="mdescRight">ROOT tree containing simulation data. <br /></td></tr>
-<tr class="separator:a938bcee89624a60f7e555aebc941745b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1710ff19690d9b89d7c7d45ff90be5a0"><td class="memItemLeft" align="right" valign="top"><a id="a1710ff19690d9b89d7c7d45ff90be5a0"></a>
 Bool_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#a1710ff19690d9b89d7c7d45ff90be5a0">fVerbose</a></td></tr>
 <tr class="memdesc:a1710ff19690d9b89d7c7d45ff90be5a0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verbose level for print-outs on screen. <br /></td></tr>
@@ -207,8 +193,8 @@ TVector3 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p class="">Class for image reconstruction from events simulated in class CCSimulations. This class usues simple back projection algorithm based on <a class="el" href="classComptonCone.html">ComptonCone</a> class objects. Detailed description of the algorithm can be found in presentation by KR on wiki <a href="http://bragg.if.uj.edu.pl/gccbwiki/images/0/0e/KR_20170222_CCandCarbonLine.pdf">LINK</a> </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a1ee2640d8267531bf0fe2aa9f138eb41"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1ee2640d8267531bf0fe2aa9f138eb41">&#9670;&nbsp;</a></span>CCReconstruction()</h2>
+<a id="af71afafdfc4c48542065fcf502370c63"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af71afafdfc4c48542065fcf502370c63">&#9670;&nbsp;</a></span>CCReconstruction()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -224,12 +210,6 @@ TVector3 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href
           <td></td>
           <td class="paramtype">TString&#160;</td>
           <td class="paramname"><em>name</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">Int_t&#160;</td>
-          <td class="paramname"><em>iter</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>

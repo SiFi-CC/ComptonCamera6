@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['isectionpoint',['IsectionPoint',['../classIsectionPoint.html',1,'']]]
+  ['g4input',['G4Input',['../classG4Input.html',1,'']]]
 ];

@@ -88,6 +88,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a24d5658ba6103d7a3393a4d8ac51c56d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:accbd03f8e9dfdcda9e318c89b18b5130"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classComptonCone.html#accbd03f8e9dfdcda9e318c89b18b5130">ComptonCone</a> (TString name, TVector3 apex, TVector3 axis, Double_t angle)</td></tr>
 <tr class="separator:accbd03f8e9dfdcda9e318c89b18b5130"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac69d16b11b75d529b5cff30f602a8d92"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classComptonCone.html#ac69d16b11b75d529b5cff30f602a8d92">ComptonCone</a> (TVector3 *posScat, TVector3 *posAbs, Double_t enPrimary, Double_t enScat)</td></tr>
+<tr class="separator:ac69d16b11b75d529b5cff30f602a8d92"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acea7cd0965c25944ed31a32e6febbf76"><td class="memItemLeft" align="right" valign="top"><a id="acea7cd0965c25944ed31a32e6febbf76"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classComptonCone.html#acea7cd0965c25944ed31a32e6febbf76">~ComptonCone</a> ()</td></tr>
 <tr class="memdesc:acea7cd0965c25944ed31a32e6febbf76"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default destructor. <br /></td></tr>
@@ -157,7 +159,7 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 </ul>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="accbd03f8e9dfdcda9e318c89b18b5130"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#accbd03f8e9dfdcda9e318c89b18b5130">&#9670;&nbsp;</a></span>ComptonCone()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#accbd03f8e9dfdcda9e318c89b18b5130">&#9670;&nbsp;</a></span>ComptonCone() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -199,6 +201,55 @@ TString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
     <tr><td class="paramname">apex</td><td>(TVector3) - coordinates of the apex </td></tr>
     <tr><td class="paramname">axis</td><td>(TVector3) - cone axis </td></tr>
     <tr><td class="paramname">angle</td><td>(Double_t) - apex angle </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ac69d16b11b75d529b5cff30f602a8d92"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac69d16b11b75d529b5cff30f602a8d92">&#9670;&nbsp;</a></span>ComptonCone() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">ComptonCone::ComptonCone </td>
+          <td>(</td>
+          <td class="paramtype">TVector3 *&#160;</td>
+          <td class="paramname"><em>posScat</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TVector3 *&#160;</td>
+          <td class="paramname"><em>posAbs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Double_t&#160;</td>
+          <td class="paramname"><em>enPrimary</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Double_t&#160;</td>
+          <td class="paramname"><em>enScat</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p class="">Standard constructor. Allows to build <a class="el" href="classComptonCone.html">ComptonCone</a> based on required positions in the detector and registered energies. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">posScat</td><td>(TVector3*) - position of Compton scattering, i.e. interaction point in the scatterer </td></tr>
+    <tr><td class="paramname">posAbs</td><td>(TVector3*) - position of absorption, i.e. interaction point in the absorber </td></tr>
+    <tr><td class="paramname">enPrimary</td><td>(Double_t) - energy of primary gamma [MeV] </td></tr>
+    <tr><td class="paramname">enScat</td><td>(Double_t) - energy of gamma after Compton scattering [MeV] </td></tr>
   </table>
   </dd>
 </dl>
