@@ -112,8 +112,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#abaf2e1f08632085de7dee6b5e5784c17">SetInputName</a> (TString inputName)</td></tr>
 <tr class="memdesc:abaf2e1f08632085de7dee6b5e5784c17"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets path to the file containing simulation results. <br /></td></tr>
 <tr class="separator:abaf2e1f08632085de7dee6b5e5784c17"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a21e5593d886d4f7ee09b073f859e718b"><td class="memItemLeft" align="right" valign="top"><a id="a21e5593d886d4f7ee09b073f859e718b"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>SetInputReader</b> (TString inputName)</td></tr>
+<tr class="memitem:a21e5593d886d4f7ee09b073f859e718b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#a21e5593d886d4f7ee09b073f859e718b">SetInputReader</a> (TString inputName)</td></tr>
 <tr class="separator:a21e5593d886d4f7ee09b073f859e718b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a41243a9c9ea0b9d6098f962863ebf596"><td class="memItemLeft" align="right" valign="top"><a id="a41243a9c9ea0b9d6098f962863ebf596"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#a41243a9c9ea0b9d6098f962863ebf596">SetName</a> (TString name)</td></tr>
@@ -170,9 +169,10 @@ TVector3 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href
 TVector3 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#ad5edf1c4631783fa46e9b001b703e4b9">fPoint2</a></td></tr>
 <tr class="memdesc:ad5edf1c4631783fa46e9b001b703e4b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Coordinates of the interaction point in absorber. <br /></td></tr>
 <tr class="separator:ad5edf1c4631783fa46e9b001b703e4b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae4a06d9f5c223669c048d656ae2ee04b"><td class="memItemLeft" align="right" valign="top"><a id="ae4a06d9f5c223669c048d656ae2ee04b"></a>
-<a class="el" href="classInputReader.html">InputReader</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>fReader</b></td></tr>
-<tr class="separator:ae4a06d9f5c223669c048d656ae2ee04b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a03494b2b61bc8c6933de878c7310e789"><td class="memItemLeft" align="right" valign="top"><a id="a03494b2b61bc8c6933de878c7310e789"></a>
+<a class="el" href="classInputReaderSimple.html">InputReaderSimple</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#a03494b2b61bc8c6933de878c7310e789">fReader</a></td></tr>
+<tr class="memdesc:a03494b2b61bc8c6933de878c7310e789"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classInputReader.html">InputReader</a> object accessing simulation data. <br /></td></tr>
+<tr class="separator:a03494b2b61bc8c6933de878c7310e789"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a30212538f48ab5719eb0fb0499057cec"><td class="memItemLeft" align="right" valign="top"><a id="a30212538f48ab5719eb0fb0499057cec"></a>
 <a class="el" href="classDetPlane.html">DetPlane</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCReconstruction.html#a30212538f48ab5719eb0fb0499057cec">fScatterer</a></td></tr>
 <tr class="memdesc:a30212538f48ab5719eb0fb0499057cec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scatterer detection plane. <br /></td></tr>
@@ -440,6 +440,30 @@ TVector3 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href
       </table>
 </div><div class="memdoc">
 <p class="">Saves 2D histogram in the ROOT file. Name of the file is based on the name of the <a class="el" href="classCCReconstruction.html">CCReconstruction</a> object. </p>
+
+</div>
+</div>
+<a id="a21e5593d886d4f7ee09b073f859e718b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a21e5593d886d4f7ee09b073f859e718b">&#9670;&nbsp;</a></span>SetInputReader()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool CCReconstruction::SetInputReader </td>
+          <td>(</td>
+          <td class="paramtype">TString&#160;</td>
+          <td class="paramname"><em>inputName</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p class="">Creates <a class="el" href="classInputReaderSimple.html">InputReaderSimple</a> object for accessing simulation data. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">inputName</td><td>(TString) - name of the input file. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

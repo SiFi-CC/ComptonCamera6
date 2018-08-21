@@ -70,6 +70,8 @@ $(function() {
 <div class="title">InputReaderSimple Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="InputReaderSimple_8hh_source.html">InputReaderSimple.hh</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for InputReaderSimple:</div>
 <div class="dyncontent">
@@ -92,6 +94,10 @@ Public Member Functions</h2></td></tr>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInputReaderSimple.html#a688817abd18864666d1a9d25268320bf">~InputReaderSimple</a> ()</td></tr>
 <tr class="memdesc:a688817abd18864666d1a9d25268320bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default destructor. <br /></td></tr>
 <tr class="separator:a688817abd18864666d1a9d25268320bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6958960f1b4d0b5fc1f5e68c4bda279b"><td class="memItemLeft" align="right" valign="top"><a id="a6958960f1b4d0b5fc1f5e68c4bda279b"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInputReaderSimple.html#a6958960f1b4d0b5fc1f5e68c4bda279b">Clear</a> (void)</td></tr>
+<tr class="memdesc:a6958960f1b4d0b5fc1f5e68c4bda279b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets default values of the protected class members. <br /></td></tr>
+<tr class="separator:a6958960f1b4d0b5fc1f5e68c4bda279b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a04d785858dcb7d48dfc231ebefa4428f"><td class="memItemLeft" align="right" valign="top"><a id="a04d785858dcb7d48dfc231ebefa4428f"></a>
 double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInputReaderSimple.html#a04d785858dcb7d48dfc231ebefa4428f">GetEnergyLoss</a> (void)</td></tr>
 <tr class="memdesc:a04d785858dcb7d48dfc231ebefa4428f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns energy deposited in the scatterer [MeV]. <br /></td></tr>
@@ -127,11 +133,7 @@ TVector3 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInputReader.html#a38875ce3bae818dd0836da36fb7ea891">~InputReader</a> ()</td></tr>
 <tr class="memdesc:a38875ce3bae818dd0836da36fb7ea891 inherit pub_methods_classInputReader"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deafault destructor. <br /></td></tr>
 <tr class="separator:a38875ce3bae818dd0836da36fb7ea891 inherit pub_methods_classInputReader"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2fb0feea53d9a1a75a542155327604f2 inherit pub_methods_classInputReader"><td class="memItemLeft" align="right" valign="top"><a id="a2fb0feea53d9a1a75a542155327604f2"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInputReader.html#a2fb0feea53d9a1a75a542155327604f2">Clear</a> (void)</td></tr>
-<tr class="memdesc:a2fb0feea53d9a1a75a542155327604f2 inherit pub_methods_classInputReader"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets default values of the protected class members. <br /></td></tr>
-<tr class="separator:a2fb0feea53d9a1a75a542155327604f2 inherit pub_methods_classInputReader"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aca495427b58461810ae3cb4a515c166e inherit pub_methods_classInputReader"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInputReader.html#aca495427b58461810ae3cb4a515c166e">LoadEvent</a> (int i)</td></tr>
+<tr class="memitem:aca495427b58461810ae3cb4a515c166e inherit pub_methods_classInputReader"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInputReader.html#aca495427b58461810ae3cb4a515c166e">LoadEvent</a> (int i)</td></tr>
 <tr class="separator:aca495427b58461810ae3cb4a515c166e inherit pub_methods_classInputReader"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af8ba43ebd386eef6633a094b73366926 inherit pub_methods_classInputReader"><td class="memItemLeft" align="right" valign="top"><a id="af8ba43ebd386eef6633a094b73366926"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInputReader.html#af8ba43ebd386eef6633a094b73366926">Print</a> (void)</td></tr>
@@ -193,7 +195,9 @@ TTree *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 <tr class="memdesc:a4cd937ad525ff6af9c4dfff17534b100 inherit pro_attribs_classInputReader"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tree containing simulation results. <br /></td></tr>
 <tr class="separator:a4cd937ad525ff6af9c4dfff17534b100 inherit pro_attribs_classInputReader"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p class="">Class for accessing data from simple simulation performed by KR. This is class derived from <a class="el" href="classInputReader.html">InputReader</a> class. It opens requested ROOT file containing tree with simulation results and via set of getter function passes information to reconstruction classes, i.e. CCREconstruction and <a class="el" href="classCCMLEM.html">CCMLEM</a>. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a84684a7bfbb8c9f79508b6e962d3d00d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a84684a7bfbb8c9f79508b6e962d3d00d">&#9670;&nbsp;</a></span>InputReaderSimple()</h2>
 

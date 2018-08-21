@@ -70,6 +70,8 @@ $(function() {
 <div class="title">InputReader Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="InputReader_8hh_source.html">InputReader.hh</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for InputReader:</div>
 <div class="dyncontent">
@@ -94,7 +96,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a38875ce3bae818dd0836da36fb7ea891"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deafault destructor. <br /></td></tr>
 <tr class="separator:a38875ce3bae818dd0836da36fb7ea891"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2fb0feea53d9a1a75a542155327604f2"><td class="memItemLeft" align="right" valign="top"><a id="a2fb0feea53d9a1a75a542155327604f2"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInputReader.html#a2fb0feea53d9a1a75a542155327604f2">Clear</a> (void)</td></tr>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInputReader.html#a2fb0feea53d9a1a75a542155327604f2">Clear</a> (void)</td></tr>
 <tr class="memdesc:a2fb0feea53d9a1a75a542155327604f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets default values of the protected class members. <br /></td></tr>
 <tr class="separator:a2fb0feea53d9a1a75a542155327604f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acf575e5ee4c4a4ce460efcdc4333f336"><td class="memItemLeft" align="right" valign="top"><a id="acf575e5ee4c4a4ce460efcdc4333f336"></a>
@@ -121,7 +123,7 @@ virtual TVector3 *&#160;</td><td class="memItemRight" valign="bottom"><a class="
 <tr class="separator:a233f84ef8ea197f798eca6330747e8bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abde56fb4ec820063b27d57bb2715fa74"><td class="memItemLeft" align="right" valign="top">virtual TVector3 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInputReader.html#abde56fb4ec820063b27d57bb2715fa74">GetPositionScattering</a> (void)</td></tr>
 <tr class="separator:abde56fb4ec820063b27d57bb2715fa74"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aca495427b58461810ae3cb4a515c166e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInputReader.html#aca495427b58461810ae3cb4a515c166e">LoadEvent</a> (int i)</td></tr>
+<tr class="memitem:aca495427b58461810ae3cb4a515c166e"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInputReader.html#aca495427b58461810ae3cb4a515c166e">LoadEvent</a> (int i)</td></tr>
 <tr class="separator:aca495427b58461810ae3cb4a515c166e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af8ba43ebd386eef6633a094b73366926"><td class="memItemLeft" align="right" valign="top"><a id="af8ba43ebd386eef6633a094b73366926"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classInputReader.html#af8ba43ebd386eef6633a094b73366926">Print</a> (void)</td></tr>
@@ -146,7 +148,9 @@ TTree *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 <tr class="memdesc:a4cd937ad525ff6af9c4dfff17534b100"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tree containing simulation results. <br /></td></tr>
 <tr class="separator:a4cd937ad525ff6af9c4dfff17534b100"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p class="">Base class for <a class="el" href="classInputReaderSimple.html">InputReaderSimple</a> and <a class="el" href="classInputReaderGeant.html">InputReaderGeant</a>. It allows for reading simulation data saved in different forms and passing it to reconstruction classes via set of getter functions. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a0bdcebdd264f270fdeba6c5b10c6b784"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0bdcebdd264f270fdeba6c5b10c6b784">&#9670;&nbsp;</a></span>InputReader()</h2>
 
@@ -327,6 +331,9 @@ TTree *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">bool InputReader::LoadEvent </td>
@@ -336,6 +343,11 @@ TTree *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 <p class="">Loads requested event from the opened tree with simulations results. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -343,6 +355,8 @@ TTree *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
   </table>
   </dd>
 </dl>
+
+<p>Reimplemented in <a class="el" href="classInputReaderGeant.html#af76cc3c51503e8553b35120650e6558f">InputReaderGeant</a>.</p>
 
 </div>
 </div>
