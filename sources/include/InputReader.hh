@@ -10,6 +10,10 @@
 
 using namespace std;
 
+///Base class for InputReaderSimple and InputReaderGeant. It allows 
+///for reading simulation data saved in different forms and passing it
+///to reconstruction classes via set of getter functions. 
+
 class InputReader : public TObject{
   
 public:
@@ -17,9 +21,9 @@ public:
    InputReader(TString path);
   ~InputReader();
   
-  bool     LoadEvent(int i);
-  void     Clear(void);
   void     Print(void);
+  void     virtual Clear(void);
+  bool     virtual LoadEvent(int i);
   TVector3 virtual *GetPositionPrimary(void);
   TVector3 virtual *GetPositionScattering(void);
   TVector3 virtual *GetPositionAbsorption(void);
@@ -30,8 +34,8 @@ public:
   double   virtual GetEnergyScattered(void);
   
 protected:
-  TFile   *fFile;
-  TTree   *fTree;
+  TFile   *fFile;	///< Input file
+  TTree   *fTree;	///< Tree containing simulation results
   
   bool    virtual AccessTree(TString name);
   bool    SetInputFile(TString path);

@@ -40,6 +40,8 @@ CCReconstruction::~CCReconstruction(){
   delete fReader;
 }
 //------------------------------------------------------------------
+///Creates InputReaderSimple object for accessing simulation data. 
+///\param inputName (TString) - name of the input file.
 bool CCReconstruction::SetInputReader(TString inputName){
   
   TFile *file = new TFile(inputName,"READ");
@@ -53,13 +55,9 @@ bool CCReconstruction::SetInputReader(TString inputName){
    file->Close();
    fReader = new InputReaderSimple(inputName);
   }
-  else if(file->Get("G4SimulationData_Reconstruction")){
-    file->Close();
-    fReader = new InputReaderGeant(inputName);
-  }
   else{
     cout << "##### Error in CCReconstruction::SetInputReader()!" << endl;
-    cout << "Unknown data format" << endl;
+    cout << "This class can only analyze simple input!" << endl;
     return false;
   }
   

@@ -57,7 +57,7 @@ private:
   Double_t  fEnergy2;		///< Energy after Compton scattering
   DetPlane  fScatterer;		///< Scatterer detection plane
   DetPlane  fAbsorber;		///< Absorber detection plane
-  InputReader *fReader;
+  InputReaderSimple *fReader;	///< InputReader object accessing simulation data
   
   ClassDef(CCReconstruction,0)
 };

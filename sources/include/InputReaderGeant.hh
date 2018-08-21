@@ -7,6 +7,12 @@
 
 using namespace std;
 
+///Class for accessing data from Geant4 simulation performed by JK.
+///This is class derived from InputReader class. It opens requested
+///ROOT file containing tree with simulation results and via set of
+///getter function passes information to reconstruction classes, i.e.
+///CCREconstruction and CCMLEM.
+
 class InputReaderGeant : public InputReader{
   
 public:
@@ -14,6 +20,8 @@ public:
   InputReaderGeant(TString path);
   ~InputReaderGeant();
   
+  bool      LoadEvent(int i);
+  void      Clear(void);
   TVector3 *GetPositionPrimary(void);
   TVector3 *GetPositionScattering(void);
   TVector3 *GetPositionAbsorption(void);
@@ -24,27 +32,21 @@ public:
   double    GetEnergyScattered(void);
   
 private:
-  int        fEventNumber;
-  bool       fIdentified;
-  PhysicVar *fRecoEnergy_e;
-  PhysicVar *fRecoEnergy_p;
-  PhysicVec *fRecoPosition_e;
-  PhysicVec *fRecoPosition_p;
-  PhysicVec *fRecoDirection_scatter;
-  vector <PhysicVec*> *fRecoClusterPositions;
-  vector <PhysicVar*> *fRecoClusterEnergies;
+  int        fEventNumber;			///< Event number
+  bool       fIdentified;			///< Flag indicating whether the event was labeled or not
+  PhysicVar *fRecoEnergy_e;			///< Electron energy + uncertainty [MeV]
+  PhysicVar *fRecoEnergy_p;			///< Photon energy + uncertainty [MeV]
+  PhysicVec *fRecoPosition_e;			///< Electron creation position + uncertainty 
+  PhysicVec *fRecoPosition_p;			///< Photon energy deposition position + incertainty
+  PhysicVec *fRecoDirection_scatter;		///< Direction of the scattered photon + uncertainty
+  vector <PhysicVec*> *fRecoClusterPositions;	///< Positions cluster with uncertainties  
+  vector <PhysicVar*> *fRecoClusterEnergies;	///< Energies cluster with uncertainties 
   
-  double     fScatDimX;
-  double     fScatDimY;
-  double     fScatDimZ;
-  double     fAbsDimX;
-  double     fAbsDimY;
-  double     fAbsDimZ;
-  TVector3   fScatPosition;
-  TVector3   fAbsPosition;
+  TVector3 *fPositionScat;			///< Position of interaction in scatterer 
+  TVector3 *fPositionAbs;			///< Position of interaction in absorber
+  TVector3 *fDirectionScat;			///< Direction of scattered gamma
   
   bool AccessTree(TString name);
-  bool AccessSetup(void);
   
   ClassDef(InputReaderGeant,0)
 };

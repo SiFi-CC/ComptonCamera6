@@ -3,22 +3,29 @@
 ClassImp(InputReaderGeant);
 
 //------------------------------------------------------------------
+///Default constructor.
 InputReaderGeant::InputReaderGeant()
 		 :InputReader(){
+  Clear();
   cout << "##### Warning in InputReaderGeant constructor!" << endl;
   cout << "You are usinf default constructor." << endl;
 }
 //------------------------------------------------------------------
+///Standard constructor.
+///\param path (TString) - path to the input file.
 InputReaderGeant::InputReaderGeant(TString path)
 		 :InputReader(path){
 
   if(!AccessTree("G4SimulationData_Reconstruction")){
     throw "##### Exception in InputReaderGeant constructor!";
   }
-  AccessSetup();
   
+  fPositionScat  = new TVector3();
+  fPositionAbs   = new TVector3();
+  fDirectionScat = new TVector3();
 }
 //------------------------------------------------------------------
+///Default destructor.
 InputReaderGeant::~InputReaderGeant(){
   if(fFile->IsOpen()) fFile->Close();
 }
@@ -32,6 +39,14 @@ bool InputReaderGeant::AccessTree(TString name){
     cout << "Could not access the tree!" << endl;
     return false;
   }
+  
+  fRecoEnergy_e   = new PhysicVar();
+  fRecoEnergy_p   = new PhysicVar();
+  fRecoPosition_e = new PhysicVec();
+  fRecoPosition_p = new PhysicVec();
+  fRecoDirection_scatter = new PhysicVec();
+  fRecoClusterPositions  = 0;
+  fRecoClusterEnergies   = 0;
   
   fTree->SetBranchAddress("EventNumber",&fEventNumber);
   fTree->SetBranchAddress("Identified",&fIdentified);
@@ -49,64 +64,82 @@ bool InputReaderGeant::AccessTree(TString name){
   return true;
 }
 //------------------------------------------------------------------
-bool InputReaderGeant::AccessSetup(void){
-
-  TString fname  = fFile->GetName();
-  G4Input *input = new G4Input(fname,false);
+bool InputReaderGeant::LoadEvent(int i){
+ 
+  int imax = fTree->GetEntries();
+  if(i>imax){
+   cout << "##### Error in InputReaderGeant::LoadEvent()!" << endl;
+   cout << "Requested event number larger than number of events in the tree!" << endl;
+   return false;
+  }
   
-  fScatDimX     = input->GetScattererXLength();
-  fScatDimY     = input->GetScattererYLength();
-  fScatDimZ     = input->GetScattererZLength();
-  fAbsDimX      = input->GetAbsorberXLength();
-  fAbsDimY      = input->GetAbsorberYLength();
-  fAbsDimZ      = input->GetAbsorberZLength();
-  fScatPosition = input->GetScattererPosition();
-  fAbsPosition  = input->GetAbsorberPosition();
+  fTree->GetEntry(i);
   
-  cout << "\n\n----- In InputReaderGeant::AccessSetup()" << endl;
-  cout << "\t Scatterer dimensions: " << fScatDimX << "\t" 
-       << fScatDimY << "\t" << fScatDimZ << endl;
-  cout << "\t Absorber dimensions:  " << fAbsDimX << "\t"
-       << fAbsDimY << "\t" << fAbsDimZ << endl;
-  cout << "\t Scatterer position: " << fScatPosition.X() << "\t" 
-       <<  fScatPosition.Y() << "\t" << fScatPosition.Z() << endl; 
-  cout << "\t Absorber position:  " << fAbsPosition.X() << "\t" 
-       <<  fAbsPosition.Y() << "\t" << fAbsPosition.Z() << endl << endl;
-  
-  delete input;
-  
-  return true;
+  return fIdentified;
 }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetPositionPrimary(void){
+ cout << "##### Warning in InputReaderGeant::GetPositionPrimary()!" << endl;
+ cout << "\t Position of gamma source is unknown!" << endl;
  return NULL; 
 }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetPositionScattering(void){
-  return NULL;
+  fPositionScat->SetX(fRecoPosition_e->position.X());
+  fPositionScat->SetY(fRecoPosition_e->position.Y());
+  fPositionScat->SetZ(fRecoPosition_e->position.Z());
+  return fPositionScat;
 }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetPositionAbsorption(void){
-  return NULL;
+  fPositionAbs->SetX(fRecoPosition_p->position.X());
+  fPositionAbs->SetY(fRecoPosition_p->position.Y());
+  fPositionAbs->SetZ(fRecoPosition_p->position.Z());
+  return fPositionAbs;
 }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetGammaDirPrimary(void){
+ cout << "##### Warning in InputReaderGeant::GetGammaDirPrimary()!" << endl;
+ cout << "\t Direction of primary gamma is unknown!" << endl;	
   return NULL;
 }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetGammaDirScattered(void){
-  return NULL;
+  TVector3 *temp = new TVector3();
+  fDirectionScat->SetX(fRecoDirection_scatter->position.X());
+  fDirectionScat->SetY(fRecoDirection_scatter->position.Y());
+  fDirectionScat->SetZ(fRecoDirection_scatter->position.Z());
+  return fDirectionScat;
 }
 //------------------------------------------------------------------
 double InputReaderGeant::GetEnergyPrimary(void){
-  return -100;
+  double sum = fRecoEnergy_e->value + fRecoEnergy_p->value;
+  return sum;
 }
 //------------------------------------------------------------------
 double InputReaderGeant::GetEnergyLoss(void){
-  return -100;
+  return fRecoEnergy_e->value;
 }
 //------------------------------------------------------------------
 double InputReaderGeant::GetEnergyScattered(void){
-  return -100;
+  return fRecoEnergy_p->value;
+}
+//------------------------------------------------------------------
+void InputReaderGeant::Clear(void){
+ fEventNumber    = -1;
+ fIdentified     = false;
+ fRecoEnergy_e   = NULL;
+ fRecoEnergy_p   = NULL;
+ fRecoPosition_e = NULL;
+ fRecoPosition_p = NULL;
+ fPositionScat   = NULL;
+ fPositionAbs    = NULL;
+ fDirectionScat  = NULL;
+ fTree           = NULL;
+ fFile           = NULL;
+ fRecoDirection_scatter = NULL;
+ if(!fRecoClusterPositions->empty()) fRecoClusterPositions->clear();
+ if(!fRecoClusterEnergies->empty())  fRecoClusterEnergies->clear();
+ return;
 }
 //------------------------------------------------------------------

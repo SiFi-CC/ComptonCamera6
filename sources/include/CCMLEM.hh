@@ -12,6 +12,8 @@
 #include "TGraph.h"
 #include "TStopwatch.h"
 #include "InputReader.hh"
+#include "InputReaderSimple.hh"
+#include "InputReaderGeant.hh"
 
 class CCMLEM : public TObject{
   

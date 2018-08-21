@@ -127,8 +127,17 @@ Bool_t CCMLEM::Reconstruct(void){
 
   const Double_t maxdist = sqrt(pow(fPixelSizeY,2)+pow(fPixelSizeZ,2));
   
+  bool status;
+  int  counter = 0;
+  
   TStopwatch t;
   t.Start(); 
+  
+  //This loop will always analyze fStop-fStart events starting with 
+  //event number fStart. If some of the events are not valid they will 
+  //be skipped, but still fStop-fStart events will be analyzed i.e.
+  //last analyzed event will have number fStop+n, where n is number of
+  //skipped events. If you want to change this - remove 'counter' variable.
   
   for(Int_t i=fStart; i<fStop; i++){
     
@@ -136,7 +145,13 @@ Bool_t CCMLEM::Reconstruct(void){
      
     if(fVerbose)  cout<<"CCMLEM::Reconstruct(...) event "<< i<<endl<<endl;
     
-    fReader->LoadEvent(i);
+    status = fReader->LoadEvent(counter+i);
+    
+    if(status==false){
+      counter++;
+      continue;
+    }
+    
     energy1 = fReader->GetEnergyPrimary();
     energy2 = fReader->GetEnergyScattered();
     point1 =  fReader->GetPositionScattering();

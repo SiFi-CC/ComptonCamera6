@@ -3,12 +3,16 @@
 ClassImp(InputReaderSimple);
 
 //------------------------------------------------------------------
+///Default constructor.
 InputReaderSimple::InputReaderSimple()
                      :InputReader(){
+  Clear();
   cout << "##### Warning in InputReaderSimple constructor!" << endl;
   cout << "You are using default constructor." << endl;
 }
 //------------------------------------------------------------------
+///Standard constructor (recommended).
+///\param path (TString) - path to the input file.
 InputReaderSimple::InputReaderSimple(TString path)
                      :InputReader(path){
 
@@ -17,6 +21,7 @@ InputReaderSimple::InputReaderSimple(TString path)
   }
 }
 //------------------------------------------------------------------
+///Default destructor.
 InputReaderSimple::~InputReaderSimple(){
   if(fFile->IsOpen()) fFile->Close();
 }
@@ -82,5 +87,19 @@ double InputReaderSimple::GetEnergyLoss(void){
 //------------------------------------------------------------------
 double InputReaderSimple::GetEnergyScattered(void){
   return fEnergy2;
+}
+//------------------------------------------------------------------
+void InputReaderSimple::Clear(void){
+ fPoint0  = NULL;
+ fPoint1  = NULL;
+ fPoint2  = NULL;
+ fVersor1 = NULL;
+ fVersor2 = NULL;
+ fFile    = NULL;
+ fTree    = NULL;
+ fEnergy0 = -100;
+ fEnergy1 = -100;
+ fEnergy2 = -100;
+ return;
 }
 //------------------------------------------------------------------
