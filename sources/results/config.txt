@@ -1,5 +1,5 @@
 # Name of the input file  
-CCSimulation_gen5.root
+CCSimulation_gen1.root
 # Center of reco plane
 0 0 0
 # Size of image
@@ -7,16 +7,14 @@ CCSimulation_gen5.root
 # No. of bins
 80 80
 # Smear
-0
+1
 # Position resolution
-0 0 0
-# Energy resolution
-0
+1 4 1
 # No. of MLEM iterations
-3
+20
 # Fresh output
 1
 # No. of first and last event
-1 1000
+0 100000
 # Verbose flag
 0
