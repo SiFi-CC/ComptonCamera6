@@ -25,7 +25,10 @@ public:
   Bool_t   Iterate(Int_t nstop, Int_t iter);
   Bool_t   Reconstruct(void);
   Int_t    AddIsectionPoint(TString dir, Double_t x, Double_t y, Double_t z);
-  Double_t Smear(double val, double sigma);
+  Double_t SmearGaus(double val, double sigma);
+  Double_t SmearBoxX(double x);
+  Double_t SmearBoxZ(double z);
+  Double_t GetSigmaE(double energy);
   Bool_t   ReadConfig(TString path);
   Bool_t   SetInputReader(void);
   Bool_t   DrawHisto(void);
@@ -46,17 +49,18 @@ private:
   Double_t  fResolutionX;
   Double_t  fResolutionY;
   Double_t  fResolutionZ;
-  Double_t  fSigmaE;
   Int_t     fIter;
   Bool_t    fFreshOutput;
   Int_t     fStart;
   Int_t     fStop;
   Bool_t    fVerbose;
   
+  
   Int_t         fNIpoints;
   Int_t         fPoints;
   Double_t      fPixelSizeZ;
   Double_t      fPixelSizeY;
+  TH1D         *fHisto;
   TFile        *fOutputFile;
   TH2F         *fImage[100];
   TClonesArray *fArray;
