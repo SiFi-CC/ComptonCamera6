@@ -8,7 +8,7 @@
 #include "TCanvas.h"
 #include "SMElement.hh"
 #include "TRandom.h"
-
+#include "TF1.h"
 using namespace std;
 
 ClassImp(CCMLEM);
@@ -38,6 +38,19 @@ CCMLEM::CCMLEM(TString path){
   fSM    = new TClonesArray("SMElement",1000000);
   fNIpoints = 0;
   fPoints   = 0;
+  
+  if(fSmear){
+    TString name = "../sources/results/EnergyResolutionExample.root";
+    TFile *file = new TFile(name,"READ");
+    fHisto = (TH1D*)file->Get("Scintillator_0ResolutionCombiEnergy");
+    TF1 *func = new TF1("fit1","[0]+[1]/sqrt(x)+[2]/x^(3/2)",0,4.5);
+  
+    func->FixParameter(0, -0.0178);
+    func->FixParameter(1, 0.05);
+    func->FixParameter(2, 0.01);
+    fHisto->Fit("fit1");
+
+  }
 }
 //--------------------
 ///Default constructor.
@@ -157,18 +170,20 @@ Bool_t CCMLEM::Reconstruct(void){
     point1 =  fReader->GetPositionScattering();
     point2 =  fReader->GetPositionAbsorption();
     
+    if(fSmear){
+    point1->SetXYZ(SmearBoxX(point1->X()), SmearGaus(point1->Y(), fResolutionY), SmearBoxZ(point1->Z()));
+    point2->SetXYZ(SmearBoxX(point2->X()), SmearGaus(point2->Y(), fResolutionY), SmearBoxZ(point2->Z()));
+    energy1 = SmearGaus(energy1, GetSigmaE(energy1));
+    energy2 = SmearGaus(energy2, GetSigmaE(energy2));
+    
+    }
+   
     ComptonCone *cone = new ComptonCone(point1,point2,energy1,energy2);
     interactionPoint  = cone->GetApex();
     coneAxis          = cone->GetAxis();
+    coneTheta         = cone->GetAngle();
     
-    if(fSmear){
-    interactionPoint.SetXYZ(Smear(interactionPoint.X(), fResolutionX),
-		      Smear(interactionPoint.Y(), fResolutionY),Smear(interactionPoint.Z(), fResolutionZ));
-    coneAxis.SetXYZ(Smear(coneAxis.X(), fResolutionX),
-		      Smear(coneAxis.Y(), fResolutionY),Smear(coneAxis.Z(), fResolutionZ));
-    }
-   
-    coneTheta = cone->GetAngle();
+    
     Double_t K = cos(coneTheta);
     Double_t a, b, c1, c2, c3, c4, c, z1, z2;
     Double_t d, e, f1, f2, f3, f4, f, y1, y2;  
@@ -511,9 +526,6 @@ Bool_t CCMLEM::ReadConfig(TString path){
     else if(comment.Contains("Position resolution")){
       config >> fResolutionX >> fResolutionY >> fResolutionZ;
     }
-    else if(comment.Contains("Energy resolution")){
-      config >> fSigmaE;
-    }
     else if(comment.Contains("No. of MLEM iterations")){
       config >> fIter; 
       if(fIter<0){
@@ -576,10 +588,24 @@ Bool_t CCMLEM::DrawHisto(void){
   return kTRUE;
 }
 //------------------------------------
-Double_t CCMLEM::Smear(double val, double sigma){ 
+Double_t CCMLEM::SmearGaus(double val, double sigma){ 
   return gRandom->Gaus(val,sigma);
 }
+//------------------------------------
+Double_t CCMLEM::SmearBoxX(double x){ 
+  return gRandom->Uniform(x-(fResolutionX/2),x+(fResolutionX/2));
+}
+//------------------------------------
+Double_t CCMLEM::SmearBoxZ(double z){ 
+  return gRandom->Uniform(z-(fResolutionZ/2),z+(fResolutionZ/2));
+}
+//------------------------------------
+Double_t CCMLEM::GetSigmaE(double energy){ 
+  double sigma = fHisto->GetFunction("fit1")->Eval(energy)*energy;
+  return sigma;
+}
 //-------------------------------------------
+
 ///Prints details of the CCMLEM class obejct.
 void CCMLEM::Print(void){
  cout << "\nCCMLEM::Print()" << endl;
@@ -591,7 +617,6 @@ void CCMLEM::Print(void){
  cout << setw(35) << "Smear level: \t" << fSmear << endl;
  cout << setw(35) << "Pos resolution: \t" << fResolutionX << ", " 
       << fResolutionY << ", " << fResolutionZ << endl;
- cout << setw(35) << "Energy resolution: \t" << fSigmaE << endl;
  cout << setw(35) << "No. of MLEM iterations: \t" << fIter << endl;
  cout << setw(35) << "FreshOutput level: \t" << fFreshOutput << endl;
  cout << setw(35) << "No. of first and last event: \t" << fStart << ", " << fStop << endl;
@@ -611,7 +636,6 @@ void CCMLEM::Clear(void){
   fResolutionX  = -1000;
   fResolutionY  = -1000;
   fResolutionZ  = -1000;
-  fSigmaE       = -1000;
   fIter         = -1000;
   fStart        = -1000;
   fStop         = -1000;
