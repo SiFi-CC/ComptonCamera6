@@ -251,9 +251,10 @@ Double_t CMReconstruction::Hprime(Int_t i, int j){
 Bool_t CMReconstruction::CalculateS(void){
   //S = new Double_t[fNvoxelsO+1];
   
+  S.reserve(fNvoxelsO+1);
+  S[0]=0;
   for(int j=1; j<fNvoxelsO+1; j++){
-    //S[j] = 0;
-    S.push_back(0);
+    S[j] = 0;
     for(int i=1; i<fNvoxelsI+1; i++){
       S[j] += H(j,i);
     }
@@ -268,10 +269,10 @@ Bool_t CMReconstruction::CalculateS(void){
       fRecoObject[0]->SetBinContent(i+1,j+1,1);
     }
   }
-  TF2* f = new TF2("gaus2d","exp(-(x*x)/(2.*[0]*[0]))",-150,150,-150,150);
-  f->SetParameters(10.,0.001);
-  fRecoObject[0]->FillRandom("gaus2d",100000);
-  delete f;
+  //TF2* f = new TF2("gaus2d","exp(-(x*x)/(2.*[0]*[0]))*exp(-(y*y)/(2.*[1]*[1]))",-150,150,-150,150);
+  //f->SetParameters(10.,10);
+  //fRecoObject[0]->FillRandom("gaus2d",100000);
+  //delete f;
   
   return kTRUE;
 }
@@ -324,4 +325,29 @@ Bool_t CMReconstruction::MLEMIterate(Int_t ni){
     SingleIteration();
     cout<<"\tdone!"<<endl;
   }
+  
+  TH1D* hProZ[100];
+  TH1D* hProY[100];
+  TCanvas* can  = new TCanvas("MLEM2D","MLEM2D",1000,1000);
+  TCanvas* canz = new TCanvas("MLEM1DZ","MLEM1DZ",1000,1000);
+  TCanvas* cany = new TCanvas("MLEM1DY","MLEM1DY",1000,1000);
+  can->Divide((int)sqrt(fNiter)+1, (int)sqrt(fNiter)+1);
+  canz->Divide((int)sqrt(fNiter)+1, (int)sqrt(fNiter)+1);
+  cany->Divide((int)sqrt(fNiter)+1, (int)sqrt(fNiter)+1);
+  for(int iter=0; iter<fNiter+1; iter++){
+    can->cd(iter+1);
+    gPad->SetLogz(1);
+    fRecoObject[iter]->Draw("colz");
+    hProZ[iter]=fRecoObject[iter]->ProjectionX();
+    hProY[iter]=fRecoObject[iter]->ProjectionY();
+    canz->cd(iter+1);
+    hProZ[iter]->Draw();
+    cany->cd(iter+1);
+    hProY[iter]->Draw();
+  }
+  fFileOut->cd();
+  can->Write();
+  canz->Write();
+  cany->Write();
+  
 }
