@@ -6,18 +6,17 @@
 
 #pragma link C++ class Track;
 #pragma link C++ class DetPlane;
-#pragma link C++ class Mask;
-#pragma link C++ class CMSimulation;
-#pragma link C++ class PhysicsBase;
-#pragma link C++ class CCSimulation;
-#pragma link C++ class ComptonCone;
-#pragma link C++ class CCReconstruction;
-#pragma link C++ class CMReconstruction;
-#pragma link C++ class CCMLEM;
 #pragma link C++ class IsectionPoint;
-#pragma link C++ class SMElement;
 #pragma link C++ class InputReader;
 #pragma link C++ class InputReaderSimple;
 #pragma link C++ class InputReaderGeant;
+
+#pragma link C++ struct PhysicVar+;
+#pragma link C++ struct PhysicVec+;
+
+#pragma link C++ class std::vector<PhysicVar>+;
+#pragma link C++ class std::vector<PhysicVec>+;
+#pragma link C++ class std::vector<PhysicVar*>+;
+#pragma link C++ class std::vector<PhysicVec*>+;
 
 #endif
