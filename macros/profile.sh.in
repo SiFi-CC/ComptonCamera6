@@ -1,5 +1,7 @@
 #!/bin/bash
 
+. @ROOTSYS@/bin/thisroot.sh
+
 export CC6DIR=@CMAKE_INSTALL_PREFIX@
 
 export PATH=@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_BINDIR@:${PATH}

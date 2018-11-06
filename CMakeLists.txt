@@ -21,6 +21,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/Modules $ENV{ROOT
 
 #---Locate the ROOT package and defines a number of variables (e.g. ROOT_INCLUDE_DIRS)
 find_package(ROOT REQUIRED COMPONENTS RIO Geom)
+set(ROOTSYS $ENV{ROOTSYS})
 
 include(GNUInstallDirs)
 
@@ -45,6 +46,9 @@ configure_file(macros/profile.sh.in profile.sh @ONLY)
 install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/profile.sh
     macros/rootlogon.C
+    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/ComptonCamera6/)
+
+INSTALL(DIRECTORY data/masks
     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/ComptonCamera6/)
 
 include_directories(common/lib)
@@ -83,7 +87,8 @@ else(DOXYGEN_FOUND)
 endif(DOXYGEN_FOUND)
 
 if (INSTALL_DOC AND BUILD_DOC)
-INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/ComptonCamera6/)
+INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc
+    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/ComptonCamera6/)
 endif()
 
 # messages
