@@ -40,7 +40,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 include(${ROOT_USE_FILE})
 include_directories(${ROOT_INCLUDE_DIRS})
 
-configure_file(profile.sh.in profile.sh @ONLY)
+configure_file(macros/profile.sh.in profile.sh @ONLY)
 
 install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/profile.sh
