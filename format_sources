@@ -1,0 +1,1 @@
+*.cc *.hh *.C : cp .clang-format $(dirname $TMPFILE) && clang-format --style=file -i $TMPFILE && rm $(dirname $TMPFILE)/.clang-format
