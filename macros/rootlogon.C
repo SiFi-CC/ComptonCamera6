@@ -1,28 +1,26 @@
 /**
- * @file   rootlogon.C
- * @author Simon Lang
- * @date   Thu May 11 09:31:40 2006
  * @author Rafal Lalik
  * @date   2018.11.06
- * 
- * @brief  hydralogin.C:
- *         A Root macro to make available all Hydra libraries in CINT.
+ *
+ * @brief  rootlogon.C:
+ *         A Root macro to make available all CC6 libraries in CINT.
  *         This macro can be listed in .rootrc
- * 
+ *         This macro is based on Simon Lang work for HADES @ 2006.
+ *
+ *
  * $Id: rootlogon.C,v 1.26 2008-05-21 13:54:48 halo Exp $
  *
  */
 
-
-/** 
- * This function searches LD_LIBRARY_PATH to find each file of a 
+/**
+ * This function searches LD_LIBRARY_PATH to find each file of a
  * list of dynamic libraries.
- * The default list of libraries is hard-coded here, and an additional 
+ * The default list of libraries is hard-coded here, and an additional
  * list, or even a complete new list can be provided as arguments.
- * 
+ *
  * @param additional_libs All libraries in this space separated list are
  *        loaded after the default libraries.
- * @param load_from_second_location All libraries listed in this space 
+ * @param load_from_second_location All libraries listed in this space
  *        separated list are not loaded from the first location found in
  *        LD_LIBRARY_PATH, if they exist in another one, too.
  * @param personal_lib_list Overrides the default (hard-coded) list of
@@ -32,8 +30,7 @@
  */
 void rootlogon(TString additional_libs = "",
                TString load_from_second_location = "",
-               TString personal_lib_list = "",
-               Bool_t test_mode = kFALSE) {
+               TString personal_lib_list = "", Bool_t test_mode = kFALSE) {
   TString common_libs;
 
   TString cc6dir = gSystem->GetFromPipe("echo $CC6DIR");
@@ -42,9 +39,7 @@ void rootlogon(TString additional_libs = "",
   TString mycc6dir = gSystem->GetFromPipe("echo $MYCC6DIR");
   Bool_t useMYCC6DIR = (mycc6dir == "") ? kFALSE : kTRUE;
 
-
   if (!useCC6DIR) cout << "CC6DIR is not set !" << endl;
-
 
   // space seperated list and order of common libraries to be loaded
   common_libs = "cc6_common ";
@@ -78,10 +73,10 @@ void rootlogon(TString additional_libs = "",
   //----------------------------------------------------------------
   // print path with one directory per line
   cout << "\nDLL Load Path Directories (in the Order of Precedence):" << endl;
-  TObjArray *apath = full_path.Tokenize(":");
+  TObjArray* apath = full_path.Tokenize(":");
   if (apath) {
     for (Int_t i = 0; i < apath->GetLast() + 1; i++) {
-      path_dir = ((TObjString *)apath->At(i))->GetString();
+      path_dir = ((TObjString*)apath->At(i))->GetString();
       cout << "   " << path_dir.Data() << endl;
     }
     apath->Delete();
@@ -91,9 +86,7 @@ void rootlogon(TString additional_libs = "",
 
   //----------------------------------------------------------------
   // handle personal list of libraries
-  if (!personal_lib_list.IsNull()) {
-    common_libs = personal_lib_list;
-  }
+  if (!personal_lib_list.IsNull()) { common_libs = personal_lib_list; }
   common_libs.Prepend(" ");
   common_libs.Append(" ");
   //----------------------------------------------------------------
@@ -103,11 +96,11 @@ void rootlogon(TString additional_libs = "",
   // case it is not already a part of it - this check does not work if one
   // uses explicit paths for a library
 
-  TObjArray *aaddlibs = additional_libs.Tokenize(" ");
+  TObjArray* aaddlibs = additional_libs.Tokenize(" ");
   if (aaddlibs) {
     for (Int_t i = 0; i < aaddlibs->GetLast() + 1; i++) {
       lib_name = " ";
-      lib_name += ((TObjString *)aaddlibs->At(i))->GetString();
+      lib_name += ((TObjString*)aaddlibs->At(i))->GetString();
       lib_name += " ";
 
       if (!common_libs.Contains(lib_name)) {
@@ -120,13 +113,12 @@ void rootlogon(TString additional_libs = "",
   }
   //----------------------------------------------------------------
 
-
   //----------------------------------------------------------------
   // find the longest filename
-  TObjArray *acommonlibs = common_libs.Tokenize(" ");
+  TObjArray* acommonlibs = common_libs.Tokenize(" ");
   if (acommonlibs) {
     for (Int_t i = 0; i < acommonlibs->GetLast() + 1; i++) {
-      lib = ((TObjString *)acommonlibs->At(i))->GetString();
+      lib = ((TObjString*)acommonlibs->At(i))->GetString();
       max_name = max_name < strlen(lib.Data()) ? strlen(lib.Data()) : max_name;
     }
     acommonlibs->Delete();
@@ -146,7 +138,7 @@ ProcessLibs:
   acommonlibs = common_libs.Tokenize(" ");
   if (acommonlibs) {
     for (Int_t i = 0; i < acommonlibs->GetLast() + 1; i++) {
-      lib = ((TObjString *)acommonlibs->At(i))->GetString();
+      lib = ((TObjString*)acommonlibs->At(i))->GetString();
       filename = lib;
       if (!filename.EndsWith(".so")) {
         filename = "lib";
@@ -185,12 +177,9 @@ ProcessLibs:
         // ... and search again, for a second location
         filename =
             gSystem->Which(truncated_path.Data(), filename, kReadPermission);
-        if (!filename.IsNull()) {
-          file = filename;
-        }
+        if (!filename.IsNull()) { file = filename; }
       }
       //----------------------------------------------------------------
-
 
       //----------------------------------------------------------------
       if (load_libs) {
@@ -223,16 +212,13 @@ ProcessLibs:
     goto ProcessLibs;
   }
   if ((!load_libs && error) || test_mode) {
-    cout << "No libraries loaded!\n"
-         << endl;
+    cout << "No libraries loaded!\n" << endl;
     return;
   }
   //----------------------------------------------------------------
 
-
   //----------------------------------------------------------------
   ////// ACLiC settings
-
 
   full_path = gSystem->Getenv("MYCC6DIR");
   if (!full_path.IsNull()) {
@@ -257,11 +243,11 @@ ProcessLibs:
   gSystem->SetFlagsOpt("-O2");
 
 #if ROOT_VERSION_CODE > ROOT_VERSION(6, 0, 0)
-  gSystem->SetMakeSharedLib(
-      "cd $BuildDir; "
-      "g++ -std=c++11 -c $Opt -pipe -Wall -fPIC -pthread $IncludePath $SourceFiles; "
-      "g++ $ObjectFiles -shared -Wl,-soname,$LibName.so "
-      "-O $LinkedLibs -o $SharedLib");
+  gSystem->SetMakeSharedLib("cd $BuildDir; "
+                            "g++ -std=c++11 -c $Opt -pipe -Wall -fPIC -pthread "
+                            "$IncludePath $SourceFiles; "
+                            "g++ $ObjectFiles -shared -Wl,-soname,$LibName.so "
+                            "-O $LinkedLibs -o $SharedLib");
 #else
   gSystem->SetMakeSharedLib(
       "cd $BuildDir; "
