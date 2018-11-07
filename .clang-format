@@ -5,6 +5,7 @@ IndentWidth: 2
 AllowShortBlocksOnASingleLine: true
 AllowShortIfStatementsOnASingleLine: true
 IndentCaseLabels: true
-ColumnLimit: 0
+ColumnLimit: 80
+PointerAlignment: Left
 
 TabWidth: 2
