@@ -1,1 +1,14 @@
+## Build files
 html/
+build/
+
+
+## Editor support
+### vim
+.vimrc
+*.swp
+*.swo
+
+## Language tooling
+### clang
+.clang_complete

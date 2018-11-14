@@ -237,7 +237,8 @@ ComptonCone* CCReconstruction::ReconstructCone(Int_t i) {
 /// requested numbers of ComptonCones and looks for their intersection with
 /// the pixels of the image plane. Details of this simple back projection
 /// algorithm can be found in presentation linked in the description of this
-/// class. \param iStart (Int_t) - number of first event for image reconstruction
+/// class. \param iStart (Int_t) - number of first event for image
+/// reconstruction
 ///\param iStop (Int_t) - number of last event for image reconstruction
 Bool_t CCReconstruction::ReconstructImage(Int_t iStart, Int_t iStop) {
 
