@@ -8,9 +8,9 @@
 /// from simulated data using back projection algorithm. ComptonCone
 /// object consists of
 ///- apex (fApex) - point of interaction on the scatterer plane. It's
-///coordiantes are stored in TVector3
+/// coordiantes are stored in TVector3
 ///- axis (fAxis) - it is calculated as vector connecting interaction points in
-///the scatterer and absorber. Coordiantes stored in TVector3
+/// the scatterer and absorber. Coordiantes stored in TVector3
 ///- apex angle (fAngle) - calculated based on gamma energy loss during Compton
 /// scattering.
 ///- name (fName) - name of the object.

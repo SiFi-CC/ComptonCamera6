@@ -58,8 +58,8 @@ void Track::SetEnergy(Double_t energy) { fEnergy = energy; }
 /// cross points, (2) when plane includes the Track and all points are common,
 /// (3) when cross point is outside of the plane (size of the plane is specified
 /// in DetPlane object). \param plane (DetPlane*) - plane wich intersects with
-///the given Track. \param position (TVector3) - coordinates of the cross point
-///returned as reference.
+/// the given Track. \param position (TVector3) - coordinates of the cross point
+/// returned as reference.
 Bool_t Track::FindCrossPoint(DetPlane* plane, TVector3& position) {
 
   Double_t a = plane->GetA();

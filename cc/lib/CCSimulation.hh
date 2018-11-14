@@ -105,10 +105,10 @@ private:
   Double_t fEnergy1;    ///< Energy loss due to Compton scattering
   Double_t fEnergy2;    ///< Energy after Compton scattering
   Double_t fYgap;       ///< For generator #4 - distance between two point-like
-                  ///< sources along Y axis
-  Double_t fZgap; ///< For generator #3 - distance between two point-like
-                  ///< sources along Z axis
-  Double_t fRadius; ///< For generator #5 - radius of the gamma source
+                        ///< sources along Y axis
+  Double_t fZgap;       ///< For generator #3 - distance between two point-like
+                        ///< sources along Z axis
+  Double_t fRadius;     ///< For generator #5 - radius of the gamma source
 
   TH2F* hSource; ///< 2D histogram of distribution of the gamma source
   TH2F* hScat;   ///< 2D histogram of distribution of evens on scatterer plane

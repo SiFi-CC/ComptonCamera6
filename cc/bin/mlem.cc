@@ -4,7 +4,6 @@
 using namespace std;
 
 int main(int argc, char* argv[]) {
-
   if (argc != 2) {
     cout << "To run type: ./mlem path_to_config" << endl;
     return 0;
@@ -12,18 +11,13 @@ int main(int argc, char* argv[]) {
 
   TString path(argv[1]);
 
-  CCMLEM* rec;
-
   try {
-    rec = new CCMLEM(path);
+    CCMLEM rec(path);
+    rec.Reconstruct();
   } catch (const char* message) {
     cout << message << endl;
-    return 0;
+    return 1;
   }
 
-  rec->Reconstruct();
-
-  delete rec;
-
-  return 1;
+  return 0;
 }
