@@ -209,13 +209,9 @@ TVector3&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 TVector3&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCSimulation.html#aea90ee1486d919d56a533c5c0da17975">fVersor2</a></td></tr>
 <tr class="memdesc:aea90ee1486d919d56a533c5c0da17975"><td class="mdescLeft">&#160;</td><td class="mdescRight">Direction of scattered gamma ray. <br /></td></tr>
 <tr class="separator:aea90ee1486d919d56a533c5c0da17975"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aedcff158a78da56235c4c64cf812d809"><td class="memItemLeft" align="right" valign="top"><a id="aedcff158a78da56235c4c64cf812d809"></a>
-Double_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCSimulation.html#aedcff158a78da56235c4c64cf812d809">fYgap</a></td></tr>
-<tr class="memdesc:aedcff158a78da56235c4c64cf812d809"><td class="mdescLeft">&#160;</td><td class="mdescRight">For generator #4 - distance between two point-like sources along Y axis. <br /></td></tr>
+<tr class="memitem:aedcff158a78da56235c4c64cf812d809"><td class="memItemLeft" align="right" valign="top">Double_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCSimulation.html#aedcff158a78da56235c4c64cf812d809">fYgap</a></td></tr>
 <tr class="separator:aedcff158a78da56235c4c64cf812d809"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3c3a946d05cd5c86a27eb9e985c5fef7"><td class="memItemLeft" align="right" valign="top"><a id="a3c3a946d05cd5c86a27eb9e985c5fef7"></a>
-Double_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCSimulation.html#a3c3a946d05cd5c86a27eb9e985c5fef7">fZgap</a></td></tr>
-<tr class="memdesc:a3c3a946d05cd5c86a27eb9e985c5fef7"><td class="mdescLeft">&#160;</td><td class="mdescRight">For generator #3 - distance between two point-like sources along Z axis. <br /></td></tr>
+<tr class="memitem:a3c3a946d05cd5c86a27eb9e985c5fef7"><td class="memItemLeft" align="right" valign="top">Double_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCSimulation.html#a3c3a946d05cd5c86a27eb9e985c5fef7">fZgap</a></td></tr>
 <tr class="separator:a3c3a946d05cd5c86a27eb9e985c5fef7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a902e45e0d76a13abbc8bd586d241382a"><td class="memItemLeft" align="right" valign="top"><a id="a902e45e0d76a13abbc8bd586d241382a"></a>
 TH2F *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCCSimulation.html#a902e45e0d76a13abbc8bd586d241382a">hAbs</a></td></tr>
@@ -253,15 +249,16 @@ TH2F *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cl
 <li>fVersor2 (TVector3) - direction of the scattered gamma ray</li>
 <li>fEnergy0 (Double_t) - initial gamma energy (set to be 4.44 MeV)</li>
 <li>fEnergy1 (Double_t) - energy loss due to Compton scattering</li>
-<li>fEnergy2 (Double_t) - energy of scattered gamma after scattering.</li>
-</ul>
-<p class="">Additionally 4 histograms are filled:</p><ul>
+<li><p class="startli">fEnergy2 (Double_t) - energy of scattered gamma after scattering.</p>
+<p class="startli">Additionally 4 histograms are filled:</p>
+</li>
 <li>hSource (TH2D*) - distribution of the gamma source</li>
 <li>hScat (TH2D*) - distribution of events on scatterer</li>
 <li>hAbs (TH2D*) - distribution of events on absorber</li>
-<li>hEnergy (TH1D*) - energy of gammas after scaterring.</li>
+<li><p class="startli">hEnergy (TH1D*) - energy of gammas after scaterring.</p>
+<p class="startli">Details of the simulated setup are saved in text file and as TGeometry in ROOT file. </p>
+</li>
 </ul>
-<p class="">Details of the simulated setup are saved in text file and as TGeometry in ROOT file. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a541cfc8f5426cf1c7062096f7775a313"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a541cfc8f5426cf1c7062096f7775a313">&#9670;&nbsp;</a></span>CCSimulation()</h2>
@@ -469,9 +466,10 @@ TH2F *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cl
 <li>Compton scattering using <a class="el" href="classPhysicsBase.html">PhysicsBase</a></li>
 <li>setting values of fVersor2, fEnergy1 and fEnergy2</li>
 <li>finding cross point of scattered track and absorber</li>
-<li>filling the tree</li>
+<li><p class="startli">filling the tree</p>
+<p class="startli">Only events which are in acceptance of both - scatterer and absorber, are taken into account. </p>
+</li>
 </ul>
-<p class="">Only events which are in acceptance of both - scatterer and absorber, are taken into account. </p>
 
 </div>
 </div>
@@ -622,9 +620,56 @@ TH2F *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cl
 
 </div>
 </div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="aedcff158a78da56235c4c64cf812d809"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aedcff158a78da56235c4c64cf812d809">&#9670;&nbsp;</a></span>fYgap</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Double_t CCSimulation::fYgap</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p class="">For generator #4 - distance between two point-like sources along Y axis </p>
+
+</div>
+</div>
+<a id="a3c3a946d05cd5c86a27eb9e985c5fef7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3c3a946d05cd5c86a27eb9e985c5fef7">&#9670;&nbsp;</a></span>fZgap</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Double_t CCSimulation::fZgap</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p class="">For generator #3 - distance between two point-like sources along Z axis </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li>/home/kasia/Projects/ComptonCamera6/sources/include/<a class="el" href="CCSimulation_8hh_source.html">CCSimulation.hh</a></li>
-<li>/home/kasia/Projects/ComptonCamera6/sources/src/CCSimulation.cc</li>
+<li>/home/kasia/Projects/ComptonCamera6/cc/lib/<a class="el" href="CCSimulation_8hh_source.html">CCSimulation.hh</a></li>
+<li>/home/kasia/Projects/ComptonCamera6/cc/lib/CCSimulation.cc</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

@@ -70,8 +70,23 @@ $(function() {
 <li>Required ROOT version: 6.13/01</li>
 <li>Doxygen version 1.8.15</li>
 </ul>
-<h2>To build run cmake and make from build directory </h2>
-<div class="fragment"><div class="line">cd build</div><div class="line">cmake ../sources</div><div class="line">make</div></div><!-- fragment --> </div></div><!-- PageDoc -->
+<h2>Sources </h2>
+<p class="">Sources repository: </p><div class="fragment"><div class="line">https://github.com/SiFi-CC/ComptonCamera6/</div></div><!-- fragment --><p class="">To get sources run: </p><div class="fragment"><div class="line">git clone https://github.com/SiFi-CC/ComptonCamera6/</div></div><!-- fragment --><h2>Building and installation </h2>
+<div class="fragment"><div class="line">in the ComptonCamera6 directory run:</div><div class="line">mkdir build</div><div class="line">cd build</div><div class="line">cmake .. -DCMAKE_INSTALL_DIR=/path/to/install/dir</div><div class="line">make</div><div class="line">make install</div></div><!-- fragment --><h2>Documentation </h2>
+<p class="">By default documentation is built and installed. Add following options to cmake:</p>
+<ul>
+<li><code>-DBUILD_DOC=Off</code> &ndash; to prevent building of documentation</li>
+<li><code>-DINSTALL_DOC=Off</code> &ndash; will prevent installation of documentation to final location</li>
+</ul>
+<h2>Installation directories </h2>
+<p class="">Following directory structure will be created </p><div class="fragment"><div class="line">&lt;location&gt;/bin</div><div class="line">          /lib or /lib64            # depends on system</div><div class="line">          /include</div><div class="line">          /share/ComptonCamera6/</div><div class="line">          /share/ComptonCamera6/doc # if doc installed</div></div><!-- fragment --><h2>Scripts and macros </h2>
+<p class="">Following scripts and macros will be also generated and installed into <code>&lt;location&gt;/share/ComptonCamera6/</code>:</p>
+<ul>
+<li><code>profile.sh</code> - set up all paths to run the CC6 executables</li>
+<li><code>rootlogon.C</code> - startup macro for ROOT to load CC6 libraries</li>
+</ul>
+<p class="">To make ROOT use this <code>rootlogon.C</code> set following value in your <code>~/.rootrc</code>:</p>
+<div class="fragment"><div class="line">Rint.Logon:              $(ROOTLOGON)</div></div><!-- fragment --><p> <code>profile.sh</code> adds location of CC6 lib and bin directories to system variables 'LD_LIBRARY_PATH' and 'PATH', respectively. If you wish to have it done automatically, insert the following line in your <code>~\.bashrc</code> file: </p><div class="fragment"><div class="line">source &lt;location&gt;/share/ComptonCamera6/profile.sh</div></div><!-- fragment --> </div></div><!-- PageDoc -->
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
