@@ -23,6 +23,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/Modules $ENV{ROOT
 find_package(ROOT REQUIRED COMPONENTS RIO Geom)
 set(ROOTSYS $ENV{ROOTSYS})
 
+find_package(CmdLineArgs REQUIRED)
+
 include(GNUInstallDirs)
 
 ##### set paths
@@ -77,11 +79,16 @@ if(DOXYGEN_FOUND)
     configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
     message("Doxygen build started")
 
-    add_custom_target(doc_doxygen ALL
+    add_custom_command(
+        OUTPUT ${CMAKE_SOURCE_DIR}/html/index.html
         COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating API documentation with Doxygen"
+        DEPENDS cc6_cc cc6_cm cc6_common cc6_tools
         VERBATIM)
+    add_custom_target(doc ALL
+        DEPENDS ${CMAKE_SOURCE_DIR}/html/index.html)
+
 else(DOXYGEN_FOUND)
     message("Deoxygen must be installed to generate the documentation")
 endif(DOXYGEN_FOUND)
@@ -113,6 +120,10 @@ Linker flags:
 Executable      ${CMAKE_EXE_LINKER_FLAGS}
 Module          ${CMAKE_MODULE_LINKER_FLAGS}
 Shared          ${CMAKE_SHARED_LINKER_FLAGS}
+
+Doxygen:        ${DOXYGEN_FOUND}
+Build doc:      ${BUILD_DOC}
+Install doc:    ${INSTALL_DOC}
 \n")
 
 foreach(p LIB BIN INCLUDE CMAKE)
