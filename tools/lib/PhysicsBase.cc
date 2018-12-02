@@ -94,14 +94,11 @@ Double_t PhysicsBase::NewEnergy(Double_t theta, Double_t initE) {
 /// quantum.
 /// 5. Assignes values to the scattered Track object and returns it.
 Track* PhysicsBase::ComptonScatter(Track* initTrack, DetPlane* plane) {
-
-  TVector3 crossPoint;
   TVector3 finVersor;
-  Bool_t crossFlag;
   Double_t initE, finE;
   Double_t epsilon = 1.E-8;
 
-  crossFlag = initTrack->FindCrossPoint(plane, crossPoint);
+  auto [crossPoint, crossFlag] = plane->FindCrossPoint(*initTrack);
   if (crossFlag == kFALSE) return NULL;
 
   initE = initTrack->GetEnergy();
@@ -139,7 +136,6 @@ Track* PhysicsBase::ComptonScatter(Track* initTrack, DetPlane* plane) {
   finTrack->SetPoint(crossPoint);
   finTrack->SetEnergy(finE);
   finTrack->SetVersor(finVersor);
-  finTrack->SetName("scattered");
 
   //----- theta check
   Double_t ang = initTrack->GetVersor().Angle(finVersor);

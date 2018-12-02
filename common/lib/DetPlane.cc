@@ -91,6 +91,45 @@ Bool_t DetPlane::CheckPoint(TVector3 point) {
 
   return kTRUE;
 }
+
+std::tuple<TVector3, Bool_t> DetPlane::FindCrossPoint(const Track& track) {
+  TVector3 position;
+  Double_t l = track.GetVersor().X();
+  Double_t m = track.GetVersor().Y();
+  Double_t n = track.GetVersor().Z();
+  Double_t x = track.GetPoint().X();
+  Double_t y = track.GetPoint().Y();
+  Double_t z = track.GetPoint().Z();
+
+  Double_t num = fA * x + fB * y + fC * z + fD;
+  Double_t denom = fA * l + fB * m + fC * n;
+
+  if (fabs(denom) < 1.E-8) {
+    cout << "##### The track is parallel to the plane! No cross points!"
+         << endl;
+    return std::make_tuple(TVector3(), false);
+  }
+  if (fabs(num) < 1.E-8) {
+    cout << "##### The plane includes the track! All points are common!"
+         << endl;
+    return std::make_tuple(TVector3(), false);
+  }
+
+  Double_t rho = num / denom;
+  Double_t crossX = x - l * rho;
+  Double_t crossY = y - m * rho;
+  Double_t crossZ = z - n * rho;
+
+  position.SetXYZ(crossX, crossY, crossZ);
+
+  if (l > 0 || fabs(crossZ) > (0.5 * fDimZ) || fabs(crossY) > (0.5 * fDimY)) {
+    // cout << "\n\tCrossing point outside of the detector plane..." << endl;
+    return std::make_tuple(TVector3(), false);
+  }
+
+  return std::make_tuple(position, true);
+}
+
 //------------------------------------------------------------------
 /// Prints details of the DetPlane class object.
 void DetPlane::Print(void) {

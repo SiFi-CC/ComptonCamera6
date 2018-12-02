@@ -1,7 +1,6 @@
 #include "DR_GenerallStructs.hh"
-PhysicVar::PhysicVar(double x = 0, double y = 0) : value(x), uncertainty(y) {}
 
-PhysicVar::PhysicVar() : value(0), uncertainty(0) {}
+PhysicVar::PhysicVar(double x, double y) : value(x), uncertainty(y) {}
 
 PhysicVar PhysicVar::operator+(const PhysicVar& a) {
   value += a.value;
@@ -47,12 +46,7 @@ PhysicVar PhysicVar::Sum(const std::vector<PhysicVar*> others) {
   return *this;
 }
 
-PhysicVec::PhysicVec(TVector3 x = TVector3(0, 0, 0),
-                     TVector3 y = TVector3(0, 0, 0))
-    : position(x), uncertainty(y) {}
-
-PhysicVec::PhysicVec()
-    : position(TVector3(0, 0, 0)), uncertainty(TVector3(0, 0, 0)) {}
+PhysicVec::PhysicVec(TVector3 x, TVector3 y) : position(x), uncertainty(y) {}
 
 PhysicVec PhysicVec::operator+(const PhysicVec& a) {
   position += a.position;

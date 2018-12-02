@@ -1,11 +1,13 @@
 #ifndef __CMReconstruction_H_
 #define __CMReconstruction_H_ 1
 #include "Mask.hh"
+#include "Source.hh"
 #include "TFile.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TTree.h"
 #include "Track.hh"
+#include <spdlog/spdlog.h>
 #include <vector>
 
 class CMReconstruction : public TObject {
@@ -14,7 +16,6 @@ public:
   CMReconstruction();
   CMReconstruction(TString name, Int_t vLevel);
   ~CMReconstruction();
-  void RebuildSetupTxt(void);
   Bool_t MLEMIterate(Int_t ni);
   void Print(void);
   void Write(void);
@@ -44,8 +45,9 @@ private:
   TH2F* fRecoObject[100];
   TH2F* fObject;
   TH2D* fHmatrix;
-  DetPlane fDetPlane;
-  Mask fMask;
+  DetPlane* fDetPlane;
+  Mask* fMask;
+  Source* fSource;
 
   Int_t fNvoxelsI;
   Int_t fNvoxelsO;
@@ -58,6 +60,9 @@ private:
   Int_t fThisIter;
   // Double_t* S;
   std::vector<Double_t> S;
+
+  std::shared_ptr<spdlog::logger> fLogger =
+      spdlog::stdout_logger_mt("CMReconstruction", true);
 
   ClassDef(CMReconstruction, 1)
 };

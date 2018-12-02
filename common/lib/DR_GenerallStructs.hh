@@ -12,8 +12,7 @@ struct PhysicVar {
   double value;
   double uncertainty;
 
-  PhysicVar();
-  PhysicVar(double x, double y);
+  PhysicVar(double x = 0, double y = 0);
   PhysicVar operator+(const PhysicVar& a);
   PhysicVar operator-(const PhysicVar& a);
   bool operator==(const PhysicVar& a) const;
@@ -29,8 +28,7 @@ struct PhysicVec {
   TVector3 position;
   TVector3 uncertainty;
 
-  PhysicVec();
-  PhysicVec(TVector3 x, TVector3 y);
+  PhysicVec(TVector3 x = TVector3(0, 0, 0), TVector3 y = TVector3(0, 0, 0));
   PhysicVec operator+(const PhysicVec& a);
   PhysicVec operator-(const PhysicVec& a);
   bool operator==(const PhysicVec& a) const;

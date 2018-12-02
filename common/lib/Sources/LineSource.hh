@@ -53,7 +53,7 @@ public:
   /** Generates Track object that is positioned between fStartPosition and
    *  fEndPosition with energy specified by fEnergyInterpolator.
    */
-  Track* GenerateEvent() override;
+  Track GenerateEvent() override;
 
 private:
   /** Line start position*/

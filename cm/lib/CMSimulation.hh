@@ -1,63 +1,86 @@
 #ifndef __CMSimulation_H_
 #define __CMSimulation_H_ 1
-#include "Mask.hh"
-#include "TFile.h"
-#include "TGeoManager.h"
-#include "TH2F.h"
-#include "TTree.h"
+#include "Source.hh"
 #include "Track.hh"
+#include <Mask.hh>
+#include <TFile.h>
+#include <TGeoManager.h>
+#include <TH2F.h>
+#include <TTree.h>
+#include <spdlog/spdlog.h>
 
 class CMSimulation : public TObject {
 
 public:
-  CMSimulation();
-  CMSimulation(TString name, Int_t vLevel);
-  ~CMSimulation();
-  void BuildSetup(double maskdist, double maskZsize, double maskYsize,
-                  double detdist, double detZsize, double detYsize);
-  void BuildSetup(DetPlane plane, Mask mask) {
-    fDetPlane = plane;
-    fMask = mask;
-  };
-  void Print(void);
-  void Clear(void);
-  void Loop(Int_t nev);
-  Bool_t GenerateRay(void);
-  Bool_t ProcessEvent(void);
-  void SaveGeometryTxt(void);
-  void BuildTGeometry(void);
-  void SetupSpectra(void);
-  void ClearSpectra(void);
-  void SetName(TString name) { fName = name; };
-  Bool_t SetPattern(TH2F* h);
-  void SetGenVersion(Int_t i) { fGenVersion = i; };
-  void SetSourcePosition(Double_t x, Double_t y, Double_t z) {
-    fSourcePos.SetXYZ(x, y, z);
-  };
-  TVector3 GetSourcePosition(void) { return fSourcePos; };
-  const char* GetName() const { return fName.Data(); };
-  TH2F* GetImage() { return hYZdetected; };
+  CMSimulation() = default;
+  CMSimulation(Source* source, Mask* mask, DetPlane* detector)
+      : fSource(source), fMask(mask), fDetPlane(detector) {
+    Init();
+  }
+  virtual ~CMSimulation();
+  void RunSimulation(Int_t nEvents);
+  void ResetSimulation();
+
+  void Write(TString name) const;
+  void Print() const;
+
+  TH2F* GetObject() const { return fH2Source; };
+  TH2F* GetImage() const { return fH2Detector; };
 
 private:
-  TVector3 fPoint0, fPoint1, fPoint2, fDir;
-  Int_t fOpaque;
-  TFile* fFile;
+  void Init();
+  Bool_t ProcessEvent();
+  void BuildTGeometry(TString name) const;
+
+  /** Source of radiation used in simulation */
+  Source* fSource = nullptr;
+  /** Mask implementation */
+  Mask* fMask = nullptr;
+  /** Detector plane */
+  DetPlane* fDetPlane = nullptr;
+
+  /** Stores data of simulated particles. Particle is svaed only if projected
+   * path is crossing mask and detector, otherwise is not scored anywhere.
+   */
   TTree* fTree;
-  TString fName;
-  Mask fMask;
-  DetPlane fDetPlane;
-  Track fTrack;
-  Int_t fVerbLevel;
-  Int_t fNev;
-  Int_t fGenVersion;
-  TVector3 fSourcePos;
+  /** Histogram representing distribution of tracks in Source
+   *
+   * TODO: This data will be moved to Source in the future.
+   */
+  TH2F* fH2Source;
+  /** Histogram representing distribution of tracks in detector. This image is
+   * used in reconstruction
+   *
+   * TODO: This data will be moved to Detector in the future.
+   */
+  TH2F* fH2Detector;
+  /** Distribution of theta angles in genrated particles
+   *
+   * TODO: This data will be removed or moved to Source in the future.
+   */
+  TH1F* fH1Theta;
+  /** Distribution of phi angles in genrated particles
+   *
+   * TODO: This data will be removed or moved to Source in the future.
+   */
+  TH1F* fH1Phi;
 
-  TH2F* hYZ;
-  TH2F* hYZdetected;
-  TH1F* hCosTheta;
-  TH1F* hPhi;
+  /**
+   * Information about currently processed particle, needs to be kept in
+   * object because TTree api requires source of data to be defined on init.
+   * fTree object is Filled usng fields of this struct.
+   */
+  struct {
+    /** Tracks representing paricle state at source mask an detector plane */
+    Track sourceTrack, maskTrack, detectorTrack;
+    /** Flag that describes whether particle was absorbed by mask */
+    Bool_t absorbed;
+  } fPersist;
 
-  ClassDef(CMSimulation, 1)
+  std::shared_ptr<spdlog::logger> fLogger =
+      spdlog::stdout_logger_mt("CMSimulation", true);
+
+  ClassDef(CMSimulation, 0)
 };
 
 #endif
