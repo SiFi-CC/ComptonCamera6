@@ -17,13 +17,13 @@ public:
       : Source(position), fEnergy(energy){};
 
   /** Generte particle */
-  Track* GenerateEvent() override;
+  Track GenerateEvent() override;
 
 private:
   /** energy of gammas emited from this source */
   Double_t fEnergy;
 
-  ClassDef(PointSource, 0)
+  ClassDef(PointSource, 1)
 };
 
 /** Source constructed from multiple point sources */
@@ -43,7 +43,7 @@ public:
    */
   void AddSourceElement(const PointSource& source);
   /** Generate particle */
-  Track* GenerateEvent() override;
+  Track GenerateEvent() override;
 
 private:
   /** List of point sources */
@@ -55,7 +55,7 @@ private:
    */
   std::vector<PointSource>::iterator fIterator = fSources.begin();
 
-  ClassDef(MultiPointSource, 0)
+  ClassDef(MultiPointSource, 1)
 };
 
 #endif

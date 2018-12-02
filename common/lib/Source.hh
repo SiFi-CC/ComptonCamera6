@@ -16,7 +16,7 @@ public:
   Source(const TVector3& position) : fPosition(position){};
 
   /** Generates particle represented by Track object. */
-  virtual Track* GenerateEvent() = 0;
+  virtual Track GenerateEvent() = 0;
 
   /** Set max values of angles between generated particles and Y and Z axis.
    *  \param angleY max angle between axis Y and direction of generated
@@ -51,7 +51,7 @@ protected:
 private:
   TString fName = "generic_source"; ///< Object name
 
-  ClassDef(Source, 0)
+  ClassDef(Source, 1)
 };
 
 #endif

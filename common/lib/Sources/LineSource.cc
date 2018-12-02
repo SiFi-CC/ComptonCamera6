@@ -23,7 +23,7 @@ LineSource::CreateEnergyInterpolator(std::vector<Double_t> energies) {
   return new Interpolator(indicies, energies, interpolationType);
 }
 
-Track* LineSource::GenerateEvent() {
+Track LineSource::GenerateEvent() {
   TVector3 line = fEndPosition - fStartPosition;
   Double_t length = line.Mag();
   TVector3 pathVersor = line.Unit();
@@ -33,7 +33,7 @@ Track* LineSource::GenerateEvent() {
   Double_t angleZ = gRandom->Uniform(-fAngleZ, fAngleZ);
 
   TVector3 point = fStartPosition + (pathVersor * random);
-  TVector3 versor = TVector3(1, tan(angleY), tan(angleZ)).Unit();
+  TVector3 versor = TVector3(-1, tan(angleY), tan(angleZ)).Unit();
   Double_t energy = fEnergyInterpolator->Eval(random);
-  return new Track(point, versor, energy, "line_source_track");
+  return Track(point, versor, energy);
 }

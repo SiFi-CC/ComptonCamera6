@@ -6,6 +6,7 @@
 #include "TRandom.h"
 #include <fstream>
 #include <iostream>
+#include <spdlog/spdlog.h>
 using namespace std;
 
 ClassImp(CMReconstruction);
@@ -26,23 +27,25 @@ CMReconstruction::CMReconstruction(TString filename, Int_t vlevel) {
   filename.ReplaceAll(".root", "");
   SetName(filename);
   fVerbose = vlevel;
-  fFileIn = new TFile("results/" + fInputName, "READ");
+  fFileIn = new TFile(fInputName, "READ");
   fFileIn->Print();
   if (!fFileIn) {
     cout << "Input file " << fInputName << " not opened correctly..." << endl;
     // exit(0);
   }
-  fImage = (TH2F*)fFileIn->Get("hYZdetected");
-  fObject = (TH2F*)fFileIn->Get("hYZ");
+  fMask = (Mask*)fFileIn->Get("mask");
+  fDetPlane = (DetPlane*)fFileIn->Get("detector");
+  fSource = (Source*)fFileIn->Get("source");
+  fImage = (TH2F*)fFileIn->Get("detectedYZ");
+  fObject = (TH2F*)fFileIn->Get("sourceYZ");
   fNbinsxO = fObject->GetXaxis()->GetNbins();
   fNbinsyO = fObject->GetYaxis()->GetNbins();
   fNvoxelsO = fNbinsxO * fNbinsyO;
   fNbinsxI = fImage->GetXaxis()->GetNbins();
   fNbinsyI = fImage->GetYaxis()->GetNbins();
   fNvoxelsI = fNbinsxI * fNbinsyI;
-  RebuildSetupTxt();
-  fMask.SetPattern((TH2F*)fFileIn->Get("mask"));
-  fFileOut = new TFile("results/" + filename + "_reco.root", "RECREATE");
+
+  fFileOut = new TFile(filename + "_reco.root", "RECREATE");
   fHmatrix = new TH2D("hHmatrix", "H matrix", fNvoxelsO, 0.5, fNvoxelsO + 0.5,
                       fNvoxelsI, 0.5, fNvoxelsI + 0.5);
   fHmatrix->GetXaxis()->SetTitle("Nr of Object voxel");
@@ -62,10 +65,10 @@ void CMReconstruction::Write(void) {
   if (fVerbose) cout << "Inside CMReconstruction::Write()..." << endl;
   if (fFileOut) {
     fFileOut->cd();
-    fMask.GetPattern()->Write();
+    fMask->GetPattern()->Write();
     fObject->Write();
     fImage->Write();
-    fMask.GetPattern()->Write();
+    fMask->GetPattern()->Write();
     fHmatrix->Write();
     int i = 0;
     while (fRecoObject[i] != 0) {
@@ -78,7 +81,7 @@ void CMReconstruction::Write(void) {
     // a->cd(1);
     // fObject->Draw("col");
     // a->cd(3);
-    // fMask.GetPattern()->Draw();
+    // fMask->GetPattern()->Draw();
     // a->cd(2);
     // fImage->Draw("colz");
     // a->cd(4);
@@ -89,97 +92,31 @@ void CMReconstruction::Write(void) {
     fFileIn->Close();
   }
 }
-//------------------------------------------------------------------
-void CMReconstruction::RebuildSetupTxt(void) {
-
-  if (fVerbose) cout << "\n----- Rebuilding setup from the txt file \n" << endl;
-  TString fname = fFileIn->GetName();
-  fname.ReplaceAll(".root", "_geometry.txt");
-  ifstream input(fname.Data(), std::ios::in);
-  if (!(input.is_open())) {
-    cout << "##### Could not open " << fname << " file! " << endl;
-    cout << "##### Please check!" << endl;
-    return;
-  }
-
-  Double_t maskPar[4];
-  Double_t absPar[4];
-  Double_t maskDim[2];
-  Double_t absDim[2];
-  TString maskName, absName;
-  TString dummy;
-
-  input >> dummy >> dummy >> dummy;
-  input >> dummy >> dummy >> dummy;
-
-  if (fVerbose) cout << "\n----- Rebuilding the mask" << endl;
-  input >> dummy >> dummy >> maskName;
-  input >> dummy >> dummy >> maskPar[0];
-  input >> dummy >> dummy >> maskPar[1];
-  input >> dummy >> dummy >> maskPar[2];
-  input >> dummy >> dummy >> maskPar[3];
-  input >> dummy >> dummy >> maskDim[0];
-  input >> dummy >> dummy >> maskDim[1];
-
-  fMask.SetPlane(maskPar[0], maskPar[1], maskPar[2], maskPar[3]);
-  fMask.SetDimensions(maskDim[0], maskDim[1]);
-  fMask.SetName(maskName);
-  if (fVerbose) fMask.Print();
-
-  if (fVerbose) cout << "\n----- Rebuilding the scatterer" << endl;
-  input >> dummy >> dummy >> absName;
-  input >> dummy >> dummy >> absPar[0];
-  input >> dummy >> dummy >> absPar[1];
-  input >> dummy >> dummy >> absPar[2];
-  input >> dummy >> dummy >> absPar[3];
-  input >> dummy >> dummy >> absDim[0];
-  input >> dummy >> dummy >> absDim[1];
-
-  fDetPlane.SetPlane(absPar[0], absPar[1], absPar[2], absPar[3]);
-  fDetPlane.SetDimensions(absDim[0], absDim[1]);
-  fDetPlane.SetName(absName);
-  if (fVerbose) fDetPlane.Print();
-
-  input.close();
-}
-//------------------------------------------------------------------
-void CMReconstruction::SetupSpectra(void) {
-
-  double maskZdim = fMask.GetDimZ() / 2;
-  double maskYdim = fMask.GetDimY() / 2;
-  double detZdim = fDetPlane.GetDimZ() / 2;
-  double detYdim = fDetPlane.GetDimY() / 2;
-  int nbinsz = fMask.GetPattern()->GetXaxis()->GetNbins();
-  int nbinsy = fMask.GetPattern()->GetYaxis()->GetNbins();
-}
-//------------------------------------------------------------------
-
 void CMReconstruction::Print(void) {
   cout << "\nCMReconstruction::Print() for object " << GetName() << endl;
 }
 //------------------------------------------------------------------
 Bool_t CMReconstruction::FillHMatrix(void) {
-  CMSimulation* sim = new CMSimulation("tmpsim", 0);
-  sim->BuildSetup(fDetPlane, fMask);
-  sim->SetGenVersion(1);
-  sim->SetupSpectra();
+  spdlog::set_level(spdlog::level::warn);
+  CMSimulation* sim = new CMSimulation(fSource, fMask, fDetPlane);
   int bx, by, bz;
   double x, y, prob;
   TH2F* tmpimg = sim->GetImage();
   int nev = 10000;
   for (int i = 1; i <= fNvoxelsO; i++) { // loop over object voxels
-    sim->ClearSpectra();
+    sim->ResetSimulation();
     SingleToDoubleIdx("O", i, bx, by);
     x = fObject->GetXaxis()->GetBinCenter(bx);
     y = fObject->GetYaxis()->GetBinCenter(by);
-    sim->SetSourcePosition(0, y, x);
-    sim->Loop(nev);
+    // sim->SetSourcePosition(0, y, x);
+    sim->RunSimulation(nev);
     for (int j = 1; j <= fNvoxelsI; j++) { // loop over image voxels
       SingleToDoubleIdx("I", j, bx, by);
       prob = tmpimg->GetBinContent(bx, by) / nev;
       fHmatrix->SetBinContent(i, j, prob);
     }
   }
+  spdlog::set_level(spdlog::level::debug);
   // delete sim;
   return kTRUE;
 }
@@ -327,13 +264,19 @@ Bool_t CMReconstruction::MLEMIterate(Int_t ni) {
 
   TH1D* hProZ[100];
   TH1D* hProY[100];
+
+  fLogger->info("canvas created");
   TCanvas* can = new TCanvas("MLEM2D", "MLEM2D", 1000, 1000);
   TCanvas* canz = new TCanvas("MLEM1DZ", "MLEM1DZ", 1000, 1000);
   TCanvas* cany = new TCanvas("MLEM1DY", "MLEM1DY", 1000, 1000);
+
   can->Divide((int)sqrt(fNiter) + 1, (int)sqrt(fNiter) + 1);
   canz->Divide((int)sqrt(fNiter) + 1, (int)sqrt(fNiter) + 1);
   cany->Divide((int)sqrt(fNiter) + 1, (int)sqrt(fNiter) + 1);
+
+  fLogger->info("save iterations");
   for (int iter = 0; iter < fNiter + 1; iter++) {
+    fLogger->info("saving iteration %d", iter);
     can->cd(iter + 1);
     gPad->SetLogz(1);
     fRecoObject[iter]->Draw("colz");
@@ -345,7 +288,11 @@ Bool_t CMReconstruction::MLEMIterate(Int_t ni) {
     hProY[iter]->Draw();
   }
   fFileOut->cd();
+  fLogger->info("canvas write");
   can->Write();
+  fLogger->info("canvas z write");
   canz->Write();
+  fLogger->info("canvas y write");
   cany->Write();
+  return true;
 }

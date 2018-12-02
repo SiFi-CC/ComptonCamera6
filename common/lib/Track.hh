@@ -15,34 +15,28 @@ class DetPlane;
 class Track : public TObject {
 
 public:
-  Track();
-  Track(TVector3 point, TVector3 vec, Double_t energy, TString name);
-  ~Track();
+  Track() = default;
+  Track(TVector3 point, TVector3 vec, Double_t energy);
 
   void SetPoint(TVector3 point);
   void SetVersor(TVector3 vec);
   void SetEnergy(Double_t energy);
-  Bool_t FindCrossPoint(DetPlane* plane, TVector3& position);
-  void Print(void);
+  void Print() const;
 
   /// Returns energy assigned to the track [MeV].
-  Double_t GetEnergy(void) { return fEnergy; };
+  Double_t GetEnergy() const { return fEnergy; };
   /// Returns Track leading versor coordinates.
-  TVector3 GetVersor(void) { return fVersor; };
+  TVector3 GetVersor() const { return fVersor; };
   /// Returns Track starting point coordinates.
-  TVector3 GetPoint(void) { return fPoint; };
-  /// Sets name of the object.
-  void SetName(TString name) { fName = name; };
-  /// Returns name of the object.
-  const char* GetName() const { return fName.Data(); }
+  TVector3 GetPoint() const { return fPoint; };
 
 private:
-  TVector3 fPoint;  ///< Coordinates of the starting point of the Track
-  TVector3 fVersor; ///< Leading versor of the track
-  Double_t fEnergy; ///< Energy assigned to the Track [MeV]
-  TString fName;    ///< Name of the object
+  /** Coordinates of the starting point of the Track */
+  TVector3 fPoint = TVector3(0, 0, 0);
+  TVector3 fVersor = TVector3(-1, 0, 0); ///< Leading versor of the track
+  Double_t fEnergy = 4.44;               ///< Energy assigned to the Track [MeV]
 
-  ClassDef(Track, 0)
+  ClassDef(Track, 1)
 };
 
 #endif
