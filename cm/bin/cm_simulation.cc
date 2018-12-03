@@ -15,7 +15,8 @@ int main(int argc, char** argv) {
     return 1;
   }
   TString mask(argv[2]);
-  TFile* maskfile = new TFile("../data/masks/hMURA" + mask + ".root", "READ");
+  TString path = TString(gSystem->Getenv("CC6DIR"))+"/share/ComptonCamera6/masks/";
+  TFile* maskfile = new TFile(path+"hMURA" + mask + ".root", "READ");
   TH2F* h = 0;
   TString fname = maskfile->GetName();
   if (fname.Contains("2d"))
