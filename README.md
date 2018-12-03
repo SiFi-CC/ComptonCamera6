@@ -24,7 +24,7 @@ Building and installation
 in the ComptonCamera6 directory run:
 mkdir build
 cd build
-cmake .. -DCMAKE_INSTALL_DIR=/path/to/install/dir
+cmake .. -DCMAKE_INSTALL_PREFIX=/path/to/install/dir
 make
 make install
 ```
