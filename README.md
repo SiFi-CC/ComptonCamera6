@@ -6,7 +6,6 @@ Prerequisites
 * Required MathMore (optional ROOT module that requires GSL)
 * Doxygen version 1.8.15
 * Compiler supporting c++17 (gcc 8, clang 4)
-* spdlog ```apt-get install libspdlog-dev```
 
 Sources
 -------

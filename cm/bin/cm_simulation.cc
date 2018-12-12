@@ -2,10 +2,8 @@
 #include "Sources/PointSource.hh"
 #include <TSystem.h>
 #include <iostream>
-#include <spdlog/spdlog.h>
 
 int main(int argc, char** argv) {
-  spdlog::set_level(spdlog::level::debug);
   TString maskFilename(argv[2]);
   TString path =
       TString(gSystem->Getenv("CC6DIR")) + "/share/ComptonCamera6/masks/";

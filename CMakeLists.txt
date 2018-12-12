@@ -28,8 +28,6 @@ set(ROOTSYS $ENV{ROOTSYS})
 
 find_package(CmdLineArgs REQUIRED)
 
-find_package(spdlog REQUIRED)
-
 include(GNUInstallDirs)
 
 ##### set paths
