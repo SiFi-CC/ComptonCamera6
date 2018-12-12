@@ -7,7 +7,6 @@
 #include "TH2F.h"
 #include "TTree.h"
 #include "Track.hh"
-#include <spdlog/spdlog.h>
 #include <vector>
 
 class CMReconstruction : public TObject {
@@ -60,9 +59,6 @@ private:
   Int_t fThisIter;
   // Double_t* S;
   std::vector<Double_t> S;
-
-  std::shared_ptr<spdlog::logger> fLogger =
-      spdlog::stdout_logger_mt("CMReconstruction", true);
 
   ClassDef(CMReconstruction, 1)
 };

@@ -7,7 +7,6 @@
 #include <TGeoManager.h>
 #include <TH2F.h>
 #include <TTree.h>
-#include <spdlog/spdlog.h>
 
 class CMSimulation : public TObject {
 
@@ -76,9 +75,6 @@ private:
     /** Flag that describes whether particle was absorbed by mask */
     Bool_t absorbed;
   } fPersist;
-
-  std::shared_ptr<spdlog::logger> fLogger =
-      spdlog::stdout_logger_mt("CMSimulation", true);
 
   ClassDef(CMSimulation, 0)
 };

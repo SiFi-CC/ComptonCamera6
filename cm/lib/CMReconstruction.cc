@@ -1,4 +1,5 @@
 #include "CMReconstruction.hh"
+#include "CLog.hh"
 #include "CMSimulation.hh"
 #include "TCanvas.h"
 #include "TF2.h"
@@ -6,8 +7,8 @@
 #include "TRandom.h"
 #include <fstream>
 #include <iostream>
-#include <spdlog/spdlog.h>
 using namespace std;
+namespace log = SiFi::log;
 
 ClassImp(CMReconstruction);
 //------------------------------------------------------------------
@@ -97,7 +98,6 @@ void CMReconstruction::Print(void) {
 }
 //------------------------------------------------------------------
 Bool_t CMReconstruction::FillHMatrix(void) {
-  spdlog::set_level(spdlog::level::warn);
   CMSimulation* sim = new CMSimulation(fSource, fMask, fDetPlane);
   int bx, by, bz;
   double x, y, prob;
@@ -116,7 +116,6 @@ Bool_t CMReconstruction::FillHMatrix(void) {
       fHmatrix->SetBinContent(i, j, prob);
     }
   }
-  spdlog::set_level(spdlog::level::debug);
   // delete sim;
   return kTRUE;
 }
@@ -265,7 +264,7 @@ Bool_t CMReconstruction::MLEMIterate(Int_t ni) {
   TH1D* hProZ[100];
   TH1D* hProY[100];
 
-  fLogger->info("canvas created");
+  log::info("canvas created");
   TCanvas* can = new TCanvas("MLEM2D", "MLEM2D", 1000, 1000);
   TCanvas* canz = new TCanvas("MLEM1DZ", "MLEM1DZ", 1000, 1000);
   TCanvas* cany = new TCanvas("MLEM1DY", "MLEM1DY", 1000, 1000);
@@ -274,9 +273,9 @@ Bool_t CMReconstruction::MLEMIterate(Int_t ni) {
   canz->Divide((int)sqrt(fNiter) + 1, (int)sqrt(fNiter) + 1);
   cany->Divide((int)sqrt(fNiter) + 1, (int)sqrt(fNiter) + 1);
 
-  fLogger->info("save iterations");
+  log::info("save iterations");
   for (int iter = 0; iter < fNiter + 1; iter++) {
-    fLogger->info("saving iteration %d", iter);
+    log::info("saving iteration %d", iter);
     can->cd(iter + 1);
     gPad->SetLogz(1);
     fRecoObject[iter]->Draw("colz");
@@ -288,11 +287,11 @@ Bool_t CMReconstruction::MLEMIterate(Int_t ni) {
     hProY[iter]->Draw();
   }
   fFileOut->cd();
-  fLogger->info("canvas write");
+  log::info("canvas write");
   can->Write();
-  fLogger->info("canvas z write");
+  log::info("canvas z write");
   canz->Write();
-  fLogger->info("canvas y write");
+  log::info("canvas y write");
   cany->Write();
   return true;
 }

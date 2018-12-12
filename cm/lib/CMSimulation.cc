@@ -1,4 +1,5 @@
 #include "CMSimulation.hh"
+#include "CLog.hh"
 #include "TCanvas.h"
 #include "TH2F.h"
 #include "TMath.h"
@@ -6,17 +7,18 @@
 #include <iostream>
 
 using namespace std;
+namespace log = SiFi::log;
 
 CMSimulation::~CMSimulation() {
-  fLogger->debug("delete fTree");
+  log::debug("delete fTree");
   // delete fTree; // TODO: can't delete, need fix
-  fLogger->debug("delete fH2Source");
+  log::debug("delete fH2Source");
   delete fH2Source;
-  fLogger->debug("delete fH2Detector");
+  log::debug("delete fH2Detector");
   delete fH2Detector;
-  fLogger->debug("delete fH1Theta");
+  log::debug("delete fH1Theta");
   delete fH1Theta;
-  fLogger->debug("delete fH1Theta");
+  log::debug("delete fH1Theta");
   delete fH1Phi;
 }
 
@@ -46,12 +48,12 @@ Bool_t CMSimulation::ProcessEvent() {
 
   auto [maskCrossPoint, maskHit] = fMask->FindCrossPoint(sourceTrack);
   if (!maskHit) {
-    fLogger->info("No cross point with Mask");
+    log::info("No cross point with Mask");
     return false;
   }
   auto [detCrossPoint, detectorHit] = fDetPlane->FindCrossPoint(sourceTrack);
   if (!detectorHit) {
-    fLogger->info("No cross point with DetPlane");
+    log::info("No cross point with DetPlane");
     return false;
   }
 
@@ -85,21 +87,21 @@ void CMSimulation::RunSimulation(Int_t nEvents) {
 }
 
 void CMSimulation::Write(TString name) const {
-  fLogger->info("Saving results of simulation to file");
+  log::info("Saving results of simulation to file");
 
-  fLogger->debug("Save raw data");
+  log::debug("Save raw data");
   TFile file(name + ".root", "RECREATE");
   fTree->SetDirectory(&file);
   fTree->Write();
 
-  fLogger->debug("Save histograms");
+  log::debug("Save histograms");
   fMask->Write();
   fH2Source->Write();
   fH2Detector->Write();
   fH1Theta->Write();
   fH1Phi->Write();
 
-  fLogger->debug("Save simulation configuration (source, mask, detector)");
+  log::debug("Save simulation configuration (source, mask, detector)");
   fSource->SetName("source");
   fSource->Write();
   fMask->SetName("mask");
@@ -120,7 +122,7 @@ void CMSimulation::Write(TString name) const {
   h2->SetFillStyle(3005);
   h2->Write();
 
-  fLogger->debug("Prepare simulation summary");
+  log::debug("Prepare simulation summary");
   TCanvas canvas("summary", "summary");
   canvas.Divide(3, 2);
 
@@ -143,7 +145,7 @@ void CMSimulation::Write(TString name) const {
   h2->Draw();
   canvas.Write();
 
-  fLogger->debug("Closing file");
+  log::debug("Closing file");
   file.Close();
 
   // BuildTGeometry(name);
