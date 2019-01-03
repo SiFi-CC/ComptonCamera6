@@ -188,7 +188,7 @@ Bool_t CCSimulation::ProcessEvent(void) {
   fTrack1.SetVersor(fVersor1);
   fTrack1.SetEnergy(fEnergy0);
 
-  auto [ scatPoint, scatFlag ] = fScatterer.FindCrossPoint(fTrack1);
+  auto [scatPoint, scatFlag] = fScatterer.FindCrossPoint(fTrack1);
   fPoint0 = scatPoint;
   if (scatFlag == kFALSE) {
     if (fVerbose) cout << "\tNo cross points with the scatterer\n" << endl;
@@ -221,7 +221,7 @@ Bool_t CCSimulation::ProcessEvent(void) {
   }
   //----- end of the position check
 
-  auto [ absPoint, absFlag ] = fAbsorber.FindCrossPoint(*fTrack2);
+  auto [absPoint, absFlag] = fAbsorber.FindCrossPoint(*fTrack2);
   fPoint2 = absPoint;
   if (absFlag == kFALSE) {
     if (fVerbose) cout << "\tNo cross point with the absorber\n" << endl;

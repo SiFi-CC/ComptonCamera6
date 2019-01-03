@@ -65,7 +65,7 @@ private:
    */
   Interpolator* fEnergyInterpolator;
 
-  ClassDef(LineSource, 0)
+  ClassDef(LineSource, 1)
 };
 
 #endif

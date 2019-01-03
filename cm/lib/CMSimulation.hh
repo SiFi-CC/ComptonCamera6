@@ -6,6 +6,7 @@
 #include <TFile.h>
 #include <TGeoManager.h>
 #include <TH2F.h>
+#include <TMatrix.h>
 #include <TTree.h>
 
 class CMSimulation : public TObject {
@@ -38,7 +39,7 @@ private:
   /** Detector plane */
   DetPlane* fDetPlane = nullptr;
 
-  /** Stores data of simulated particles. Particle is svaed only if projected
+  /** Stores data of simulated particles. Particle is saved only if projected
    * path is crossing mask and detector, otherwise is not scored anywhere.
    */
   TTree* fTree;
