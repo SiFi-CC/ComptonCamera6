@@ -1,29 +1,30 @@
 #include "CMSimulation.hh"
 #include "CLog.hh"
-#include "TCanvas.h"
-#include "TH2F.h"
-#include "TMath.h"
-#include "TRandom.h"
-#include <iostream>
+#include <TCanvas.h>
+#include <TH2F.h>
+#include <TMath.h>
+#include <TRandom.h>
 
-using namespace std;
 namespace log = SiFi::log;
 
 CMSimulation::~CMSimulation() {
+  log::info("delete CMSimulation");
   log::debug("delete fTree");
-  // delete fTree; // TODO: can't delete, need fix
+  delete fTree;
   log::debug("delete fH2Source");
   delete fH2Source;
   log::debug("delete fH2Detector");
   delete fH2Detector;
   log::debug("delete fH1Theta");
   delete fH1Theta;
-  log::debug("delete fH1Theta");
+  log::debug("delete fH1Phi");
   delete fH1Phi;
 }
 
 void CMSimulation::Init() {
+  TDirectory::AddDirectory(false);
   fTree = new TTree("track", "tracks");
+  fTree->SetDirectory(nullptr);
   fTree->Branch("sourceTrack", &fPersist.sourceTrack);
   fTree->Branch("maskTrack", &fPersist.maskTrack);
   fTree->Branch("detectorTrack", &fPersist.detectorTrack);
@@ -48,12 +49,12 @@ Bool_t CMSimulation::ProcessEvent() {
 
   auto [maskCrossPoint, maskHit] = fMask->FindCrossPoint(sourceTrack);
   if (!maskHit) {
-    log::info("No cross point with Mask");
+    log::debug("No cross point with Mask");
     return false;
   }
   auto [detCrossPoint, detectorHit] = fDetPlane->FindCrossPoint(sourceTrack);
   if (!detectorHit) {
-    log::info("No cross point with DetPlane");
+    log::debug("No cross point with DetPlane");
     return false;
   }
 
@@ -81,33 +82,35 @@ void CMSimulation::RunSimulation(Int_t nEvents) {
   while (nEvents > eventsAccepted) {
     if (ProcessEvent()) { eventsAccepted++; }
     eventsProcessed++;
-    cout << "i=" << eventsProcessed << " events simulated, " << eventsAccepted
-         << " in acceptance" << endl;
+    log::debug("%d events simulated, %d in acceptance", eventsProcessed,
+               eventsAccepted);
+    if (eventsProcessed % 100000 == 0) {
+      log::info("%d processed events", eventsProcessed);
+    }
   }
+  log::info("Finished simulation: %d events simulated, %d in acceptance",
+            eventsProcessed, eventsAccepted);
 }
 
 void CMSimulation::Write(TString name) const {
   log::info("Saving results of simulation to file");
 
   log::debug("Save raw data");
-  TFile file(name + ".root", "RECREATE");
+  TFile file(name, "RECREATE");
   fTree->SetDirectory(&file);
   fTree->Write();
+  fTree->SetDirectory(nullptr);
 
   log::debug("Save histograms");
-  fMask->Write();
-  fH2Source->Write();
-  fH2Detector->Write();
-  fH1Theta->Write();
-  fH1Phi->Write();
+  fH2Source->Write("H2Source");
+  fH2Detector->Write("H2Detector");
+  fH1Theta->Write("H1Theta");
+  fH1Phi->Write("H1Phi");
 
   log::debug("Save simulation configuration (source, mask, detector)");
-  fSource->SetName("source");
-  fSource->Write();
-  fMask->SetName("mask");
-  fMask->Write();
-  fDetPlane->SetName("detector");
-  fDetPlane->Write();
+  fSource->Write("source");
+  fMask->Write("mask");
+  fDetPlane->Write("detector");
 
   TH1D* h1 = fH2Source->ProjectionX("sourceProjectionZ");
   h1->SetTitle("source along Z axis");
@@ -160,22 +163,19 @@ void CMSimulation::ResetSimulation() {
 }
 
 void CMSimulation::Print() const {
-  cout << "Mask object: " << fMask->GetName() << endl;
-  cout << "fA = " << fMask->GetA() << endl;
-  cout << "fB = " << fMask->GetB() << endl;
-  cout << "fC = " << fMask->GetC() << endl;
-  cout << "fD = " << fMask->GetD() << endl;
-  cout << "fDimZ = " << fMask->GetDimZ() << endl;
-  cout << "fDimY = " << fMask->GetDimY() << endl;
-  cout << "DetPlane object: " << fDetPlane->GetName() << endl;
-  cout << "fA = " << fDetPlane->GetA() << endl;
-  cout << "fB = " << fDetPlane->GetB() << endl;
-  cout << "fC = " << fDetPlane->GetC() << endl;
-  cout << "fD = " << fDetPlane->GetD() << endl;
-  cout << "fDimZ = " << fDetPlane->GetDimZ() << endl;
-  cout << "fDimY = " << fDetPlane->GetDimY() << endl;
+  log::info("Mask object: %s\n"
+            "fA = %f\nfB = %f\nfC = %f\nfD = %f\n"
+            "fDimZ = %d\nfDimY = %d\n",
+            "DetPlane object: %s\n",
+            "fA = %f\nfB = %f\nfC = %f\nfD = %f\n"
+            "fDimZ = %d\nfDimY = %d\n",
+            fMask->GetName(), fMask->GetA(), fMask->GetB(), fMask->GetC(),
+            fMask->GetD(), fMask->GetDimZ(), fMask->GetDimY(),
+            fDetPlane->GetName(), fDetPlane->GetA(), fDetPlane->GetB(),
+            fDetPlane->GetC(), fDetPlane->GetD(), fDetPlane->GetDimZ(),
+            fDetPlane->GetDimY());
 
-  cout << "Geometry of the setup saved in the text file" << endl;
+  log::info("Geometry of the setup saved in the text file");
 }
 
 void CMSimulation::BuildTGeometry(TString name) const {

@@ -1,4 +1,5 @@
 #include "PointSource.hh"
+#include "CLog.hh"
 #include <TRandom.h>
 
 // -----------------------
@@ -17,14 +18,13 @@ Track PointSource::GenerateEvent() {
 // -----------------------
 
 Track MultiPointSource::GenerateEvent() {
+  if (fIterator == fSources.end()) {
+    fIterator = fSources.begin(); // on last element go to start
+  }
   Track track = fIterator->GenerateEvent();
   track.SetPoint(track.GetPoint() + fPosition);
 
-  if (fIterator == fSources.end()) {
-    fIterator = fSources.begin(); // on last element go to start
-  } else {
-    ++fIterator;
-  }
+  ++fIterator;
   return track;
 }
 

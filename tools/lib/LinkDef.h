@@ -6,5 +6,6 @@
 
 #pragma link C++ class std::vector<TVector3>+;
 #pragma link C++ class PhysicsBase;
+#pragma link C++ class H2Coords;
 
 #endif

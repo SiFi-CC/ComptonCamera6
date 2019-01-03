@@ -1,297 +1,240 @@
 #include "CMReconstruction.hh"
 #include "CLog.hh"
 #include "CMSimulation.hh"
-#include "TCanvas.h"
-#include "TF2.h"
-#include "TMath.h"
-#include "TRandom.h"
-#include <fstream>
-#include <iostream>
-using namespace std;
+#include "DataStructConvert.hh"
+#include "Sources/PointSource.hh"
+#include <TCanvas.h>
+#include <TF2.h>
+#include <TMath.h>
+#include <TRandom.h>
+
 namespace log = SiFi::log;
 
-ClassImp(CMReconstruction);
-//------------------------------------------------------------------
-CMReconstruction::CMReconstruction() {
-  fFileIn = 0;
-  fFileOut = 0;
-  fImage = 0;
-  fObject = 0;
-  fVerbose = 0;
-  fNiter = 0;
-  for (int i = 0; i < 100; i++)
-    fRecoObject[i] = 0;
-}
-//------------------------------------------------------------------
-CMReconstruction::CMReconstruction(TString filename, Int_t vlevel) {
-  fInputName = filename;
-  filename.ReplaceAll(".root", "");
-  SetName(filename);
-  fVerbose = vlevel;
-  fFileIn = new TFile(fInputName, "READ");
-  fFileIn->Print();
-  if (!fFileIn) {
-    cout << "Input file " << fInputName << " not opened correctly..." << endl;
-    // exit(0);
-  }
-  fMask = (Mask*)fFileIn->Get("mask");
-  fDetPlane = (DetPlane*)fFileIn->Get("detector");
-  fSource = (Source*)fFileIn->Get("source");
-  fImage = (TH2F*)fFileIn->Get("detectedYZ");
-  fObject = (TH2F*)fFileIn->Get("sourceYZ");
-  fNbinsxO = fObject->GetXaxis()->GetNbins();
-  fNbinsyO = fObject->GetYaxis()->GetNbins();
-  fNvoxelsO = fNbinsxO * fNbinsyO;
-  fNbinsxI = fImage->GetXaxis()->GetNbins();
-  fNbinsyI = fImage->GetYaxis()->GetNbins();
-  fNvoxelsI = fNbinsxI * fNbinsyI;
+using SiFi::tools::convertHistogramToMatrix;
+using SiFi::tools::convertMatrixToHistogram;
+using SiFi::tools::unvectorizeMatrix;
+using SiFi::tools::vectorizeMatrix;
 
-  fFileOut = new TFile(filename + "_reco.root", "RECREATE");
-  fHmatrix = new TH2D("hHmatrix", "H matrix", fNvoxelsO, 0.5, fNvoxelsO + 0.5,
-                      fNvoxelsI, 0.5, fNvoxelsI + 0.5);
-  fHmatrix->GetXaxis()->SetTitle("Nr of Object voxel");
-  fHmatrix->GetYaxis()->SetTitle("Nr of Image voxel");
-  fNiter = 0;
-  fThisIter = 0;
-  for (int i = 0; i < 100; i++)
-    fRecoObject[i] = 0;
+CMReconstruction::~CMReconstruction() = default;
+
+CMReconstruction::CMReconstruction(TString simulationFile) {
+  log::info("Load simulation results from file");
+  TFile file(simulationFile, "READ");
+  file.Print();
+
+  log::debug("Load from \"mask\" object of type %s",
+             file.Get("mask")->ClassName());
+  fMask = *static_cast<Mask*>(file.Get("mask"));
+
+  log::debug("Load from \"detector\" object of type %s",
+             file.Get("detector")->ClassName());
+  fDetPlane = *static_cast<DetPlane*>(file.Get("detector"));
+
+  log::debug("Load from \"H2Detector\" object of type %s",
+             file.Get("H2Detector")->ClassName());
+  fImage = *static_cast<TH2F*>(file.Get("H2Detector"));
+  fImage.SetDirectory(nullptr);
+
+  log::debug("Load from \"H2Source\" object of type %s",
+             file.Get("H2Source")->ClassName());
+  fObject = *static_cast<TH2F*>(file.Get("H2Source"));
+  fObject.SetDirectory(nullptr);
+  log::debug("file closed");
+
+  fObjectCoords = H2Coords(&fObject);
+  fImageCoords = H2Coords(&fImage);
+  log::debug("dimensions of reconstructed object [%s]",
+             fObjectCoords.String().c_str());
+  log::debug("dimensions of detector image [%s]",
+             fImageCoords.String().c_str());
+
+  fImageMat.ResizeTo(fImageCoords.NBins(), 1);
+  fImageMat = vectorizeMatrix(convertHistogramToMatrix(&fImage));
+
+  fMatrixH.ResizeTo(fImageCoords.NBins(), fObjectCoords.NBins());
+  fMatrixHPrime.ResizeTo(fObjectCoords.NBins(), fImageCoords.NBins());
+  fMatrixH = TMatrixT<Double_t>(fImageCoords.NBins(), fObjectCoords.NBins());
+  fMatrixHPrime =
+      TMatrixT<Double_t>(fObjectCoords.NBins(), fImageCoords.NBins());
 }
-//------------------------------------------------------------------
-CMReconstruction::~CMReconstruction() {
-  if (fVerbose) cout << "Inside destructor of CMsimulation class" << endl;
-  Write();
-}
-//------------------------------------------------------------------
-void CMReconstruction::Write(void) {
-  if (fVerbose) cout << "Inside CMReconstruction::Write()..." << endl;
-  if (fFileOut) {
-    fFileOut->cd();
-    fMask->GetPattern()->Write();
-    fObject->Write();
-    fImage->Write();
-    fMask->GetPattern()->Write();
-    fHmatrix->Write();
-    int i = 0;
-    while (fRecoObject[i] != 0) {
-      fRecoObject[i]->Write();
-      i++;
+
+void CMReconstruction::FillHMatrix() {
+  log::info("CMReconstruction::FillHMatrix");
+  auto logLevel = log::getLevel();
+
+  int nIterations = 10000;
+  for (int objBin = 0; objBin < fObjectCoords.NBins(); objBin++) {
+    auto [objBinX, objBinY] = fObjectCoords.BinXY(objBin);
+    log::debug("Hmatrix (%d, %d) voxel", objBinX, objBinY);
+
+    // TODO switch to angular bins
+    Double_t x = fObject.GetXaxis()->GetBinCenter(objBinX + 1);
+    Double_t y = fObject.GetYaxis()->GetBinCenter(objBinY + 1);
+
+    log::setLevel(log::level::warn);
+    {
+      PointSource src(TVector3(0, y, x), 1);
+      CMSimulation sim(&src, &fMask, &fDetPlane);
+      sim.RunSimulation(nIterations);
+      auto imgVec = vectorizeMatrix(convertHistogramToMatrix(sim.GetImage()));
+
+      for (int imgBin = 0; imgBin < fImageCoords.NBins(); imgBin++) {
+        if (imgVec(imgBin, 0) == 0) {
+          // fix for division by zero durring reconstruction
+          fMatrixH(imgBin, objBin) = 1e-6 / nIterations;
+        } else {
+          fMatrixH(imgBin, objBin) = imgVec(imgBin, 0) / nIterations;
+        }
+      }
     }
-
-    // TCanvas* a = new TCanvas("summary","summary");
-    // a->Divide(3,2);
-    // a->cd(1);
-    // fObject->Draw("col");
-    // a->cd(3);
-    // fMask->GetPattern()->Draw();
-    // a->cd(2);
-    // fImage->Draw("colz");
-    // a->cd(4);
-    // fObject->Draw("colz");
-    // a->Write();
-
-    fFileOut->Close();
-    fFileIn->Close();
+    log::setLevel(logLevel);
   }
+  fMatrixHPrime.Transpose(fMatrixH);
 }
-void CMReconstruction::Print(void) {
-  cout << "\nCMReconstruction::Print() for object " << GetName() << endl;
-}
-//------------------------------------------------------------------
-Bool_t CMReconstruction::FillHMatrix(void) {
-  CMSimulation* sim = new CMSimulation(fSource, fMask, fDetPlane);
-  int bx, by, bz;
-  double x, y, prob;
-  TH2F* tmpimg = sim->GetImage();
-  int nev = 10000;
-  for (int i = 1; i <= fNvoxelsO; i++) { // loop over object voxels
-    sim->ResetSimulation();
-    SingleToDoubleIdx("O", i, bx, by);
-    x = fObject->GetXaxis()->GetBinCenter(bx);
-    y = fObject->GetYaxis()->GetBinCenter(by);
-    // sim->SetSourcePosition(0, y, x);
-    sim->RunSimulation(nev);
-    for (int j = 1; j <= fNvoxelsI; j++) { // loop over image voxels
-      SingleToDoubleIdx("I", j, bx, by);
-      prob = tmpimg->GetBinContent(bx, by) / nev;
-      fHmatrix->SetBinContent(i, j, prob);
+
+Bool_t CMReconstruction::CalculateS() {
+  log::info("CMReconstruction::CalculateS");
+
+  fNormS = std::vector<Double_t>(fObjectCoords.NBins());
+  for (int i = 0; i < fObjectCoords.NBins(); i++) {
+    fNormS[i] = 0;
+    for (int j = 0; j < fImageCoords.NBins(); j++) {
+      fNormS[i] += fMatrixH(j, i);
     }
   }
-  // delete sim;
-  return kTRUE;
-}
-//------------------------------------------------------------------
-Bool_t CMReconstruction::SingleToDoubleIdx(TString which, int i, int& binx,
-                                           int& biny) {
-  int nbinsx, nbinsy;
-  if (which == "I") {
-    nbinsx = fNbinsxI;
-    nbinsy = fNbinsyI;
-  } else if (which == "O") {
-    nbinsx = fNbinsxO;
-    nbinsy = fNbinsyO;
-  } else
-    return kFALSE;
 
-  binx = i % nbinsx;
-  if (binx == 0) binx = nbinsx;
-  biny = i / nbinsx + 1;
-  if (biny > nbinsy) biny = nbinsy;
-  return kTRUE;
-}
-//------------------------------------------------------------------
-Bool_t CMReconstruction::DoubleToSingleIdx(TString which, int binx, int biny,
-                                           int& i) {
-  int nbinsx, nbinsy;
-  if (which == "I") {
-    nbinsx = fNbinsxI;
-    nbinsy = fNbinsyI;
-  } else if (which == "O") {
-    nbinsx = fNbinsxO;
-    nbinsy = fNbinsyO;
-  } else
-    return kFALSE;
-
-  i = (biny - 1) * nbinsx + binx;
-  return kTRUE;
-}
-//------------------------------------------------------------------
-Double_t CMReconstruction::Image(Int_t i) {
-  int bx, by;
-  SingleToDoubleIdx("I", i, bx, by);
-  return fImage->GetBinContent(bx, by);
-}
-//------------------------------------------------------------------
-Double_t CMReconstruction::Object(Int_t i) {
-  int bx, by;
-  SingleToDoubleIdx("O", i, bx, by);
-  return fObject->GetBinContent(bx, by);
-}
-//------------------------------------------------------------------
-Double_t CMReconstruction::RecoObject(Int_t i) {
-  int bx, by;
-  SingleToDoubleIdx("O", i, bx, by);
-  return fRecoObject[fThisIter - 1]->GetBinContent(bx, by);
-}
-//------------------------------------------------------------------
-Double_t CMReconstruction::H(Int_t i, int j) {
-  return fHmatrix->GetBinContent(i, j);
-}
-//------------------------------------------------------------------
-Double_t CMReconstruction::Hprime(Int_t i, int j) {
-  return fHmatrix->GetBinContent(j, i);
-}
-//------------------------------------------------------------------
-Bool_t CMReconstruction::CalculateS(void) {
-  // S = new Double_t[fNvoxelsO+1];
-
-  S.reserve(fNvoxelsO + 1);
-  S[0] = 0;
-  for (int j = 1; j < fNvoxelsO + 1; j++) {
-    S[j] = 0;
-    for (int i = 1; i < fNvoxelsI + 1; i++) {
-      S[j] += H(j, i);
-    }
-  }
-  cout << fObject << endl;
-  fObject->Print();
-  fRecoObject[0] = (TH2F*)fObject->Clone("hYZreco00");
-  fRecoObject[0]->SetTitle("reco YZ, iter 00");
-  fRecoObject[0]->Reset();
-  for (int i = 0; i < fNbinsxO; i++) {
-    for (int j = 0; j < fNbinsyO; j++) {
-      fRecoObject[0]->SetBinContent(i + 1, j + 1, 1);
-    }
-  }
-  // TF2* f = new
-  // TF2("gaus2d","exp(-(x*x)/(2.*[0]*[0]))*exp(-(y*y)/(2.*[1]*[1]))",-150,150,-150,150);
-  // f->SetParameters(10.,10);
-  // fRecoObject[0]->FillRandom("gaus2d",100000);
-  // delete f;
-
-  return kTRUE;
-}
-//------------------------------------------------------------------
-Bool_t CMReconstruction::SingleIteration(void) {
-  if (fThisIter == 0) {
-    FillHMatrix();
-    CalculateS();
-  }
-  fThisIter++;
-  fRecoObject[fThisIter] =
-      (TH2F*)fObject->Clone(Form("hYZreco%02i", fThisIter));
-  fRecoObject[fThisIter]->SetTitle(Form("reco YZ, iter %02i", fThisIter));
-  fRecoObject[fThisIter]->Reset();
-  Double_t den, P, fj_new;
-  Double_t R[fNvoxelsI + 1];
-  Int_t bx, by;
-
-  // calculating I/(H*fk)
-  for (int i = 1; i < fNbinsxO + 1; i++) {
-    R[i] = 0;
-    den = 0;
-    for (int l = 1; l < fNvoxelsO + 1; l++) // single element of denominator
-      den += (H(l, i) * RecoObject(l));
-    R[i] = Image(i) / den;
-  }
-
-  for (int j = 1; j < fNvoxelsO + 1; j++) {
-    fj_new = 0;
-    // P
-    P = 0;
-    for (int k = 1; k < fNvoxelsI + 1; k++)
-      P += (Hprime(k, j) * R[k]);
-    // full expression
-    fj_new = RecoObject(j) * P / S[j];
-    SingleToDoubleIdx("O", j, bx, by);
-    fRecoObject[fThisIter]->SetBinContent(bx, by, fj_new);
-  }
-  return kTRUE;
-}
-//------------------------------------------------------------------
-Bool_t CMReconstruction::MLEMIterate(Int_t ni) {
-  fNiter = ni;
-  if (fNiter > 100) {
-    cout << "Too many iterations requested. Currently <100 feasible. "
-         << "\nFor more please adjust the code." << endl;
-    return kFALSE;
-  }
-  for (int i = 0; i < fNiter; i++) {
-    cout << "Before " << i + 1 << "th iteration..." << endl;
-    SingleIteration();
-    cout << "\tdone!" << endl;
-  }
-
-  TH1D* hProZ[100];
-  TH1D* hProY[100];
-
-  log::info("canvas created");
-  TCanvas* can = new TCanvas("MLEM2D", "MLEM2D", 1000, 1000);
-  TCanvas* canz = new TCanvas("MLEM1DZ", "MLEM1DZ", 1000, 1000);
-  TCanvas* cany = new TCanvas("MLEM1DY", "MLEM1DY", 1000, 1000);
-
-  can->Divide((int)sqrt(fNiter) + 1, (int)sqrt(fNiter) + 1);
-  canz->Divide((int)sqrt(fNiter) + 1, (int)sqrt(fNiter) + 1);
-  cany->Divide((int)sqrt(fNiter) + 1, (int)sqrt(fNiter) + 1);
-
-  log::info("save iterations");
-  for (int iter = 0; iter < fNiter + 1; iter++) {
-    log::info("saving iteration %d", iter);
-    can->cd(iter + 1);
-    gPad->SetLogz(1);
-    fRecoObject[iter]->Draw("colz");
-    hProZ[iter] = fRecoObject[iter]->ProjectionX();
-    hProY[iter] = fRecoObject[iter]->ProjectionY();
-    canz->cd(iter + 1);
-    hProZ[iter]->Draw();
-    cany->cd(iter + 1);
-    hProY[iter]->Draw();
-  }
-  fFileOut->cd();
-  log::info("canvas write");
-  can->Write();
-  log::info("canvas z write");
-  canz->Write();
-  log::info("canvas y write");
-  cany->Write();
   return true;
+}
+
+void CMReconstruction::SingleIteration() {
+  log::debug("CMReconstruction::SingleIteration()  iter=%d",
+             fRecoObject.size());
+
+  // H * f_k
+  // vector of correlations
+  // i-th element of this vector contains information whether image resulting
+  // from source postioned in i-th bin correlates to current iteration.
+  auto hfProduct = fMatrixH * fRecoObject.back();
+  log::debug("SingleIteration  H * f_k (%d, %d)", hfProduct.GetNrows(),
+             hfProduct.GetNcols());
+
+  // Image / (H * f_k)
+  // Image vector with inverse of correlations used as weights, the largest
+  // weight will be atributed for image element that has the worst corelation
+  // with current iteration.
+  TMatrixT<Double_t> weightedImage(fImageCoords.NBins(), 1);
+  for (int i = 0; i < fImageCoords.NBins(); i++) {
+    weightedImage(i, 0) = fImageMat(i, 0) / hfProduct(i, 0);
+  }
+  log::debug("SingleIteration Image / (H * f_k) (%d, %d)",
+             weightedImage.GetNrows(), weightedImage.GetNcols());
+
+  TMatrixT<Double_t> nextIteration = fMatrixHPrime * weightedImage;
+  for (int i = 0; i < fObjectCoords.NBins(); i++) {
+    nextIteration(i, 0) =
+        nextIteration(i, 0) * fRecoObject.back()(i, 0) / fNormS[i];
+  }
+
+  fRecoObject.push_back(nextIteration);
+
+  log::debug("end CMReconstruction::SingleIteration()  iter=%d",
+             fRecoObject.size() - 1);
+}
+
+void CMReconstruction::RunReconstruction(Int_t nIterations) {
+  log::info("CMReconstruction::RunReconstruction(%d)", nIterations);
+  if (nIterations > 100) {
+    log::error("Too many iterations requested. Currently <100 feasible. \nFor "
+               "more please adjust the code.");
+    throw "too many iterations";
+  }
+
+  FillHMatrix();
+  CalculateS();
+
+  fRecoObject.push_back(TMatrixT<Double_t>(fObjectCoords.NBins(), 1));
+  fRecoObject[0] = 1;
+
+  for (int i = 0; i < nIterations; i++) {
+    SingleIteration();
+  }
+}
+
+void CMReconstruction::Write(TString filename) const {
+  log::info("CMReconstruction::Write(%s)", filename.Data());
+  TFile file(filename, "RECREATE");
+  file.cd();
+
+  fObject.Write();
+  fImage.Write();
+  fMatrixH.Write("matrixH");
+  SiFi::tools::convertMatrixToHistogram(
+      "histH", "histogram of matrix H(probability matrix)", fMatrixH)
+      .Write();
+
+  int nIterations = fRecoObject.size() - 1;
+  std::vector<TH2F*> histReco(nIterations);
+  std::vector<TH1D*> histProjX(nIterations);
+  std::vector<TH1D*> histProjY(nIterations);
+
+  TCanvas can("MLEM2D", "MLEM2D", 1000, 1000);
+  TCanvas canz("MLEM1DZ", "MLEM1DZ", 1000, 1000);
+  TCanvas cany("MLEM1DY", "MLEM1DY", 1000, 1000);
+
+  can.Divide(static_cast<int>(sqrt(nIterations)) + 1,
+             static_cast<int>(sqrt(nIterations)) + 1);
+  canz.Divide(static_cast<int>(sqrt(nIterations)) + 1,
+              static_cast<int>(sqrt(nIterations) + 1));
+  cany.Divide(static_cast<int>(sqrt(nIterations)) + 1,
+              static_cast<int>(sqrt(nIterations)) + 1);
+
+  log::debug("Save %d iterations", nIterations);
+  for (int i = 0; i < nIterations; i++) {
+    log::debug("saving iteration %d", i);
+
+    auto recoIteration = convertMatrixToHistogram(
+        "reco", TString::Format("iteration %d", i).Data(),
+        unvectorizeMatrix(fRecoObject[i], fObjectCoords.NBinsX(),
+                          fObjectCoords.NBinsY()));
+    recoIteration.Write();
+
+    // Histograms can be released after writing canvas to file so it's necessary
+    // to store all references to release memory later.
+    histReco[i] = static_cast<TH2F*>(recoIteration.Clone());
+    histReco[i]->SetDirectory(nullptr);
+    histProjX[i] = recoIteration.ProjectionX(
+        TString::Format("projection Z, iteration %d", i).Data());
+    histProjY[i] = recoIteration.ProjectionY(
+        TString::Format("projection Y, iteration %d", i).Data());
+
+    can.cd(i + 1);
+    gPad->SetLogz(1);
+    histReco[i]->Draw("colz");
+
+    canz.cd(i + 1);
+    histProjX[i]->Draw();
+
+    cany.cd(i + 1);
+    histProjY[i]->Draw();
+  }
+
+  log::debug("Write() canvas recnstruction iterations");
+  can.Write();
+  log::debug("Write() canvas Z projection");
+  canz.Write();
+  log::debug("Write() canvas Y projection");
+  cany.Write();
+
+  for (auto& object : histReco) {
+    delete object;
+  }
+  for (auto& object : histProjX) {
+    delete object;
+  }
+  for (auto& object : histProjY) {
+    delete object;
+  }
+
+  file.Close();
+  log::debug("end CMReconstruction::Write(%s)", filename.Data());
 }
