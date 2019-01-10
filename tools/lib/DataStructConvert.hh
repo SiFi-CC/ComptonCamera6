@@ -8,8 +8,6 @@
 namespace SiFi {
 namespace tools {
 
-namespace log = SiFi::log;
-
 TMatrixT<Double_t> convertHistogramToMatrix(TH2F* hist);
 TH2F convertMatrixToHistogram(const char* name, const char* title,
                               TMatrixT<Double_t> matrix);
@@ -32,12 +30,12 @@ template <typename T>
 TMatrixT<T> unvectorizeMatrix(const TMatrixT<T>& matVec, Int_t nRows,
                               Int_t nCols) {
   if (matVec.GetNcols() != 1) {
-    log::error("unvectorizeMatrix: you need to pass column matrix");
+    spdlog::error("unvectorizeMatrix: you need to pass column matrix");
     throw "wrong matrix dimensions";
   }
   if (matVec.GetNrows() != nRows * nCols) {
-    log::error("unvectorizeMatrix: number of columns needs to be equal to "
-               "nRows*nCols");
+    spdlog::error("unvectorizeMatrix: number of columns needs to be equal to "
+                  "nRows*nCols");
     throw "wrong matrix dimensions";
   }
 

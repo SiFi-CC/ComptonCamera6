@@ -5,19 +5,17 @@
 #include <TMath.h>
 #include <TRandom.h>
 
-namespace log = SiFi::log;
-
 CMSimulation::~CMSimulation() {
-  log::info("delete CMSimulation");
-  log::debug("delete fTree");
+  log->info("delete CMSimulation");
+  log->debug("delete fTree");
   delete fTree;
-  log::debug("delete fH2Source");
+  log->debug("delete fH2Source");
   delete fH2Source;
-  log::debug("delete fH2Detector");
+  log->debug("delete fH2Detector");
   delete fH2Detector;
-  log::debug("delete fH1Theta");
+  log->debug("delete fH1Theta");
   delete fH1Theta;
-  log::debug("delete fH1Phi");
+  log->debug("delete fH1Phi");
   delete fH1Phi;
 }
 
@@ -47,31 +45,31 @@ void CMSimulation::Init() {
 Bool_t CMSimulation::ProcessEvent() {
   Track sourceTrack = fSource->GenerateEvent();
 
-  auto [maskCrossPoint, maskHit] = fMask->FindCrossPoint(sourceTrack);
-  if (!maskHit) {
-    log::debug("No cross point with Mask");
+  auto maskCross = fMask->FindCrossPoint(sourceTrack);
+  if (!maskCross.second) {
+    log->debug("No cross point with Mask");
     return false;
   }
-  auto [detCrossPoint, detectorHit] = fDetPlane->FindCrossPoint(sourceTrack);
-  if (!detectorHit) {
-    log::debug("No cross point with DetPlane");
+  auto detCross = fDetPlane->FindCrossPoint(sourceTrack);
+  if (!detCross.second) {
+    log->debug("No cross point with DetPlane");
     return false;
   }
 
   // commit data
   fPersist.sourceTrack = sourceTrack;
   fPersist.maskTrack =
-      Track(maskCrossPoint, sourceTrack.GetVersor(), sourceTrack.GetEnergy());
+      Track(maskCross.first, sourceTrack.GetVersor(), sourceTrack.GetEnergy());
   fPersist.detectorTrack =
-      Track(detCrossPoint, sourceTrack.GetVersor(), sourceTrack.GetEnergy());
-  fPersist.absorbed = !fMask->IsOpaque(maskCrossPoint);
+      Track(detCross.first, sourceTrack.GetVersor(), sourceTrack.GetEnergy());
+  fPersist.absorbed = !fMask->IsOpaque(maskCross.first);
   fTree->Fill();
 
   fH2Source->Fill(sourceTrack.GetPoint().Z(), sourceTrack.GetPoint().Y());
   fH1Theta->Fill(sourceTrack.GetVersor().Theta());
   fH1Phi->Fill(sourceTrack.GetVersor().Phi());
   if (!fPersist.absorbed) {
-    fH2Detector->Fill(detCrossPoint.Z(), detCrossPoint.Y());
+    fH2Detector->Fill(detCross.first.Z(), detCross.first.Y());
   }
   return true;
 }
@@ -82,32 +80,32 @@ void CMSimulation::RunSimulation(Int_t nEvents) {
   while (nEvents > eventsAccepted) {
     if (ProcessEvent()) { eventsAccepted++; }
     eventsProcessed++;
-    log::debug("%d events simulated, %d in acceptance", eventsProcessed,
+    log->debug("{} events simulated, {} in acceptance", eventsProcessed,
                eventsAccepted);
     if (eventsProcessed % 100000 == 0) {
-      log::info("%d processed events", eventsProcessed);
+      log->info("{} processed events", eventsProcessed);
     }
   }
-  log::info("Finished simulation: %d events simulated, %d in acceptance",
+  log->info("Finished simulation: {} events simulated, {} in acceptance",
             eventsProcessed, eventsAccepted);
 }
 
 void CMSimulation::Write(TString name) const {
-  log::info("Saving results of simulation to file");
+  log->info("Saving results of simulation to file");
 
-  log::debug("Save raw data");
+  log->debug("Save raw data");
   TFile file(name, "RECREATE");
   fTree->SetDirectory(&file);
   fTree->Write();
   fTree->SetDirectory(nullptr);
 
-  log::debug("Save histograms");
+  log->debug("Save histograms");
   fH2Source->Write("H2Source");
   fH2Detector->Write("H2Detector");
   fH1Theta->Write("H1Theta");
   fH1Phi->Write("H1Phi");
 
-  log::debug("Save simulation configuration (source, mask, detector)");
+  log->debug("Save simulation configuration (source, mask, detector)");
   fSource->Write("source");
   fMask->Write("mask");
   fDetPlane->Write("detector");
@@ -125,7 +123,7 @@ void CMSimulation::Write(TString name) const {
   h2->SetFillStyle(3005);
   h2->Write();
 
-  log::debug("Prepare simulation summary");
+  log->debug("Prepare simulation summary");
   TCanvas canvas("summary", "summary");
   canvas.Divide(3, 2);
 
@@ -148,7 +146,7 @@ void CMSimulation::Write(TString name) const {
   h2->Draw();
   canvas.Write();
 
-  log::debug("Closing file");
+  log->debug("Closing file");
   file.Close();
 
   // BuildTGeometry(name);
@@ -163,19 +161,19 @@ void CMSimulation::ResetSimulation() {
 }
 
 void CMSimulation::Print() const {
-  log::info("Mask object: %s\n"
-            "fA = %f\nfB = %f\nfC = %f\nfD = %f\n"
-            "fDimZ = %d\nfDimY = %d\n",
-            "DetPlane object: %s\n",
-            "fA = %f\nfB = %f\nfC = %f\nfD = %f\n"
-            "fDimZ = %d\nfDimY = %d\n",
+  log->info("Mask object: {}\n"
+            "fA = {}\nfB = {}\nfC = {}\nfD = {}\n"
+            "fDimZ = {}\nfDimY = {}\n",
+            "DetPlane object: {}\n",
+            "fA = {}\nfB = {}\nfC = {}\nfD = {}\n"
+            "fDimZ = {}\nfDimY = {}\n",
             fMask->GetName(), fMask->GetA(), fMask->GetB(), fMask->GetC(),
             fMask->GetD(), fMask->GetDimZ(), fMask->GetDimY(),
             fDetPlane->GetName(), fDetPlane->GetA(), fDetPlane->GetB(),
             fDetPlane->GetC(), fDetPlane->GetD(), fDetPlane->GetDimZ(),
             fDetPlane->GetDimY());
 
-  log::info("Geometry of the setup saved in the text file");
+  log->info("Geometry of the setup saved in the text file");
 }
 
 void CMSimulation::BuildTGeometry(TString name) const {

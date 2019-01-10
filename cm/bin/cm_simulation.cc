@@ -4,11 +4,9 @@
 #include <TSystem.h>
 #include <iostream>
 
-namespace log = SiFi::log;
-
 int main(int argc, char** argv) {
-  log::setLevel(log::level::info);
-  TString maskFilename(argv[2]);
+  spdlog::set_level(spdlog::level::info);
+  TString maskFilename(argv[1]);
   TString path =
       TString(gSystem->Getenv("CC6DIR")) + "/share/ComptonCamera6/masks/";
   TFile* maskfile = new TFile(path + "hMURA" + maskFilename + ".root", "READ");

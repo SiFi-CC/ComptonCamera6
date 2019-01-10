@@ -1,39 +1,25 @@
 #ifndef __CLog_H_
 #define __CLog_H_ 1
 
+#include <spdlog/spdlog.h>
+#define __FORCE_SPDLOG_H_TO_BE_INCLUDED_FIRST_ // force clang-format include
+                                               // order
+
+#include <spdlog/sinks/stdout_color_sinks.h>
+
 namespace SiFi {
-namespace log {
 
-enum class level : int { debug = 1, info = 2, warn = 3, error = 4 };
+using logger = std::shared_ptr<spdlog::logger>;
 
-void setLevel(level logLevel);
-level getLevel();
+inline logger createLogger(std::string name) {
+  auto alreadyExists = spdlog::get(name);
+  if (alreadyExists != nullptr) { return alreadyExists; }
 
-/**
- * Loggs very verbose informations, data for every iteration, used to debug
- * problems with code.
- */
-void debug(const char* fmt, ...);
+  auto logger = spdlog::stdout_color_st(name);
+  spdlog::drop(name); // it will be released after all references are lost
+  return logger;
+}
 
-/**
- * Logs basic information about current program, amount of this logs should not
- * clutter the screen
- */
-void info(const char* fmt, ...);
-
-/**
- * Log warning, should be used when sth unexpected happens but it's not critical
- * to program workings(e.g. particle with negative energy)
- */
-void warn(const char* fmt, ...);
-
-/**
- * Log errors, should be used if problem is critical and only solution is to
- * exit the program.
- */
-void error(const char* fmt, ...);
-
-} // namespace log
 } // namespace SiFi
 
 #endif

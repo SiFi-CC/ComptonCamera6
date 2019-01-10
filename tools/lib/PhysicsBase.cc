@@ -98,8 +98,8 @@ Track* PhysicsBase::ComptonScatter(Track* initTrack, DetPlane* plane) {
   Double_t initE, finE;
   Double_t epsilon = 1.E-8;
 
-  auto [crossPoint, crossFlag] = plane->FindCrossPoint(*initTrack);
-  if (crossFlag == kFALSE) return NULL;
+  auto crossPointData = plane->FindCrossPoint(*initTrack);
+  if (crossPointData.second == kFALSE) return NULL;
 
   initE = initTrack->GetEnergy();
   fTheta = FindTheta(initE); // rad
@@ -133,7 +133,7 @@ Track* PhysicsBase::ComptonScatter(Track* initTrack, DetPlane* plane) {
   //-----
 
   Track* finTrack = new Track();
-  finTrack->SetPoint(crossPoint);
+  finTrack->SetPoint(crossPointData.first);
   finTrack->SetEnergy(finE);
   finTrack->SetVersor(finVersor);
 

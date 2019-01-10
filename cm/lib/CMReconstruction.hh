@@ -93,6 +93,8 @@ private:
   /** Mask used in simulation */
   Mask fMask;
 
+  SiFi::logger log = SiFi::createLogger("CMReconstruction");
+
   ClassDef(CMReconstruction, 0)
 };
 
