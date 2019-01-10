@@ -1,5 +1,5 @@
-file(GLOB cc6_tools_SRCS "**.cc")
-file(GLOB cc6_tools_HDRS "**.hh")
+file(GLOB cc6_tools_SRCS "*.cc")
+file(GLOB cc6_tools_HDRS "*.hh")
 
 ROOT_GENERATE_DICTIONARY(G__cc6_tools ${cc6_tools_HDRS} LINKDEF LinkDef.h)
 

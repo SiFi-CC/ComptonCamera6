@@ -58,7 +58,7 @@ public:
    *  - Cross point is outside of the plane (size of the plane is specified
    * in DetPlane object).
    */
-  std::tuple<TVector3, Bool_t> FindCrossPoint(const Track& track);
+  std::pair<TVector3, Bool_t> FindCrossPoint(const Track& track);
 
 private:
   Double_t fA; ///< Coefficient A of the cartesian plane equation

@@ -18,17 +18,17 @@ public:
 
   Int_t Bin(Int_t xBin, Int_t yBin) const {
     if (xBin >= fNBinsXY.first || yBin >= fNBinsXY.second) {
-      SiFi::log::warn("invalid bin coordinates");
+      spdlog::warn("invalid bin coordinates");
       return -1;
     }
     return yBin * fNBinsXY.first + xBin;
   }
-  std::tuple<Int_t, Int_t> BinXY(Int_t bin) const {
+  std::pair<Int_t, Int_t> BinXY(Int_t bin) const {
     if (bin >= fNBins) {
-      SiFi::log::warn("invalid bin coordinate");
-      return std::make_tuple(-1, -1);
+      spdlog::warn("invalid bin coordinate");
+      return std::make_pair(-1, -1);
     }
-    return std::make_tuple(bin % fNBinsXY.first, bin / fNBinsXY.first);
+    return std::make_pair(bin % fNBinsXY.first, bin / fNBinsXY.first);
   }
 
   std::string String() const {

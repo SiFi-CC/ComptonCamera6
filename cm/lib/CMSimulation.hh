@@ -1,5 +1,6 @@
 #ifndef __CMSimulation_H_
 #define __CMSimulation_H_ 1
+#include "CLog.hh"
 #include "Source.hh"
 #include "Track.hh"
 #include <Mask.hh>
@@ -26,6 +27,8 @@ public:
 
   TH2F* GetObject() const { return fH2Source; };
   TH2F* GetImage() const { return fH2Detector; };
+
+  void SetLogLevel(spdlog::level::level_enum level) { log->set_level(level); }
 
 private:
   void Init();
@@ -76,6 +79,8 @@ private:
     /** Flag that describes whether particle was absorbed by mask */
     Bool_t absorbed;
   } fPersist;
+
+  SiFi::logger log = SiFi::createLogger("CMSimulation");
 
   ClassDef(CMSimulation, 0)
 };
