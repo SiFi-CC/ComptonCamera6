@@ -1,27 +1,26 @@
+#include "CLog.hh"
 #include "CMReconstruction.hh"
-#include "TStopwatch.h"
-#include <iostream>
-using namespace std;
-
-TStopwatch t;
+#include <TStopwatch.h>
 
 int main(int argc, char** argv) {
-  t.Start();
+  spdlog::set_level(spdlog::level::info);
   if (argc != 3) {
-    cout << "type: './cm_reconstruct fSimuFilename fNIter' to start:\n\n "
-            "where:\n\n fSimuFilename is input filefrom simulations stored in "
-            "the ../results/ directory\n\n fNIter is the numer of iterations "
-            "to be processed.\n\n"
-         << endl;
+    spdlog::info(
+        "type: './cm_reconstruct [FILENAME] [ITERATIONS]' to start:\n\n"
+        "where:\n\n"
+        "FILE - is an input file from simulations\n\n"
+        "ITERATIONS - is the numer of iterations to be processed.\n\n");
     return 1;
   }
-  TString inputfile(argv[1]);
-  TString niterstring(argv[2]);
-  Int_t niter = niterstring.Atoi();
-  CMReconstruction reco(inputfile, 1);
-  reco.MLEMIterate(niter);
-  t.Stop();
-  t.Print();
+
+  TString filename(argv[1]);
+  Int_t iterations = TString(argv[2]).Atoi();
+
+  CMReconstruction reconstruction(filename);
+  reconstruction.RunReconstruction(iterations);
+  reconstruction.Write(filename.ReplaceAll(".root", "_reconstruct.root"));
+
+  spdlog::info("Finished simulation");
 
   return 0;
 }

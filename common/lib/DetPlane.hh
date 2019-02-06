@@ -1,8 +1,9 @@
 #ifndef __DetPlane_H_
 #define __DetPlane_H_ 1
-#include "TObject.h"
-#include "TString.h"
-#include "TVector3.h"
+#include "Track.hh"
+#include <TObject.h>
+#include <TString.h>
+#include <TVector3.h>
 
 /// Class which represents plane of the detector. The DetPlane
 /// object consists of:
@@ -44,7 +45,20 @@ public:
   /// Returns size of the detector plane along Y axis
   Double_t GetDimY(void) { return fDimY; };
   /// Returns object name.
-  const char* GetName() const { return fName.Data(); }
+  const char* GetName() const { return fName.Data(); };
+
+  /**
+   * Calculates coordinates of cross point of the DetPlane and given Track.
+   * \param track Track object
+   * \returns tuple
+   * First value represents position on DetPlane where Track and plane will
+   * intersect. Second value is false if
+   *  - Track is parallel to the plane and there are no cross points,
+   *  - DetPlane includes the Track and all points are common,
+   *  - Cross point is outside of the plane (size of the plane is specified
+   * in DetPlane object).
+   */
+  std::pair<TVector3, Bool_t> FindCrossPoint(const Track& track);
 
 private:
   Double_t fA; ///< Coefficient A of the cartesian plane equation
@@ -56,7 +70,7 @@ private:
   Double_t fDimY; ///< Size of the detector plane along Y (full length in mm)
   TString fName;  ///< Object name
 
-  ClassDef(DetPlane, 0)
+  ClassDef(DetPlane, 1)
 };
 
 #endif

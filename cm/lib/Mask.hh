@@ -19,7 +19,7 @@ public:
 private:
   TH2F* fPattern;
 
-  ClassDef(Mask, 0)
+  ClassDef(Mask, 1)
 };
 
 #endif

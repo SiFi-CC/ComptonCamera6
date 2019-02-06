@@ -20,10 +20,12 @@ list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/Modules $ENV{ROOTSYS})
 
 #---Locate the ROOT package and defines a number of variables (e.g. ROOT_INCLUDE_DIRS)
-find_package(ROOT REQUIRED COMPONENTS RIO Geom)
+find_package(ROOT REQUIRED COMPONENTS RIO Geom MathMore)
 set(ROOTSYS $ENV{ROOTSYS})
 
 find_package(CmdLineArgs REQUIRED)
+add_subdirectory(spdlog)
+include_directories(spdlog/include)
 
 
 include(GNUInstallDirs)

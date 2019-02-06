@@ -22,8 +22,9 @@ Double_t KleinNishina(Double_t* x, Double_t* par) {
   Double_t factor1 = (1. + costheta * costheta) / 2.;
   Double_t factor2 = 1. / (1. + alpha * (1. - costheta));
   Double_t factor3 =
-      1 + (alpha * alpha * (1 - costheta) * (1 - costheta)) /
-              ((1 + alpha * (1 - costheta)) * (1 + costheta * costheta));
+      1 +
+      (alpha * alpha * (1 - costheta) * (1 - costheta)) /
+          ((1 + alpha * (1 - costheta)) * (1 + costheta * costheta));
 
   Double_t prob = kR0 * kR0 * factor1 * factor2 * factor2 * factor3; // m2
   // prob = prob*1E31;						// mb
@@ -94,15 +95,12 @@ Double_t PhysicsBase::NewEnergy(Double_t theta, Double_t initE) {
 /// quantum.
 /// 5. Assignes values to the scattered Track object and returns it.
 Track* PhysicsBase::ComptonScatter(Track* initTrack, DetPlane* plane) {
-
-  TVector3 crossPoint;
   TVector3 finVersor;
-  Bool_t crossFlag;
   Double_t initE, finE;
   Double_t epsilon = 1.E-8;
 
-  crossFlag = initTrack->FindCrossPoint(plane, crossPoint);
-  if (crossFlag == kFALSE) return NULL;
+  auto crossPointData = plane->FindCrossPoint(*initTrack);
+  if (crossPointData.second == kFALSE) return NULL;
 
   initE = initTrack->GetEnergy();
   fTheta = FindTheta(initE); // rad
@@ -136,10 +134,9 @@ Track* PhysicsBase::ComptonScatter(Track* initTrack, DetPlane* plane) {
   //-----
 
   Track* finTrack = new Track();
-  finTrack->SetPoint(crossPoint);
+  finTrack->SetPoint(crossPointData.first);
   finTrack->SetEnergy(finE);
   finTrack->SetVersor(finVersor);
-  finTrack->SetName("scattered");
 
   //----- theta check
   Double_t ang = initTrack->GetVersor().Angle(finVersor);
