@@ -6,6 +6,7 @@
 #include "Sources/PointSource.hh"
 #include <TSystem.h>
 #include <iostream>
+using namespace std;
 
 int main(int argc, char** argv) {
 
@@ -34,6 +35,15 @@ int main(int argc, char** argv) {
     spdlog::error("{} requires 2 arguments: mask source", argv[0]);
     abort();
   }
+  TString mask(argv[2]);
+  TString path = TString(gSystem->Getenv("CC6DIR"))+"/share/ComptonCamera6/masks/";
+  TFile* maskfile = new TFile(path+"hMURA" + mask + ".root", "READ");
+  TH2F* h = 0;
+  TString fname = maskfile->GetName();
+  if (fname.Contains("2d"))
+    h = (TH2F*)maskfile->Get("hMURA2d");
+  else
+    h = (TH2F*)maskfile->Get("hMURA1d");
 
   spdlog::set_level(spdlog::level::info);
   TString path =

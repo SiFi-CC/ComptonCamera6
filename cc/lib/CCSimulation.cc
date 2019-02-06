@@ -1,12 +1,15 @@
 #include "CCSimulation.hh"
 #include "TMath.h"
 #include "TRandom.h"
-#include <fstream>
 #include <iostream>
+#include <fstream>
+#include <CmdLineConfig.hh>
 
 using namespace std;
 
 ClassImp(CCSimulation);
+
+CmdLineOption _source_type("Source", "-s", "source type" , -1000);
 
 //------------------------------------------------------------------
 /// Default constructor.
@@ -16,6 +19,7 @@ CCSimulation::CCSimulation() {
   fFile = 0;
   fTree = 0;
   fNev = 0;
+  fGenVersion = CmdLineOption::GetIntValue("Source");
 }
 //------------------------------------------------------------------
 /// Standard constructor.
@@ -44,8 +48,8 @@ CCSimulation::CCSimulation(TString name, Bool_t verbose) {
   fTree->Branch("energy1", &fEnergy1); // energy loss
   fTree->Branch("energy2", &fEnergy2); // energy after scattering
   fNev = 0;
-  fGenVersion = -1000;
-
+  fGenVersion = CmdLineOption::GetIntValue("Source");
+  
   Double_t size = 200.;
   Int_t nbins = 100;
   hSource =
@@ -58,6 +62,8 @@ CCSimulation::CCSimulation(TString name, Bool_t verbose) {
   hAbs = new TH2F("hAbs", "hAbs", nbins, -size, size, nbins, -size, size);
   hAbs->GetXaxis()->SetTitle("z [mm]");
   hAbs->GetYaxis()->SetTitle("y [mm]");
+  hEnergy1 = new TH1F("hEnergy1", "energy loss", nbins, 0., 5.);
+  hEnergy1->GetXaxis()->SetTitle("energy [MeV]");
   hEnergy = new TH1F("hEnergy", "energy of scattered gamma", nbins, 0., 5.);
   hEnergy->GetXaxis()->SetTitle("energy [MeV]");
 }
@@ -73,7 +79,8 @@ CCSimulation::~CCSimulation() {
     hScat->Write();
     hAbs->Write();
     hEnergy->Write();
-    fFile->Close();
+    hEnergy1->Write();
+    fFile->Close(); 
   }
   SaveGeometryTxt();
   BuildTGeometry();
@@ -122,7 +129,7 @@ Bool_t CCSimulation::GenerateRay(void) {
 
   switch (fGenVersion) {
     case 1: // isotropic point-like source
-      fPoint0.SetXYZ(0, 0, 0);
+      fPoint0.SetXYZ(fXofSource, fYofSource, fZofSource);
       theta = acos(gRandom->Uniform(-1, 1));             // rad
       phi = gRandom->Uniform(-TMath::Pi(), TMath::Pi()); // rad
       // Double_t theta = TMath::Pi()/2.;	//rad
@@ -138,7 +145,7 @@ Bool_t CCSimulation::GenerateRay(void) {
       if (gRandom->Uniform(0, 1) < 0.5)
         fPoint0.SetXYZ(0, 0, 0);
       else
-        fPoint0.SetXYZ(0, 0, fZgap);
+        fPoint0.SetXYZ(fXofSource, fYofSource, fZofSource + fZgap);
       theta = acos(gRandom->Uniform(-1, 1));             // rad
       phi = gRandom->Uniform(-TMath::Pi(), TMath::Pi()); // rad
       break;
@@ -160,12 +167,19 @@ Bool_t CCSimulation::GenerateRay(void) {
       break;
     default:
       cout << "##### Please choose correct version of the generaror!" << endl;
+      abort();
       break;
   }
 
   fVersor1.SetMagThetaPhi(1, theta, phi);
 
   return kTRUE;
+}
+//------------------------------------------------------------------
+void CCSimulation::SetCoordinate(Double_t x, Double_t y, Double_t z){
+  fXofSource=x;
+  fYofSource=y;
+  fZofSource=z; 
 }
 //------------------------------------------------------------------
 /// Function which processes single gamma ray. Subsequents steps:
@@ -232,6 +246,7 @@ Bool_t CCSimulation::ProcessEvent(void) {
   hSource->Fill(fPoint0.Z(), fPoint0.Y());
   hScat->Fill(fPoint1.Z(), fPoint1.Y());
   hAbs->Fill(fPoint2.Z(), fPoint2.Y());
+  hEnergy1->Fill(fEnergy1);
   hEnergy->Fill(fEnergy2);
   fNev++;
 
