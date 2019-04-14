@@ -1,5 +1,6 @@
 #include "CLog.hh"
 #include "CMReconstruction.hh"
+#include "G4SimulationAdapter.hh"
 #include <TStopwatch.h>
 
 int main(int argc, char** argv) {
