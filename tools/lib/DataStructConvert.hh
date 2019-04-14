@@ -11,7 +11,9 @@ namespace tools {
 TMatrixT<Double_t> convertHistogramToMatrix(TH2F* hist);
 TH2F convertMatrixToHistogram(const char* name, const char* title,
                               TMatrixT<Double_t> matrix);
-
+//
+// Convert to vector by stacking columns one on the other
+//
 template <typename T> TMatrixT<T> vectorizeMatrix(const TMatrixT<T>& mat2D) {
   Int_t nRows = mat2D.GetNrows();
   Int_t nCols = mat2D.GetNcols();
@@ -26,6 +28,8 @@ template <typename T> TMatrixT<T> vectorizeMatrix(const TMatrixT<T>& mat2D) {
   return matVec;
 }
 
+//
+// Convert back to Matrix by assumong that columns are stacked one on another
 template <typename T>
 TMatrixT<T> unvectorizeMatrix(const TMatrixT<T>& matVec, Int_t nRows,
                               Int_t nCols) {
