@@ -30,6 +30,7 @@ private:
   void SingleIteration();
 
   std::vector<TMatrixT<Double_t>> fRecoObject;
+  // vectorized column matrix representing detector image
   TMatrixT<Double_t> fImage;
   TMatrixT<Double_t> fMatrixH;
   TMatrixT<Double_t> fMatrixHTranspose;

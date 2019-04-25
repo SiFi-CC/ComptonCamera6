@@ -5,36 +5,44 @@
 #include <TStopwatch.h>
 
 int main(int argc, char** argv) {
-  spdlog::set_level(spdlog::level::info);
-  if (argc != 3) {
+  spdlog::set_level(spdlog::level::debug);
+  if (argc != 4) {
     spdlog::info(
-        "type: './cm_g4reconstruct [FILENAME] [ITERATIONS]' to start:\n\n"
+        "type: './cm_g4reconstruct [DETECTOR] [SIMULATIONS] [ITERATIONS]' to "
+        "start:\n\n"
         "where:\n\n"
-        "FILE - is an input file from simulations\n\n"
+        "DETECTOR - is a result of single simulation, detector image from "
+        "this file will be used to reconstruct source\n\n"
+        "SIMULATIONS - is a set of simulation results for difrent source "
+        "position\n\n"
         "ITERATIONS - is the numer of iterations to be processed.\n\n");
     return 1;
   }
-  TString filename(argv[1]);
-  Int_t iterations = TString(argv[2]).Atoi();
+  TString simFile(argv[1]);
+  TString dataFile(argv[2]);
+  TString reconstructFile("reconstruct.root");
+  Int_t iterations = TString(argv[3]).Atoi();
 
-
-  // TODO: add cmd arg
-  G4SimulationAdapter adapter("../../g4sim/build/grid_simulation.root");
+  G4SimulationAdapter adapter(dataFile);
   // for now I'm assuming only one set of data is available in file
   auto input = adapter.GetFirstReconstructData();
   spdlog::info("Extracted {} inputs from data file", input.size());
 
-  // TODO: switch to usng collecton of hits instead of histogram
-  TFile simulationFile(filename, "READ");
-  auto detectorImage = static_cast<TH2F*>(simulationFile.Get("energyDepositions"));
+  // TODO: switch to using collecton of hits instead of histogram
+  TFile simulationFile(simFile, "READ");
+  auto detectorImage = static_cast<TH2F*>(simulationFile.Get("energyDeposits"));
 
   SimulationParams params;
   params.recoData = input;
   params.initSimulationMetadata();
 
+  spdlog::info("Prepare reconstruction");
   G4Reconstruction reconstruction(params, detectorImage);
+  spdlog::info("Run reconstruction");
   reconstruction.RunReconstruction(iterations);
-  reconstruction.Write(filename.ReplaceAll(".root", "_reconstruct.root"));
+
+  spdlog::info("Save reconstruction to file {}.", reconstructFile);
+  reconstruction.Write(reconstructFile);
 
   spdlog::info("Finished simulation");
 
