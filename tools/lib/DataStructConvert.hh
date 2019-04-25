@@ -8,11 +8,23 @@
 namespace SiFi {
 namespace tools {
 
+//
+// Assuming most intitive choice of coordinates
+//  - histogram has X axis pointed to right
+//  - histogram has Y axis pointed up
+//  - matrix row inidices are growing along downward direction
+//  - matrix column indicies are growing to the right
+//  - histogram bins are numbered 1..size
+//  - matrix bins are numbered 0..(size-1)
+//
+// e.g.
+//  bin (x, y) in histogram (N, M) size is bin (M - y , x - 1) for matrix (M, N)
+//
 TMatrixT<Double_t> convertHistogramToMatrix(TH2F* hist);
 TH2F convertMatrixToHistogram(const char* name, const char* title,
                               TMatrixT<Double_t> matrix);
 //
-// Convert to vector by stacking columns one on the other
+// Convert to vector by stacking columns
 //
 template <typename T> TMatrixT<T> vectorizeMatrix(const TMatrixT<T>& mat2D) {
   Int_t nRows = mat2D.GetNrows();
@@ -21,7 +33,7 @@ template <typename T> TMatrixT<T> vectorizeMatrix(const TMatrixT<T>& mat2D) {
 
   for (int row = 0; row < nRows; row++) {
     for (int col = 0; col < nCols; col++) {
-      matVec(row * nCols + col, 0) = mat2D(row, col);
+      matVec(col * nRows + row, 0) = mat2D(row, col);
     }
   }
 
@@ -47,7 +59,7 @@ TMatrixT<T> unvectorizeMatrix(const TMatrixT<T>& matVec, Int_t nRows,
 
   for (int row = 0; row < nRows; row++) {
     for (int col = 0; col < nCols; col++) {
-      mat2D(row, col) = matVec(row * nCols + col, 0);
+      mat2D(row, col) = matVec(col * nRows + row, 0);
     }
   }
 

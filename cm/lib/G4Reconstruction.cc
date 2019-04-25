@@ -12,19 +12,20 @@ void SimulationParams::initSimulationMetadata() {
 
   mask.xRange = std::make_pair(-100, 100);
   mask.yRange = std::make_pair(-100, 100);
-  mask.zRange = std::make_pair(400, 420);
+  mask.zRange = std::make_pair(485, 515);
   mask.binX = 21;
   mask.binY = 21;
   mask.binZ = 1;
 
-  detector.xRange = std::make_pair(-100, 100);
-  detector.yRange = std::make_pair(-100, 100);
-  detector.zRange = std::make_pair(550, 600);
-  mask.binX = 21;
-  mask.binY = 21;
-  mask.binZ = 1; // TODO: very temporary
+  detector.xRange = std::make_pair(-150, 150);
+  detector.yRange = std::make_pair(-150, 150);
+  detector.zRange = std::make_pair(635, 685);
+  detector.binX = 100;
+  detector.binY = 100;
+  detector.binZ = 1; // TODO: very temporary
+  spdlog::info("setup hardcoded defaults for simulation options");
 
-  // TODO temporary (this should be extracted from metadata
+  // TODO temporary (this should be extracted from metadata inside adapter)
   //
   //   for (auto data : recoData) {
   //     log::debug("reading data from simulation {}", data->GetName())
@@ -33,35 +34,61 @@ void SimulationParams::initSimulationMetadata() {
 
 G4Reconstruction::G4Reconstruction(SimulationParams sim, TH2F* detector)
     : fParams(sim) {
-  fMatrixH = TMatrixT<Double_t>(sim.source.nBins(), sim.detector.nBins());
-  fMatrixHTranspose =
-      TMatrixT<Double_t>(sim.detector.nBins(), sim.source.nBins());
-  fImage = SiFi::tools::convertHistogramToMatrix(detector);
+  log->debug(
+      "G4Reconstruction::G4Reconstruction(simulationParams, detectorImage)");
+  if (detector->GetYaxis()->GetNbins() != sim.detector.binY ||
+      detector->GetXaxis()->GetNbins() != sim.detector.binX) {
+    log->error("Image bins does not match simulation data");
+    throw "bin mismatch";
+  }
+
+  fMatrixH.ResizeTo(sim.detector.nBins(), sim.source.nBins());
+  fMatrixHTranspose.ResizeTo(sim.source.nBins(), sim.detector.nBins());
+  fRecoObject.push_back(TMatrixT<double>(sim.source.nBins(), 1));
+  fRecoObject[0] = 1.0 / sim.source.nBins();
+  fImage.ResizeTo(sim.detector.nBins(), 1);
+
+  fImage = SiFi::tools::vectorizeMatrix(
+      SiFi::tools::convertHistogramToMatrix(detector));
+
+  log->info("Building H matrix");
   for (auto file : sim.recoData) {
-    TTree* srcTree = static_cast<TTree*>(file->Get("source"));
-    TTree* detTree = static_cast<TTree*>(file->Get("deposits"));
-    TVector3 srcPosition;
-    srcTree->Branch("position", &srcPosition);
-    TVector3 detPosition;
-    detTree->Branch("position", &detPosition);
+    auto srcBranch =
+        static_cast<TTree*>(file->Get("source"))->GetBranch("position");
+    auto detBranch =
+        static_cast<TTree*>(file->Get("deposits"))->GetBranch("position");
+    TVector3* srcPosition = new TVector3();
+    srcBranch->SetAddress(&srcPosition);
+    TVector3* detPosition = new TVector3();
+    detBranch->SetAddress(&detPosition);
 
-    if (srcTree->GetEntries() < 100) {
-      log->error("too small number of events");
-    }
-    srcTree->GetEntry(0); // seting value on position variable
+    srcBranch->GetEntry(0); // seting value on position variable
+    // check if std dev is small enough
 
-    auto sourceBin =
-        sim.source.getBin(srcPosition.X(), srcPosition.Y(), srcPosition.Z());
+    auto sourceHistBin =
+        sim.source.getBin(srcPosition->X(), srcPosition->Y(), srcPosition->Z());
+    auto sourceMatBin =
+        std::make_tuple<int, int>(sim.source.binY - std::get<1>(sourceHistBin),
+                                  std::get<0>(sourceHistBin) - 1);
+    int colIndexMatrixH =
+        std::get<1>(sourceMatBin) * sim.source.binY + std::get<0>(sourceMatBin);
+
+    log->debug("processing point source at {}, {} in histogram bin({}, {}) = "
+               "matrix bin ({}, {})",
+               srcPosition->X(), srcPosition->Y(), std::get<0>(sourceHistBin),
+               std::get<1>(sourceHistBin), std::get<0>(sourceMatBin),
+               std::get<1>(sourceMatBin));
 
     TMatrixT<Double_t> detMatrix(sim.detector.binY, sim.detector.binX);
-    for (int i = 0; i < detTree->GetEntries(); i++) {
-      detTree->GetEntry(i);
+    for (int i = 0; i < detBranch->GetEntries(); i++) {
+      detBranch->GetEntry(i);
 
-      auto detectorBin = sim.detector.getBin(detPosition.X(), detPosition.Y(),
-                                             detPosition.Z());
+      auto detectorBin = sim.detector.getBin(detPosition->X(), detPosition->Y(),
+                                             detPosition->Z());
 
       if (sim.detector.isValidBin(detectorBin)) {
-        detMatrix(std::get<1>(detectorBin), std::get<0>(detectorBin)) += 1;
+        detMatrix(sim.detector.binY - std::get<1>(detectorBin),
+                  std::get<0>(detectorBin) - 1) += 1;
       }
     }
     auto column = SiFi::tools::vectorizeMatrix(detMatrix);
@@ -70,9 +97,8 @@ G4Reconstruction::G4Reconstruction(SimulationParams sim, TH2F* detector)
       normFactor += column(row, 0);
     }
     for (int row = 0; row < sim.detector.nBins(); row++) {
-      int col =
-          std::get<0>(sourceBin) * sim.source.binY + std::get<1>(sourceBin);
-      fMatrixH(row, col) = column(row, 0) / normFactor;
+      fMatrixH(row, colIndexMatrixH) =
+          column(row, 0) == 0 ? 1e-9 : (column(row, 0) / normFactor);
     }
   }
   fMatrixHTranspose.Transpose(fMatrixH);
@@ -109,8 +135,7 @@ void G4Reconstruction::SingleIteration() {
 
   TMatrixT<Double_t> nextIteration = fMatrixHTranspose * weightedImage;
   for (int i = 0; i < fParams.source.nBins(); i++) {
-    nextIteration(i, 0) =
-        nextIteration(i, 0) * fRecoObject.back()(i, 0);
+    nextIteration(i, 0) = nextIteration(i, 0) * fRecoObject.back()(i, 0);
   }
 
   fRecoObject.push_back(nextIteration);
@@ -118,7 +143,6 @@ void G4Reconstruction::SingleIteration() {
   log->debug("end CMReconstruction::SingleIteration()  iter={}",
              fRecoObject.size() - 1);
 }
-
 
 void G4Reconstruction::Write(TString filename) const {
   log->info("CMReconstruction::Write({})", filename.Data());
@@ -129,21 +153,22 @@ void G4Reconstruction::Write(TString filename) const {
       "histH", "histogram of matrix H(probability matrix)", fMatrixH)
       .Write();
 
+  SiFi::tools::convertMatrixToHistogram(
+      "image", "image on detector",
+      SiFi::tools::unvectorizeMatrix(fImage, 100, 100))
+      .Write();
+
   int nIterations = fRecoObject.size() - 1;
-  std::vector<TH2F*> histReco(nIterations);
-  std::vector<TH1D*> histProjX(nIterations);
-  std::vector<TH1D*> histProjY(nIterations);
-  
+
   log->debug("Save {} iterations", nIterations);
   for (int i = 0; i < nIterations; i++) {
     log->debug("saving iteration {}", i);
 
     auto recoIteration = SiFi::tools::convertMatrixToHistogram(
         "reco", TString::Format("iteration %d", i).Data(),
-        SiFi::tools::unvectorizeMatrix(fRecoObject[i], fParams.source.binX,
-                          fParams.source.binY));
+        SiFi::tools::unvectorizeMatrix(fRecoObject[i], fParams.source.binY,
+                                       fParams.source.binX));
     recoIteration.Write();
-
   }
 
   file.Close();
