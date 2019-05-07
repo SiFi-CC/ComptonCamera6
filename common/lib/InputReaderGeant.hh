@@ -31,26 +31,56 @@ public:
   double GetEnergyLoss(void);
   double GetEnergyScattered(void);
 
+  TVector3* GetScattererPosition(void);
+  TVector3* GetAbsorberPosition(void);
+
+  double GetScatThickx(void);
+  double GetScatThicky(void);
+  double GetScatThickz(void);
+  double GetAbsThickx(void);
+  double GetAbsThicky(void);
+  double GetAbsThickz(void);
+
 private:
   int fEventNumber; ///< Event number
   bool fIdentified; ///< Flag indicating whether the event was labeled or not
-  PhysicVar* fRecoEnergy_e;   ///< Electron energy + uncertainty [MeV]
-  PhysicVar* fRecoEnergy_p;   ///< Photon energy + uncertainty [MeV]
-  PhysicVec* fRecoPosition_e; ///< Electron creation position + uncertainty
-  PhysicVec*
-      fRecoPosition_p; ///< Photon energy deposition position + incertainty
-  PhysicVec* fRecoDirection_scatter; ///< Direction of the scattered photon +
-                                     ///< uncertainty
-  vector<PhysicVec*>*
-      fRecoClusterPositions; ///< Positions cluster with uncertainties
-  vector<PhysicVar*>*
-      fRecoClusterEnergies; ///< Energies cluster with uncertainties
+  Double_t fEnergy_Primary;
+  Double_t fRealEnergy_e; ///< Electron energy + uncertainty [MeV]
+  Double_t fRealEnergy_p; ///< Photon energy + uncertainty [MeV]
+  TVector3* fRealPosition_source;
+  TVector3* fRealDirection_source;
+  TVector3* fRealPosition_e; ///< Electron creation position + uncertainty
+  TVector3*
+      fRealPosition_p; ///< Photon energy deposition position + incertainty
+  TVector3* fRealDirection_scatter; ///< Direction of the scattered photon +
+                                    ///< uncertainty
+  // vector<PhysicVec*>*
+  // fRecoClusterPositions; ///< Positions cluster with uncertainties
+  // vector<PhysicVar*>*
+  // fRecoClusterEnergies; ///< Energies cluster with uncertainties
 
   TVector3* fPositionScat;  ///< Position of interaction in scatterer
   TVector3* fPositionAbs;   ///< Position of interaction in absorber
   TVector3* fDirectionScat; ///< Direction of scattered gamma
+  TVector3* fPositionSource;
+  TVector3* fDirectionSource;
 
-  bool AccessTree(TString name);
+  TVector3* fScattererPosition;
+  TVector3* fAbsorberPosition;
+
+  TVector3* fScatPlanePos;
+  TVector3* fAbsPlanePos;
+
+  Double_t fScattererThickness_x;
+  Double_t fScattererThickness_y;
+  Double_t fScattererThickness_z;
+  Double_t fAbsorberThickness_x;
+  Double_t fAbsorberThickness_y;
+  Double_t fAbsorberThickness_z;
+  Double_t fNumberOfSimulatedEvents;
+
+  bool AccessTree(TString name, TString name1);
+  TTree* fTree1;
 
   ClassDef(InputReaderGeant, 0)
 };
