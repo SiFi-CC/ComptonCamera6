@@ -164,8 +164,9 @@ void CMSimulation::Print() const {
   log->info("Mask object: {}\n"
             "fA = {}\nfB = {}\nfC = {}\nfD = {}\n"
             "fDimZ = {}\nfDimY = {}\n",
-            "DetPlane object: {}\n", "fA = {}\nfB = {}\nfC = {}\nfD = {}\n"
-                                     "fDimZ = {}\nfDimY = {}\n",
+            "DetPlane object: {}\n",
+            "fA = {}\nfB = {}\nfC = {}\nfD = {}\n"
+            "fDimZ = {}\nfDimY = {}\n",
             fMask->GetName(), fMask->GetA(), fMask->GetB(), fMask->GetC(),
             fMask->GetD(), fMask->GetDimZ(), fMask->GetDimY(),
             fDetPlane->GetName(), fDetPlane->GetA(), fDetPlane->GetB(),
