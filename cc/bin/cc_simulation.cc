@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
   CmdLineOption _pos_z("pos_z", "-z", "z position of source", 0.0);
   CmdLineOption _pos_x("pos_x", "-x", "x position of source", 0.0);
   CmdLineOption _number_events("no. of events", "-n", "number of events", 0);
-  //CmdLineOption _output_name("Output", "-o", "output name", "");
+  // CmdLineOption _output_name("Output", "-o", "output name", "");
   CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 
   Int_t nev = CmdLineOption::GetIntValue("no. of events");
@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
   Double_t z = CmdLineOption::GetDoubleValue("pos_z");
   Double_t x = CmdLineOption::GetDoubleValue("pos_x");
   int gen = CmdLineOption::GetIntValue("Source");
-  //TString output = CmdLineOption::GetStringValue("Output");
+  // TString output = CmdLineOption::GetStringValue("Output");
   CCSimulation* sim;
   TStopwatch t;
   t.Start();
