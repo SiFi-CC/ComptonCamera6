@@ -22,9 +22,8 @@ Double_t KleinNishina(Double_t* x, Double_t* par) {
   Double_t factor1 = (1. + costheta * costheta) / 2.;
   Double_t factor2 = 1. / (1. + alpha * (1. - costheta));
   Double_t factor3 =
-      1 +
-      (alpha * alpha * (1 - costheta) * (1 - costheta)) /
-          ((1 + alpha * (1 - costheta)) * (1 + costheta * costheta));
+      1 + (alpha * alpha * (1 - costheta) * (1 - costheta)) /
+              ((1 + alpha * (1 - costheta)) * (1 + costheta * costheta));
 
   Double_t prob = kR0 * kR0 * factor1 * factor2 * factor2 * factor3; // m2
   // prob = prob*1E31;						// mb
