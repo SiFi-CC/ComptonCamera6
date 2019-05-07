@@ -15,6 +15,7 @@
 #include "TString.h"
 #include "TTree.h"
 #include "TVector3.h"
+#include "Track.hh"
 
 class CCMLEM : public TObject {
 
@@ -25,6 +26,7 @@ public:
 
   Bool_t Iterate(Int_t nstop, Int_t iter);
   Bool_t Reconstruct(void);
+  Bool_t GetSigmaError(void);
   Int_t AddIsectionPoint(TString dir, Double_t x, Double_t y, Double_t z);
   Double_t SmearGaus(double val, double sigma);
   Double_t SmearBoxX(double x);
@@ -39,6 +41,8 @@ public:
 
 private:
   TString fInputName;
+  Double_t fDistScatter;
+  Double_t fDistAbsorber;
   Double_t fXofRecoPlane;
   Double_t fYofRecoPlane;
   Double_t fZofRecoPlane;
@@ -63,9 +67,14 @@ private:
   Double_t fPixelSizeZ;
   Double_t fPixelSizeY;
   Double_t fPixelSizeX;
+  Double_t fSigma[100];
+  TTree* fTree;
   TH1D* fHisto;
   TFile* fOutputFile;
-  TH3F* fImage[100];
+  TH2F* fImage[150];
+  TH1F* fAngDiff;
+  TH1F* fGeoAng;
+  TH1F* fScatAng;
   TClonesArray* fArray;
   TClonesArray* fSM;
   InputReader* fReader;
