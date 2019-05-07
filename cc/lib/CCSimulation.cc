@@ -11,11 +11,12 @@ using namespace std;
 ClassImp(CCSimulation);
 
 CmdLineOption _source_type("Source", "-s", "source type", -1000);
-
+// CmdLineOption _output_name("Output", "-o", "output name", "");
 //------------------------------------------------------------------
 /// Default constructor.
 CCSimulation::CCSimulation() {
   SetName("simulation");
+  // fOutputName = CmdLineOption::GetStringValue("Output");
   fVerbose = kTRUE;
   fFile = 0;
   fTree = 0;
@@ -35,9 +36,11 @@ CCSimulation::CCSimulation() {
 CCSimulation::CCSimulation(TString name, Bool_t verbose) {
 
   SetName(name);
-  // fN = ncount;
+  TString outputName = "work";
+  // fOutputName = CmdLineOption::GetStringValue("Output");
   fVerbose = verbose;
-  fFile = new TFile("../work/results/" + name + ".root", "RECREATE");
+  fFile =
+      new TFile("../" + outputName + "/results/" + name + ".root", "RECREATE");
   fTree = new TTree("data", "data");
   fTree->Branch("point0", &fPoint0); // source position
   fTree->Branch("point1", &fPoint1); // interaction point on the scaterrer
@@ -138,7 +141,7 @@ Bool_t CCSimulation::GenerateRay(void) {
       // Double_t phi = TMath::Pi();		//rad
       break;
     case 2: // uniform distribution along z axis (beam)
-      maxz = fScatterer.GetDimZ() / 2.;
+      maxz = fScatterer.GetDimZ() / 4.;
       fPoint0.SetXYZ(fXofSource, fYofSource, gRandom->Uniform(-maxz, maxz));
       theta = acos(gRandom->Uniform(-1, 1));             // rad
       phi = gRandom->Uniform(-TMath::Pi(), TMath::Pi()); // rad
@@ -199,22 +202,30 @@ Bool_t CCSimulation::ProcessEvent(void) {
   Clear();
   GenerateRay();
 
+  // cout << endl << endl << endl;
+  // cout << fXofSource << "\t" << fYofSource << "\t" << fZofSource << endl;
+  // cout << endl << endl << endl;
+
   fEnergy0 = 4.44;
   fTrack1.SetPoint(fPoint0);
   fTrack1.SetVersor(fVersor1);
   fTrack1.SetEnergy(fEnergy0);
   auto scatData = fScatterer.FindCrossPoint(fTrack1);
-  fPoint0 = scatData.first;
+  fPoint1 = scatData.first;
   if (scatData.second == kFALSE) {
     if (fVerbose) cout << "\tNo cross points with the scatterer\n" << endl;
     return kFALSE;
   }
+  /*Bool_t scatFlag = fTrack1.FindCrossPoint(&fScatterer,fPoint1);
+  if(scatFlag == kFALSE){
+    if(fVerbose) cout << "\tNo cross points with the scatterer\n" << endl;
+    return kFALSE;
+  }*/
 
   fTrack2 = fPhysics.ComptonScatter(&fTrack1, &fScatterer);
   fVersor2 = fTrack2->GetVersor();
   fEnergy2 = fTrack2->GetEnergy();
   // if(fEnergy2<=3.84){
-
   fEnergy1 = fEnergy0 - fEnergy2;
   //}
   // else{
@@ -248,11 +259,16 @@ Bool_t CCSimulation::ProcessEvent(void) {
     if (fVerbose) cout << "\tNo cross point with the absorber\n" << endl;
     return kFALSE;
   }
+  /*Bool_t absFlag = fTrack2->FindCrossPoint(&fAbsorber,fPoint2);
+  if(absFlag == kFALSE){
+     if(fVerbose) cout << "\tNo cross point with the absorber\n" << endl;
+     return kFALSE;
+  }*/
 
   fTree->Fill();
   hSource->Fill(fPoint0.Z(), fPoint0.Y());
   hScat->Fill(scatData.first.Z(), scatData.first.Y());
-  hAbs->Fill(absData.first.Z(), absData.first.Y());
+  hAbs->Fill(fPoint2.Z(), fPoint2.Y());
   hEnergy1->Fill(fEnergy1);
   hEnergy->Fill(fEnergy2);
   fNev++;
@@ -265,6 +281,7 @@ Bool_t CCSimulation::ProcessEvent(void) {
 /// absorber to be simulated.
 void CCSimulation::Loop(Int_t nev) {
   Int_t i = 0;
+  // cout << "in loop..." << endl;
   while (fNev < nev) {
     ProcessEvent();
     i++;
@@ -290,9 +307,11 @@ void CCSimulation::Clear(void) {
 /// text file. Name of the file: CCSimulation_geometry_genX.txt (X is the
 /// generator number).
 void CCSimulation::SaveGeometryTxt(void) {
+  TString outputName = "work";
   ofstream output(
-      Form("../work/results/"
-           "CCSimulation_geometry_gen%i_corr_%.0f_%.0f_%.0f_no.%i.txt",
+      Form("../" + outputName +
+               "/results/"
+               "CCSimulation_geometry_gen%i_corr_%.0f_%.0f_%.0f_no.%i.txt",
            fGenVersion, fXofSource, fYofSource, fZofSource, fNev),
       std::ios::out | std::ios::trunc);
   output << "Generator version: " << fGenVersion << endl;
@@ -415,11 +434,13 @@ void CCSimulation::BuildTGeometry(void) {
     cout << "##### Please choose correcr version of the generaror!" << endl;
 
   //----- close geometry and save
+  TString outputName = "work";
   geom->CloseGeometry();
   geom->SetVisLevel(4);
   geom->Export(
-      Form("../work/results/"
-           "CCSimulation_TGeometry_gen%i_corr_%.0f_%.0f_%.0f_no.%i.root",
+      Form("../" + outputName +
+               "/results/"
+               "CCSimulation_TGeometry_gen%i_corr_%.0f_%.0f_%.0f_no.%i.root",
            fGenVersion, fXofSource, fYofSource, fZofSource, fNev));
 }
 //------------------------------------------------------------------
