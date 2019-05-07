@@ -40,15 +40,21 @@ bool InputReader::SetInputFile(TString path) {
 //------------------------------------------------------------------
 /// Opens tree containing simulations results. Sets branches addresses
 ///\param name (TString) - name of the tree
-bool InputReader::AccessTree(TString name) {
+bool InputReader::AccessTree(TString name1) {
 
-  fTree = (TTree*)fFile->Get(name);
+  fTree = (TTree*)fFile->Get(name1);
   if (fTree == NULL) {
     cout << "##### Error in InputReader::AccessTree()!" << endl;
-    cout << "Could not access tree: " << name << endl;
+    cout << "Could not access tree: " << name1 << endl;
     return false;
   }
-
+  /*fTree1 = (TTree*)fFile->Get(name2);
+  if (fTree1 == NULL) {
+    cout << "##### Error in InputReader::AccessTree()!" << endl;
+    cout << "Could not access tree: " << name2 << endl;
+    return false;
+  }
+*/
   return true;
 }
 //------------------------------------------------------------------
@@ -57,6 +63,7 @@ bool InputReader::AccessTree(TString name) {
 bool InputReader::LoadEvent(int i) {
 
   int imax = fTree->GetEntries();
+  // int imax1 = fTree1->GetEntries();
 
   if (i > imax) {
     cout << "##### Error in InputReader::LoadEvent()!" << endl;
@@ -66,6 +73,7 @@ bool InputReader::LoadEvent(int i) {
   }
 
   fTree->GetEntry(i);
+  // fTree1->GetEntry(i);
   return true;
 }
 //------------------------------------------------------------------
@@ -97,10 +105,27 @@ double InputReader::GetEnergyLoss(void) { return -100; }
 /// Returns energy of the scattered gamma [MeV].
 double InputReader::GetEnergyScattered(void) { return -100; }
 //------------------------------------------------------------------
+TVector3* InputReader::GetScattererPosition(void) { return NULL; }
+//------------------------------------------------------------------
+TVector3* InputReader::GetAbsorberPosition(void) { return NULL; }
+//------------------------------------------------------------------
+double InputReader::GetScatThickx(void) { return -100; }
+//------------------------------------------------------------------
+double InputReader::GetScatThicky(void) { return -100; }
+//------------------------------------------------------------------
+double InputReader::GetScatThickz(void) { return -100; }
+//------------------------------------------------------------------
+double InputReader::GetAbsThickx(void) { return -100; }
+//------------------------------------------------------------------
+double InputReader::GetAbsThicky(void) { return -100; }
+//------------------------------------------------------------------
+double InputReader::GetAbsThickz(void) { return -100; }
+//------------------------------------------------------------------
 /// Sets default values of the protected class members.
 void InputReader::Clear(void) {
   fFile = NULL;
   fTree = NULL;
+  fTree1 = NULL;
 }
 //------------------------------------------------------------------
 /// Prints details of the InputReader class object.
