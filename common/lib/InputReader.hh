@@ -29,15 +29,23 @@ public:
   TVector3 virtual* GetPositionAbsorption(void);
   TVector3 virtual* GetGammaDirPrimary(void);
   TVector3 virtual* GetGammaDirScattered(void);
+  TVector3 virtual* GetScattererPosition(void);
+  TVector3 virtual* GetAbsorberPosition(void);
   double virtual GetEnergyPrimary(void);
   double virtual GetEnergyLoss(void);
   double virtual GetEnergyScattered(void);
+  double virtual GetScatThickx(void);
+  double virtual GetScatThicky(void);
+  double virtual GetScatThickz(void);
+  double virtual GetAbsThickx(void);
+  double virtual GetAbsThicky(void);
+  double virtual GetAbsThickz(void);
 
 protected:
   TFile* fFile; ///< Input file
   TTree* fTree; ///< Tree containing simulation results
-
-  bool virtual AccessTree(TString name);
+  TTree* fTree1;
+  bool virtual AccessTree(TString name1);
   bool SetInputFile(TString path);
 
   ClassDef(InputReader, 0)
