@@ -571,11 +571,16 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
   double sigma[lastiter + 1];
   TH1D* ProZ[150];
   TH1D* ProY[150];
-
-  TF1* func = new TF1("func", "[0]*exp(-0.5*((x-[1])/[2])^2)", -40.5, 40.5);
-  func->SetParameter(0, 18000);
-  func->SetParameter(1, 0.01);
-  func->SetParameter(2, 0.1);
+  
+  // For the unknown source distribution, user should define an appropriate fitting
+  // function to compare reasonablely sigma value of the new 10th iteration with previous one. 
+  
+  TF1* func = new TF1("FitProjection", FitProjection, -40.5, 40.5, 3);
+  func->SetParameters(fP0,fP1,fP2);
+  func->SetParNames("Constant","Mean_value","Sigma");
+//   func->SetParameter(0, 18000);
+//   func->SetParameter(1, 0.01);
+//   func->SetParameter(2, 0.1);
   // func->SetParameter(3,8.1);
 
   if (fImage[lastiter] == NULL) {
@@ -623,7 +628,7 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
     // sigma[j]=0;
     ProY[i] = fImage[i]->ProjectionY();
     ProZ[i] = fImage[i]->ProjectionX();
-    ProZ[i]->Fit("func");
+    ProZ[i]->Fit(func,"r");
     sigma[i] = func->GetParameter(2);
     // cout<< "i : \t" << i << "\t" << "sigma : \t " << sigma[i]<< endl;
   }
@@ -705,6 +710,8 @@ Bool_t CCMLEM::ReadConfig(TString path) {
       config >> fSmear;
     } else if (comment.Contains("Position resolution")) {
       config >> fResolutionX >> fResolutionY >> fResolutionZ;
+    } else if (comment.Contains("Fitting parameters")) {
+      config >> fP0 >> fP1 >> fP2;
     } else if (comment.Contains("No. of MLEM iterations")) {
       config >> fIter;
       if (fIter < 0) {
@@ -861,7 +868,13 @@ Double_t CCMLEM::GetSigmaE(double energy) {
   return sigma;
 }
 //-------------------------------------------
-
+Double_t CCMLEM::FitProjection(Double_t *x,Double_t *p) {
+      Double_t a = 0;
+      if (p[2]!=0) a = (x[0] - p[1])/p[2];
+      Double_t fitvalue = p[0]*TMath::Exp(-0.5*a*a);
+      return fitvalue;
+}
+//-------------------------------------------
 /// Prints details of the CCMLEM class obejct.
 void CCMLEM::Print(void) {
   cout << "\nCCMLEM::Print()" << endl;
@@ -899,6 +912,9 @@ void CCMLEM::Clear(void) {
   fResolutionX = -1000;
   fResolutionY = -1000;
   fResolutionZ = -1000;
+  fP0 = -1000;
+  fP1 = -1000;
+  fP2 = -1000;
   fIter = -1000;
   fStart = -1000;
   fStop = -1000;
