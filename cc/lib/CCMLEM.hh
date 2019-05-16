@@ -32,6 +32,7 @@ public:
   Double_t SmearBoxX(double x);
   Double_t SmearBoxZ(double z);
   Double_t GetSigmaE(double energy);
+  static Double_t FitProjection(Double_t *x,Double_t *par);
   Bool_t ReadConfig(TString path);
   Bool_t SetInputReader(void);
   Bool_t DrawHisto(void);
@@ -56,6 +57,9 @@ private:
   Double_t fResolutionX;
   Double_t fResolutionY;
   Double_t fResolutionZ;
+  Double_t fP0;
+  Double_t fP1;
+  Double_t fP2;
   Int_t fIter;
   Bool_t fFreshOutput;
   Int_t fStart;
