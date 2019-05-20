@@ -22,7 +22,9 @@ namespace tools {
 //
 TMatrixT<Double_t> convertHistogramToMatrix(TH2F* hist);
 TH2F convertMatrixToHistogram(const char* name, const char* title,
-                              TMatrixT<Double_t> matrix);
+                              TMatrixT<Double_t> matrix,
+                              std::pair<double, double> xRange = {-1.0, 1.0},
+                              std::pair<double, double> yRange = {-1.0, 1.0});
 //
 // Convert to vector by stacking columns
 //

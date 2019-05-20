@@ -18,26 +18,27 @@ int main(int argc, char** argv) {
         "ITERATIONS - is the numer of iterations to be processed.\n\n");
     return 1;
   }
+
   TString simFile(argv[1]);
   TString dataFile(argv[2]);
   TString reconstructFile("reconstruct.root");
   Int_t iterations = TString(argv[3]).Atoi();
 
   G4SimulationAdapter adapter(dataFile);
+
   // for now I'm assuming only one set of data is available in file
-  auto input = adapter.GetFirstReconstructData();
-  spdlog::info("Extracted {} inputs from data file", input.size());
+  CameraGeometry geometryData = adapter.GetFirstReconstructData();
+  spdlog::info("Extracted {} inputs from data file",
+               geometryData.recoData.size());
+  geometryData.Print();
 
   // TODO: switch to using collecton of hits instead of histogram
   TFile simulationFile(simFile, "READ");
   auto detectorImage = static_cast<TH2F*>(simulationFile.Get("energyDeposits"));
-
-  SimulationParams params;
-  params.recoData = input;
-  params.initSimulationMetadata();
+  adapter.VerifyForReconstruct(&simulationFile);
 
   spdlog::info("Prepare reconstruction");
-  G4Reconstruction reconstruction(params, detectorImage);
+  G4Reconstruction reconstruction(geometryData, detectorImage);
   spdlog::info("Run reconstruction");
   reconstruction.RunReconstruction(iterations);
 

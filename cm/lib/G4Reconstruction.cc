@@ -2,37 +2,7 @@
 #include "DataStructConvert.hh"
 #include <TTree.h>
 
-void SimulationParams::initSimulationMetadata() {
-  source.xRange = std::make_pair(-105, 105);
-  source.yRange = std::make_pair(-105, 105);
-  source.zRange = std::make_pair(-0.1, 0.1);
-  source.binX = 21;
-  source.binY = 21;
-  source.binZ = 1;
-
-  mask.xRange = std::make_pair(-100, 100);
-  mask.yRange = std::make_pair(-100, 100);
-  mask.zRange = std::make_pair(485, 515);
-  mask.binX = 21;
-  mask.binY = 21;
-  mask.binZ = 1;
-
-  detector.xRange = std::make_pair(-150, 150);
-  detector.yRange = std::make_pair(-150, 150);
-  detector.zRange = std::make_pair(635, 685);
-  detector.binX = 100;
-  detector.binY = 100;
-  detector.binZ = 1; // TODO: very temporary
-  spdlog::info("setup hardcoded defaults for simulation options");
-
-  // TODO temporary (this should be extracted from metadata inside adapter)
-  //
-  //   for (auto data : recoData) {
-  //     log::debug("reading data from simulation {}", data->GetName())
-  //   }
-}
-
-G4Reconstruction::G4Reconstruction(SimulationParams sim, TH2F* detector)
+G4Reconstruction::G4Reconstruction(CameraGeometry sim, TH2F* detector)
     : fParams(sim) {
   log->debug(
       "G4Reconstruction::G4Reconstruction(simulationParams, detectorImage)");
@@ -57,13 +27,12 @@ G4Reconstruction::G4Reconstruction(SimulationParams sim, TH2F* detector)
         static_cast<TTree*>(file->Get("source"))->GetBranch("position");
     auto detBranch =
         static_cast<TTree*>(file->Get("deposits"))->GetBranch("position");
+    auto detHistogram = static_cast<TH2F*>(file->Get("energyDeposits"));
     TVector3* srcPosition = new TVector3();
     srcBranch->SetAddress(&srcPosition);
-    TVector3* detPosition = new TVector3();
-    detBranch->SetAddress(&detPosition);
 
+    // when source recording is disabled there should still be at least on event
     srcBranch->GetEntry(0); // seting value on position variable
-    // check if std dev is small enough
 
     auto sourceHistBin =
         sim.source.getBin(srcPosition->X(), srcPosition->Y(), srcPosition->Z());
@@ -79,29 +48,48 @@ G4Reconstruction::G4Reconstruction(SimulationParams sim, TH2F* detector)
                std::get<1>(sourceHistBin), std::get<0>(sourceMatBin),
                std::get<1>(sourceMatBin));
 
-    TMatrixT<Double_t> detMatrix(sim.detector.binY, sim.detector.binX);
-    for (int i = 0; i < detBranch->GetEntries(); i++) {
-      detBranch->GetEntry(i);
-
-      auto detectorBin = sim.detector.getBin(detPosition->X(), detPosition->Y(),
-                                             detPosition->Z());
-
-      if (sim.detector.isValidBin(detectorBin)) {
-        detMatrix(sim.detector.binY - std::get<1>(detectorBin),
-                  std::get<0>(detectorBin) - 1) += 1;
-      }
+    TMatrixT<Double_t> column;
+    column.ResizeTo(sim.detector.nBins(), 1);
+    if (detBranch->GetEntries() == 0) {
+      column = ReadFromTH2F(detHistogram);
+    } else {
+      column = ReadFromTTree(detBranch);
     }
-    auto column = SiFi::tools::vectorizeMatrix(detMatrix);
+
     double normFactor = 0;
-    for (int row = 0; row < sim.detector.nBins(); row++) {
+    for (int row = 0; row < fParams.detector.nBins(); row++) {
       normFactor += column(row, 0);
     }
+
     for (int row = 0; row < sim.detector.nBins(); row++) {
       fMatrixH(row, colIndexMatrixH) =
           column(row, 0) == 0 ? 1e-9 : (column(row, 0) / normFactor);
     }
   }
   fMatrixHTranspose.Transpose(fMatrixH);
+}
+
+TMatrixT<Double_t> G4Reconstruction::ReadFromTH2F(TH2F* detHist) {
+  return SiFi::tools::vectorizeMatrix(
+      SiFi::tools::convertHistogramToMatrix(detHist));
+}
+
+TMatrixT<Double_t> G4Reconstruction::ReadFromTTree(TBranch* detBranch) {
+  TVector3* detPosition = new TVector3();
+  detBranch->SetAddress(&detPosition);
+  TMatrixT<Double_t> detMatrix(fParams.detector.binY, fParams.detector.binX);
+  for (int i = 0; i < detBranch->GetEntries(); i++) {
+    detBranch->GetEntry(i);
+
+    auto detectorBin = fParams.detector.getBin(
+        detPosition->X(), detPosition->Y(), detPosition->Z());
+
+    if (fParams.detector.isValidBin(detectorBin)) {
+      detMatrix(fParams.detector.binY - std::get<1>(detectorBin),
+                std::get<0>(detectorBin) - 1) += 1;
+    }
+  }
+  return SiFi::tools::vectorizeMatrix(detMatrix);
 }
 
 void G4Reconstruction::RunReconstruction(int nIter) {
@@ -167,7 +155,8 @@ void G4Reconstruction::Write(TString filename) const {
     auto recoIteration = SiFi::tools::convertMatrixToHistogram(
         "reco", TString::Format("iteration %d", i).Data(),
         SiFi::tools::unvectorizeMatrix(fRecoObject[i], fParams.source.binY,
-                                       fParams.source.binX));
+                                       fParams.source.binX),
+        fParams.source.xRange, fParams.source.yRange);
     recoIteration.Write();
   }
 
