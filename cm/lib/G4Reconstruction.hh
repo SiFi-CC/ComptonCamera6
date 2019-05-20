@@ -3,24 +3,17 @@
 
 #include "BinnedGeometry.hh"
 #include "CLog.hh"
+#include "G4SimulationAdapter.hh"
+#include <TBranch.h>
 #include <TFile.h>
 #include <TH2F.h>
 #include <TObject.h>
 #include <TVector3.h>
 
-struct SimulationParams {
-  BinnedGeometry source;
-  BinnedGeometry mask;
-  BinnedGeometry detector;
-  std::vector<TFile*> recoData;
-
-  void initSimulationMetadata();
-};
-
 class G4Reconstruction : public TObject {
 public:
   G4Reconstruction() = default;
-  G4Reconstruction(SimulationParams sim, TH2F* detector);
+  G4Reconstruction(CameraGeometry sim, TH2F* detector);
   virtual ~G4Reconstruction() = default;
 
   void RunReconstruction(int nIter);
@@ -28,6 +21,8 @@ public:
 
 private:
   void SingleIteration();
+  TMatrixT<Double_t> ReadFromTTree(TBranch* branch);
+  TMatrixT<Double_t> ReadFromTH2F(TH2F* hist);
 
   std::vector<TMatrixT<Double_t>> fRecoObject;
   // vectorized column matrix representing detector image
@@ -35,7 +30,7 @@ private:
   TMatrixT<Double_t> fMatrixH;
   TMatrixT<Double_t> fMatrixHTranspose;
 
-  SimulationParams fParams;
+  CameraGeometry fParams;
 
   SiFi::logger log = SiFi::createLogger("G4Reconstruction");
 
