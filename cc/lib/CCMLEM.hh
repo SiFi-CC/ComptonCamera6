@@ -16,6 +16,7 @@
 #include "TTree.h"
 #include "TVector3.h"
 #include "Track.hh"
+#include "TStyle.h"
 
 class CCMLEM : public TObject {
 
@@ -71,6 +72,7 @@ private:
   Double_t fPixelSizeZ;
   Double_t fPixelSizeY;
   Double_t fPixelSizeX;
+  //Double_t fSigmaErr[100];
   Double_t fSigma[100];
   TTree* fTree;
   TH1D* fHisto;
