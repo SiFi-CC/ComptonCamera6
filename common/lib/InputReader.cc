@@ -1,5 +1,5 @@
 #include "InputReader.hh"
-
+#include <vector>
 ClassImp(InputReader);
 
 //------------------------------------------------------------------
@@ -84,9 +84,13 @@ TVector3* InputReader::GetPositionPrimary(void) { return NULL; }
 /// in the scatterer (Compton scattering).
 TVector3* InputReader::GetPositionScattering(void) { return NULL; }
 //------------------------------------------------------------------
+TVector3* InputReader::GetPositionScatteringReco(void) { return NULL; }
+//------------------------------------------------------------------
 /// Returns pointer to the vector representing place of interaction
 /// in the absorber (absorption).
 TVector3* InputReader::GetPositionAbsorption(void) { return NULL; }
+//------------------------------------------------------------------
+TVector3* InputReader::GetPositionAbsorptionReco(void) { return NULL; }
 //------------------------------------------------------------------
 /// Returns pointer to the vector representing direction of the primary
 /// gamma
@@ -96,14 +100,24 @@ TVector3* InputReader::GetGammaDirPrimary(void) { return NULL; }
 /// scattered gamma.
 TVector3* InputReader::GetGammaDirScattered(void) { return NULL; }
 //------------------------------------------------------------------
+TVector3* InputReader::GetGammaDirScatteredReco(void) { return NULL; }
+//------------------------------------------------------------------
+int InputReader::GetRecoClusterPosSize(void) { return -100; }
+//------------------------------------------------------------------
 /// Returns energy of the gamma emitted from the source [MeV].
 double InputReader::GetEnergyPrimary(void) { return -100; }
+//------------------------------------------------------------------
+double InputReader::GetEnergyPrimaryReco(void) { return -100; }
 //------------------------------------------------------------------
 /// Returns energy deposited in the scatterer [MeV].
 double InputReader::GetEnergyLoss(void) { return -100; }
 //------------------------------------------------------------------
+double InputReader::GetEnergyLossReco(void) { return -100; }
+//------------------------------------------------------------------
 /// Returns energy of the scattered gamma [MeV].
 double InputReader::GetEnergyScattered(void) { return -100; }
+//------------------------------------------------------------------
+double InputReader::GetEnergyScatteredReco(void) { return -100; }
 //------------------------------------------------------------------
 TVector3* InputReader::GetScattererPosition(void) { return NULL; }
 //------------------------------------------------------------------
@@ -125,7 +139,7 @@ double InputReader::GetAbsThickz(void) { return -100; }
 void InputReader::Clear(void) {
   fFile = NULL;
   fTree = NULL;
-  fTree1 = NULL;
+  //fTree1 = NULL;
 }
 //------------------------------------------------------------------
 /// Prints details of the InputReader class object.
