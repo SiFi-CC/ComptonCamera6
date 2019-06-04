@@ -5,7 +5,12 @@ using namespace std;
 
 int main(int argc, char *argv[]){
 
+<<<<<<< HEAD
   if(argc!=2){
+=======
+
+  if (argc != 2) {
+>>>>>>> Merge changes from recent master
     cout << "To run type: ./mlem path_to_config" << endl;
     return 0;
   }
