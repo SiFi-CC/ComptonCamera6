@@ -24,13 +24,22 @@ public:
   void Clear(void);
   TVector3* GetPositionPrimary(void);
   TVector3* GetPositionScattering(void);
+  TVector3* GetPositionScatteringReco(void);
   TVector3* GetPositionAbsorption(void);
+  TVector3* GetPositionAbsorptionReco(void);
   TVector3* GetGammaDirPrimary(void);
   TVector3* GetGammaDirScattered(void);
+  TVector3* GetGammaDirScatteredReco(void);
+  int GetRecoClusterPosSize(void);
+   
   double GetEnergyPrimary(void);
+  double GetEnergyPrimaryReco(void);
   double GetEnergyLoss(void);
+  double GetEnergyLossReco(void);
   double GetEnergyScattered(void);
-
+  double GetEnergyScatteredReco(void);
+  
+  
   TVector3* GetScattererPosition(void);
   TVector3* GetAbsorberPosition(void);
 
@@ -44,6 +53,7 @@ public:
 private:
   int fEventNumber; ///< Event number
   bool fIdentified; ///< Flag indicating whether the event was labeled or not
+  //bool fSize;
   Double_t fEnergy_Primary;
   Double_t fRealEnergy_e; ///< Electron energy + uncertainty [MeV]
   Double_t fRealEnergy_p; ///< Photon energy + uncertainty [MeV]
@@ -54,14 +64,29 @@ private:
       fRealPosition_p; ///< Photon energy deposition position + incertainty
   TVector3* fRealDirection_scatter; ///< Direction of the scattered photon +
                                     ///< uncertainty
-  // vector<PhysicVec*>*
-  // fRecoClusterPositions; ///< Positions cluster with uncertainties
-  // vector<PhysicVar*>*
-  // fRecoClusterEnergies; ///< Energies cluster with uncertainties
+  PhysicVar* fRecoEnergy_e;   ///< Electron energy + uncertainty [MeV]
+  PhysicVar* fRecoEnergy_p;   ///< Photon energy + uncertainty [MeV]
+  PhysicVec* fRecoPosition_e; ///< Electron creation position + uncertainty
+  PhysicVec*
+      fRecoPosition_p; ///< Photon energy deposition position + incertainty
+  PhysicVec* fRecoDirection_scatter; ///< Direction of the scattered photon +
+                                     ///< uncertainty
+  vector<PhysicVec*>*
+      fRecoClusterPositions; ///< Positions cluster with uncertainties
+  vector<PhysicVar*>*
+      fRecoClusterEnergies; ///< Energies cluster with uncertainties
+
 
   TVector3* fPositionScat;  ///< Position of interaction in scatterer
   TVector3* fPositionAbs;   ///< Position of interaction in absorber
   TVector3* fDirectionScat; ///< Direction of scattered gamma
+  
+  TVector3* fPositionScatReco;
+  TVector3* fPositionAbsReco;
+  TVector3* fDirectionScatReco;
+  
+  
+  
   TVector3* fPositionSource;
   TVector3* fDirectionSource;
 
@@ -79,8 +104,9 @@ private:
   Double_t fAbsorberThickness_z;
   Double_t fNumberOfSimulatedEvents;
 
-  bool AccessTree(TString name, TString name1);
+  bool AccessTree(TString name, TString name1, TString name2);
   TTree* fTree1;
+  TTree* fTree2;
 
   ClassDef(InputReaderGeant, 0)
 };
