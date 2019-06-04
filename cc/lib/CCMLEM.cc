@@ -5,6 +5,7 @@
 #include "TClonesArray.h"
 #include "TF1.h"
 #include "TRandom.h"
+#include "TStyle.h"
 #include <fstream>
 #include <iostream>
 #include <math.h>
@@ -41,15 +42,22 @@ CCMLEM::CCMLEM(TString path) {
   fPoints = 0;
 
   if (fSmear) {
-    TString name = "../work/results/EnergyResolutionExample.root";
+     TString name = "../work/results/EnergyResolutionExample.root";
+     //TString name = "../work/results/Fiber_1_0.root";
+    // TString name = "../work/results/Fiber_1_1.root";
     TFile* file = new TFile(name, "READ");
     fHisto = (TH1D*)file->Get("Scintillator_0ResolutionCombiEnergy");
+    // fHisto = (TH1D*)file->Get("FiberEnergyUnc_Type3");
+    // fHisto = (TH1D*)file->Get("FiberEnergyUnc_Type5");
     TF1* func = new TF1("fit1", "[0]+[1]/sqrt(x)+[2]/x^(3/2)", 0, 4.5);
 
-    func->FixParameter(0, -0.0178);
-    func->FixParameter(1, 0.05);
-    func->FixParameter(2, 0.01);
-    fHisto->Fit("fit1");
+//     func->FixParameter(0, -0.0178);
+//     func->FixParameter(1, 0.05);
+//     func->FixParameter(2, 0.01);
+    fHisto->Fit("fit1","r");
+    std::cout << "par0 " << func->GetParameter(0) << std::endl;
+    std::cout << "par1 " << func->GetParameter(1) << std::endl;
+    std::cout << "par2 " << func->GetParameter(2) << std::endl;
   }
 }
 //--------------------
@@ -82,7 +90,8 @@ Bool_t CCMLEM::SetInputReader(void) {
     file->Close();
     fReader = new InputReaderSimple(fullName);
   } else if (file->Get("G4SimulationData_Real") &&
-             file->Get("G4SimulationData_Setup")) {
+             file->Get("G4SimulationData_Setup")&&
+             file->Get("G4SimulationData_Reconstruction")) {
     file->Close();
     fReader = new InputReaderGeant(fullName);
   } else {
@@ -245,12 +254,12 @@ Bool_t CCMLEM::Reconstruct(void) {
     // point2->SetXYZ(point1->x()+point2->x(), point1->y()+point2->y(),
     // point1->z()+point2->z()); point2->Print();
     if (fSmear) {
-      point1->SetXYZ(SmearBoxX(point1->X()),
-                     SmearGaus(point1->Y(), fResolutionY),
-                     SmearBoxZ(point1->Z()));
-      point2->SetXYZ(SmearBoxX(point2->X()),
-                     SmearGaus(point2->Y(), fResolutionY),
-                     SmearBoxZ(point2->Z()));
+          point1->SetXYZ(SmearBoxX(point1->X()),
+                         SmearGaus(point1->Y(), fResolutionY),
+                         SmearBoxZ(point1->Z()));
+          point2->SetXYZ(SmearBoxX(point2->X()),
+                         SmearGaus(point2->Y(), fResolutionY),
+                         SmearBoxZ(point2->Z()));
       energy1 = SmearGaus(energy1, GetSigmaE(energy1));
       energy2 = SmearGaus(energy2, GetSigmaE(energy2));
     }
@@ -458,13 +467,15 @@ Bool_t CCMLEM::Reconstruct(void) {
   SaveToFile(fImage[0]);
 
   for (int iter = 1; iter < fIter + 1; iter++) {
-    Iterate(fStop, iter);
-    if (fSigma[100] < 0.2) {
-      t.Stop();
-      t.Print();
-      // cout<< "sigma value" <<fSigma[100] << endl;
-      return 0;
-    }
+      
+      Iterate(fStop, iter);
+      if (fSigma[100] < 0.01) {
+          
+          t.Stop();
+          t.Print();
+// //       // cout<< "sigma value" <<fSigma[100] << endl;
+          return 0;
+      }
   }
 
   // DrawHisto();
@@ -555,6 +566,9 @@ Int_t CCMLEM::AddIsectionPoint(TString dir, Double_t x, Double_t y,
 //------------------------------------
 Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
 
+  //gStyle->SetOptStat(1101);
+  gStyle->SetOptFit(1011);
+    
   int lastiter = iter - 1;
 
   double sigma[lastiter + 1];
@@ -564,9 +578,12 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
   // For the unknown source distribution, user should define an appropriate fitting
   // function to compare reasonablely sigma value of the new 10th iteration with previous one. 
   
-  TF1* func = new TF1("FitProjection", FitProjection, -40.5, 40.5, 3);
+  TF1* func = new TF1("FitProjection", FitProjection, -14.5, 14.5, 3);
   func->SetParameters(fP0,fP1,fP2);
-  func->SetParNames("Constant","Mean_value","Sigma");
+  func->SetParNames("Constant","Mean_value","Sigma_z");
+//   TF1* func_y = new TF1("FitProjection", FitProjection, -14.5, 14.5, 3);
+//   func_y->SetParameters(fP0,fP1,fP2);
+//   func_y->SetParNames("Constant_y","Mean_value_y","Sigma_y");
 //   func->SetParameter(0, 18000);
 //   func->SetParameter(1, 0.01);
 //   func->SetParameter(2, 0.1);
@@ -612,44 +629,48 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
     addvalue = dist * hlastiter->GetBinContent(binno) / denominator[eventno];
     hthisiter->SetBinContent(binno, hthisiter->GetBinContent(binno) + addvalue);
   }
+  
+  
 
-  for (int i = 10; i < lastiter + 1; i = i + 10) {
+  for (int i = 10; i <= lastiter + 1; i = i + 10) {
     // sigma[j]=0;
     ProY[i] = fImage[i]->ProjectionY();
     ProZ[i] = fImage[i]->ProjectionX();
     ProZ[i]->Fit(func,"r");
+    //ProY[i]->Fit(func_y,"r");
     sigma[i] = func->GetParameter(2);
     // cout<< "i : \t" << i << "\t" << "sigma : \t " << sigma[i]<< endl;
   }
 
-  for (int j = 20; j < lastiter + 1; j = j + 10) {
+    for (int j = 20; j <= lastiter + 1; j = j + 10) {
+      //cout << fSigma[100] << endl;
+      if (fabs(sigma[j]) !=0) fSigma[100] = (fabs(sigma[j] - sigma[j - 10]))/fabs(sigma[j]);
+      //cout << fSigma[100] << endl;
+      if (fSigma[100] < 0.01) {
 
-    fSigma[100] = fabs(sigma[j] - sigma[j - 10]);
-    if (fSigma[100] < 0.2) {
-
-      cout << "SigmaIter" << j << " - "
+        cout << "SigmaIter" << j << " - "
            << "SigmaIter" << j - 10 << " = "
-           << "SigmaErr : " << fSigma[100] << endl;
+           << "SigmaPercentageErr : " << fSigma[100] << endl;
 
-      TCanvas* can = new TCanvas("can", "MLEM2D", 1000, 1000);
-      can->Divide(2, 2);
-      can->cd(1);
-      fImage[j - 10]->Draw("colz");
-      can->cd(2);
-      ProZ[j - 10]->Draw();
-      can->cd(3);
-      ProY[j - 10]->Draw();
+        TCanvas* can = new TCanvas("can", "MLEM2D", 1000, 1000);
+        can->Divide(1, 2);
+        can->cd(1);
+        //fImage[j - 10]->Draw("colz");
+        //can->cd(2);
+        ProZ[j - 10]->Draw();
+        can->cd(2);
+        ProY[j - 10]->Draw();
 
-      SaveToFile(can);
-      // can->Update();
-      delete can;
+        SaveToFile(can);
+        //can->Update();
+        //delete can;
 
-      return 0;
+        return 0;
+      
     }
   }
-
+  
   SaveToFile(hthisiter);
-
   return kTRUE;
 }
 //------------------------------------
