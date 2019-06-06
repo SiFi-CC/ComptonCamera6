@@ -4,8 +4,7 @@
 using namespace std;
 
 int main(int argc, char* argv[]) {
-
-
+    
   if (argc != 2) {
     cout << "To run type: ./mlem path_to_config" << endl;
     return 0;
