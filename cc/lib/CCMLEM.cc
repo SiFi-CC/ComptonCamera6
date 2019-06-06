@@ -94,6 +94,9 @@ Bool_t CCMLEM::SetInputReader(void) {
              file->Get("G4SimulationData_Reconstruction")) {
     file->Close();
     fReader = new InputReaderGeant(fullName);
+  } else if (file->Get("Cluster21") && file->Get("Cluster22")) {
+    file->Close();
+    fReader = new InputReaderEI(fullName);
   } else {
     cout << "##### Error in CCMLEM::SetInputReader()!" << endl;
     cout << "Unknown data format" << endl;
