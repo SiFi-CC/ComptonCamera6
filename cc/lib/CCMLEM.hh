@@ -4,6 +4,7 @@
 #include "InputReader.hh"
 #include "InputReaderGeant.hh"
 #include "InputReaderSimple.hh"
+#include "InputReaderEI.hh"
 #include "TFile.h"
 #include "TGraph.h"
 #include "TH1F.h"
