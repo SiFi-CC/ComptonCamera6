@@ -58,6 +58,9 @@ install(FILES
     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/ComptonCamera6/)
 
 INSTALL(DIRECTORY data/masks
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/ComptonCamera6/)
+
+INSTALL(DIRECTORY data/mlem_reco
     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/ComptonCamera6/)
 
 include_directories(BEFORE common/lib)

@@ -11,6 +11,7 @@ using namespace std;
 ClassImp(CCSimulation);
 
 CmdLineOption _source_type("Source", "-s", "source type", -1000);
+CmdLineOption _output_path("OutputPath", "-opath", "output path", "./results/");
 // CmdLineOption _output_name("Output", "-o", "output name", "");
 //------------------------------------------------------------------
 /// Default constructor.
@@ -36,11 +37,11 @@ CCSimulation::CCSimulation() {
 CCSimulation::CCSimulation(TString name, Bool_t verbose) {
 
   SetName(name);
-  TString outputName = "work";
+  TString outputName = CmdLineOption::GetStringValue("OutputPath");
   // fOutputName = CmdLineOption::GetStringValue("Output");
   fVerbose = verbose;
   fFile =
-      new TFile("../" + outputName + "/results/" + name + ".root", "RECREATE");
+      new TFile(outputName +"/"+ name + ".root", "RECREATE");
   fTree = new TTree("data", "data");
   fTree->Branch("point0", &fPoint0); // source position
   fTree->Branch("point1", &fPoint1); // interaction point on the scaterrer
@@ -308,12 +309,10 @@ void CCSimulation::Clear(void) {
 /// text file. Name of the file: CCSimulation_geometry_genX.txt (X is the
 /// generator number).
 void CCSimulation::SaveGeometryTxt(void) {
-  TString outputName = "work";
+  TString outputName = CmdLineOption::GetStringValue("OutputPath");
   ofstream output(
-      Form("../" + outputName +
-               "/results/"
-               "CCSimulation_geometry_gen%i_corr_%.0f_%.0f_%.0f_no.%i.txt",
-           fGenVersion, fXofSource, fYofSource, fZofSource, fNev),
+      Form("%s/CCSimulation_geometry_gen%i_corr_%.0f_%.0f_%.0f_no.%i.txt",
+           outputName.Data(),fGenVersion, fXofSource, fYofSource, fZofSource, fNev),
       std::ios::out | std::ios::trunc);
   output << "Generator version: " << fGenVersion << endl;
   if (fGenVersion == 1)
@@ -435,14 +434,10 @@ void CCSimulation::BuildTGeometry(void) {
     cout << "##### Please choose correcr version of the generaror!" << endl;
 
   //----- close geometry and save
-  TString outputName = "work";
+  TString outputName = CmdLineOption::GetStringValue("OutputPath");
   geom->CloseGeometry();
   geom->SetVisLevel(4);
-  geom->Export(
-      Form("../" + outputName +
-               "/results/"
-               "CCSimulation_TGeometry_gen%i_corr_%.0f_%.0f_%.0f_no.%i.root",
-           fGenVersion, fXofSource, fYofSource, fZofSource, fNev));
+  geom->Export( Form( "%s/CCSimulation_TGeometry_gen%i_corr_%.0f_%.0f_%.0f_no.%i.root", outputName.Data(), fGenVersion, fXofSource, fYofSource, fZofSource, fNev));
 }
 //------------------------------------------------------------------
 /// Prints details of the CCSimulation class object.
