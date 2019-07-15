@@ -32,6 +32,7 @@ public:
   
   int GetScatSize(void);
   int GetAbsSize(void);
+  int GetSize(void);
 
   
 
@@ -48,12 +49,16 @@ private:
   
   Int_t fSizeScat2;
   Int_t fSizeAbs2;
+  Int_t fSize;
   
   Double_t fTotalEnergy2;
-    
-  bool AccessTree(TString name, TString name1);
+  Double_t fEnergyRecoScat21;
+  Double_t fEnergyRecoAbs22; 
+  
+  bool AccessTree(TString name, TString name1, TString name2);
   TTree* fTree;
   TTree* fTree1;
+  TTree* fTree2;
 
 //  ClassDef(InputReaderEI, 0)
 };
