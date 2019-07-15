@@ -1,0 +1,10 @@
+
+1. In the build directory, compile simulation with respect to your the source type and geometry 
+
+./bin/cc_simulation -y 0 -z 0 -x 0 -n 100 -s 1
+
+2. put the output file name  and size of image plane and other variables which you need in the config file
+
+3. compile mlem and mention the config file directory 
+
+./bin/mlem ../work/results/config.txt
