@@ -1,0 +1,20 @@
+# Name of the input file  
+CCSimulation_gen1_corr_0_0_0_no.10000.root
+# Size of image volume
+61 61 0
+# No. of bins
+61 61 0
+# Smear
+1
+# Position resolution
+1 4 1 
+# Fitting parameters
+2300 0.1 1
+# No. of MLEM iterations
+60
+# Fresh output
+1
+# No. of first and last event
+0 10000
+# Verbose flag
+0
