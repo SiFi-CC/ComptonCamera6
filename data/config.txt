@@ -1,18 +1,20 @@
 # Name of the input file  
-LYSO_Ce_Epotek_OC_Requested_SetUp.root
+CCSimulation_gen1_corr_0_0_0_no.10000.root
 # Size of image volume
 61 61 0
 # No. of bins
 61 61 0
 # Smear
-0
+1
 # Position resolution
 1 4 1 
+# Fitting parameters
+2300 0.1 1
 # No. of MLEM iterations
-10
+60
 # Fresh output
 1
 # No. of first and last event
-0 273296
+0 10000
 # Verbose flag
 0
