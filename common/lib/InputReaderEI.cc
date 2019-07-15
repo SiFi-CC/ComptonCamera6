@@ -14,7 +14,7 @@ InputReaderEI::InputReaderEI() : InputReader() {
 ///\param path (TString) - path to the input file.
 InputReaderEI::InputReaderEI(TString path) : InputReader(path) {
 
-  if (!AccessTree("Cluster21", "Cluster22")) {
+  if (!AccessTree("Cluster21", "Cluster22", "Energy")) {
     throw "##### Exception in InputReaderEI constructor!";
   }
   fPositionScatReco = new TVector3();
@@ -26,10 +26,11 @@ InputReaderEI::~InputReaderEI() {
   if (fFile->IsOpen()) fFile->Close();
 }
 //------------------------------------------------------------------
-bool InputReaderEI::AccessTree(TString name, TString name1) {
+bool InputReaderEI::AccessTree(TString name, TString name1, TString name2) {
 
   fTree = (TTree*)fFile->Get(name);
   fTree1 = (TTree*)fFile->Get(name1);
+  fTree2 = (TTree*)fFile->Get(name2);
   
   if (fTree == NULL) {
     cout << "##### Error in InputReaderEI::AccessTree()!" << endl;
@@ -37,6 +38,11 @@ bool InputReaderEI::AccessTree(TString name, TString name1) {
     return false;
   }
   if (fTree1 == NULL) {
+    cout << "##### Error in InputReaderEI::AccessTree()!" << endl;
+    cout << "Could not access the tree!" << endl;
+    return false;
+  }
+  if (fTree2 == NULL) {
     cout << "##### Error in InputReaderEI::AccessTree()!" << endl;
     cout << "Could not access the tree!" << endl;
     return false;
@@ -56,7 +62,11 @@ bool InputReaderEI::AccessTree(TString name, TString name1) {
   fTree1->SetBranchAddress("PointRecoAbs2", &fPointRecoAbs2);
   fTree1->SetBranchAddress("EnergyRecoAbs2", &fEnergyRecoAbs2);
   fTree1->SetBranchAddress("SizeAbs2", &fSizeAbs2);
-  fTree1->SetBranchAddress("TotalEnergy'2'", &fTotalEnergy2);
+  //fTree1->SetBranchAddress("TotalEnergy'2'", &fTotalEnergy2);
+  fTree2->SetBranchAddress("EnergyRecoScat2", &fEnergyRecoScat21);
+  fTree2->SetBranchAddress("EnergyRecoAbs2", &fEnergyRecoAbs22);
+  fTree2->SetBranchAddress("TotalEnergy'2'", &fTotalEnergy2);
+  fTree2->SetBranchAddress("Size", &fSize);
   
   cout << "\n\nIn InputReaderEI::AccessTree()." << endl;
   cout << fTree->GetName() << " tree accessed.\n" << endl;
@@ -64,6 +74,8 @@ bool InputReaderEI::AccessTree(TString name, TString name1) {
   cout << "\n\nIn InputReaderEI::AccessTree()." << endl;
   cout << fTree1->GetName() << " tree accessed.\n" << endl;
   
+  cout << "\n\nIn InputReaderEI::AccessTree()." << endl;
+  cout << fTree2->GetName() << " tree accessed.\n" << endl;
  
   
   return true;
@@ -83,6 +95,14 @@ bool InputReaderEI::LoadEvent(int i) {
   }
   fTree1->GetEntry(i);
   
+  int imax2 = fTree2->GetEntries();
+  if (i > imax2) {
+    cout << "##### Error in InputReaderEI::LoadEvent() in reconstruction tree!" << endl;
+    cout << "Requested event number larger than number of events in the tree!"
+         << endl;
+    return false;
+  }
+  fTree2->GetEntry(i);
 
   return true;
 }
@@ -102,21 +122,26 @@ TVector3* InputReaderEI::GetPositionAbsorption(void) {
   return fPositionAbsReco;
 }
 //------------------------------------------------------------------
-double InputReaderEI::GetEnergyLoss(void) { return fEnergyRecoScat2->value; }
+double InputReaderEI::GetEnergyLoss(void) { return fEnergyRecoScat21; }
 //------------------------------------------------------------------
-double InputReaderEI::GetEnergyScattered(void) { return fEnergyRecoAbs2->value; }
+double InputReaderEI::GetEnergyScattered(void) { return fEnergyRecoAbs22; }
 //------------------------------------------------------------------
 int InputReaderEI::GetScatSize(void) { return fSizeScat2; }
 //------------------------------------------------------------------
 int InputReaderEI::GetAbsSize(void) { return fSizeAbs2; }
+//------------------------------------------------------------------
+int InputReaderEI::GetSize(void) { return fSize; }
 //------------------------------------------------------------------
 double InputReaderEI::GetTotalEnergy(void) { return fTotalEnergy2; }
 //------------------------------------------------------------------
 void InputReaderEI::Clear(void) {
   
   fTotalEnergy2 = -1000;
+  fEnergyRecoScat21 = -1000;
+  fEnergyRecoAbs22 = -1000;
   fSizeScat2 = -1;
   fSizeAbs2 = -1;
+  fSize = -1;
   fPositionScatReco = NULL;
   fPositionAbsReco = NULL;
   fEnergyRecoScat2 = NULL;
@@ -125,6 +150,7 @@ void InputReaderEI::Clear(void) {
   fPointRecoAbs2 = NULL;
   fTree = NULL;
   fTree1 = NULL;
+  fTree2 = NULL;
   
   fFile = NULL;
 
