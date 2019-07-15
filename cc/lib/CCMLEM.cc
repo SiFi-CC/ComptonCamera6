@@ -6,11 +6,14 @@
 #include "TF1.h"
 #include "TRandom.h"
 #include "TStyle.h"
+#include "TSystem.h"
 #include <fstream>
 #include <iostream>
 #include <math.h>
 #include <sstream>
 #include <string>
+
+#include <CmdLineConfig.hh>
 using namespace std;
 
 ClassImp(CCMLEM);
@@ -31,7 +34,7 @@ CCMLEM::CCMLEM(TString path) {
   Size_t len = strlen(fInputName);
   TString fname = fInputName;
   fname.Insert(len - 5, "_MLEM");
-  TString outputName = "../work/results/" + fname;
+  TString outputName = fname;
   outputName.ReplaceAll("CCSimulation", "CCReconstruction");
   TString option = (fFreshOutput ? "RECREATE" : "UPDATE");
   fOutputFile = new TFile(outputName, option);
@@ -42,7 +45,8 @@ CCMLEM::CCMLEM(TString path) {
   fPoints = 0;
 
   if (fSmear) {
-     TString name = "../work/results/EnergyResolutionExample.root";
+    TString path = gSystem->Getenv("CC6DIR");
+    TString name = path+"/share/ComptonCamera6/mlem_reco/EnergyResolutionExample.root";
      //TString name = "../work/results/Fiber_1_0.root";
     // TString name = "../work/results/Fiber_1_1.root";
     TFile* file = new TFile(name, "READ");
@@ -77,7 +81,7 @@ CCMLEM::~CCMLEM() {
 /// InputReader object - either for simple input or Geant4 input.
 Bool_t CCMLEM::SetInputReader(void) {
 
-  TString fullName = "../work/results/" + fInputName;
+  TString fullName = fInputName;
 
   TFile* file = new TFile(fullName, "READ");
   if (!file->IsOpen()) {
@@ -905,7 +909,7 @@ Double_t CCMLEM::FitProjection(Double_t *x,Double_t *p) {
 void CCMLEM::Print(void) {
   cout << "\nCCMLEM::Print()" << endl;
   cout << setw(35) << "Name of input file: \t"
-       << "../work/results/" + fInputName << endl;
+       << fInputName << endl;
   // cout << setw(35) << "Center of reco plane: \t" << fXofRecoPlane << ", "
   // << fYofRecoPlane << ", " << fZofRecoPlane << endl;
   cout << setw(35) << "Size of image volume: \t" << fDimZ << ", " << fDimY

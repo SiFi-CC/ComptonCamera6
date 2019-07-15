@@ -1,10 +1,10 @@
 
-1. In your work directory, run simulation with respect to your the source type and geometry 
+1. In your work directory, run simulation with respect to your the source type and geometry, for possible options you may type "cc_simulation -h", or as an example:
 
-cc_simulation -y 0 -z 0 -x 0 -n 100 -s 1
+cc_simulation -y 0 -z 0 -x 0 -n 1000 -s 1
 
 2. put the output file name and size of image plane and other variables which you need in the config file
 
-3. run mlem and mention the config file directory 
+3. run mlem and mention the config file, example of such file you can find in $CC6DIR/mlem_reco/config.txt
 
-mlem ../work/results/config.txt
+mlem config.txt
