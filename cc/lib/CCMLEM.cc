@@ -94,7 +94,7 @@ Bool_t CCMLEM::SetInputReader(void) {
              file->Get("G4SimulationData_Reconstruction")) {
     file->Close();
     fReader = new InputReaderGeant(fullName);
-  } else if (file->Get("Cluster21") && file->Get("Cluster22")) {
+  } else if (file->Get("Cluster21") && file->Get("Cluster22") && file->Get("Energy")) {
     file->Close();
     fReader = new InputReaderEI(fullName);
   } else {
@@ -187,9 +187,11 @@ Bool_t CCMLEM::Reconstruct(void) {
 
     energy1 = fReader->GetEnergyLoss();
     energy2 = fReader->GetEnergyScattered();
+    //cout<< "energyloss" << energy1 << "+" << "energyscattered" << energy2 << "=" << energy1 + energy2 << endl;
     point1 = fReader->GetPositionScattering();
-    // point1->Print();
+    //point1->Print();
     point2 = fReader->GetPositionAbsorption();
+    //point2->Print();
     /* point2 = fReader->GetGammaDirScattered();
       //point2->Print();
      Scatthick_z = fReader->GetScatThickz();
@@ -483,19 +485,19 @@ Bool_t CCMLEM::Reconstruct(void) {
   for (int iter = 1; iter < fIter + 1; iter++) {
       
       Iterate(fStop, iter);
-      if (fSigma[100] < 0.01) {
-          
-          t.Stop();
-          t.Print();
-// //       // cout<< "sigma value" <<fSigma[100] << endl;
-          return 0;
+       if (fSigma[100] < 0.01) {
+           
+           t.Stop();
+           t.Print();
+// cout<< "sigma value" <<fSigma[100] << endl;
+           return 0;
       }
   }
 
-  // DrawHisto();
+   DrawHisto();
   // GetSigmaError();
-  // t.Stop();
-  // t.Print();
+   //t.Stop();
+   //t.Print();
 
   return kTRUE;
 }
@@ -592,12 +594,12 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
   // For the unknown source distribution, user should define an appropriate fitting
   // function to compare reasonablely sigma value of the new 10th iteration with previous one. 
   
-  TF1* func = new TF1("FitProjection", FitProjection, -14.5, 14.5, 3);
-  func->SetParameters(fP0,fP1,fP2);
-  func->SetParNames("Constant","Mean_value","Sigma_z");
-//   TF1* func_y = new TF1("FitProjection", FitProjection, -14.5, 14.5, 3);
-//   func_y->SetParameters(fP0,fP1,fP2);
-//   func_y->SetParNames("Constant_y","Mean_value_y","Sigma_y");
+   TF1* func_z = new TF1("FitProjection", FitProjection, -14.5, 14.5, 3);
+   func_z->SetParameters(fP0,fP1,fP2);
+   func_z->SetParNames("Constant","Mean_value","Sigma_z");
+   //TF1* func_y = new TF1("FitProjection", FitProjection, -14.5, 14.5, 3);
+   //func_y->SetParameters(fP0,fP1,fP2);
+   //func_y->SetParNames("Constant_y","Mean_value_y","Sigma_y");
 //   func->SetParameter(0, 18000);
 //   func->SetParameter(1, 0.01);
 //   func->SetParameter(2, 0.1);
@@ -650,9 +652,9 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
     // sigma[j]=0;
     ProY[i] = fImage[i]->ProjectionY();
     ProZ[i] = fImage[i]->ProjectionX();
-    ProZ[i]->Fit(func,"r");
+    ProZ[i]->Fit(func_z, "r");
     //ProY[i]->Fit(func_y,"r");
-    sigma[i] = func->GetParameter(2);
+    sigma[i] = func_z->GetParameter(2);
     // cout<< "i : \t" << i << "\t" << "sigma : \t " << sigma[i]<< endl;
   }
 
