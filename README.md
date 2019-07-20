@@ -6,6 +6,7 @@ Prerequisites
 * Required MathMore (optional ROOT module that requires GSL)
 * Doxygen version 1.8.15
 * Compiler supporting c++14
+* Run script `prepare_tree.sh`
 
 Sources
 -------
