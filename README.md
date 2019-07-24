@@ -20,10 +20,17 @@ To get sources run:
 git clone https://github.com/SiFi-CC/ComptonCamera6/
 ```
 
+Prepare submodules (spdlog) by running:
+```
+cd ComptonCamera6
+./prepare_tree.sh
+```
+
 Building and installation
 -------------------------
+
+In the ComptonCamera6 directory run:
 ```
-in the ComptonCamera6 directory run:
 mkdir build
 cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=/path/to/install/dir
