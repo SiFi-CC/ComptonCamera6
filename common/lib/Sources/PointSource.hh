@@ -15,47 +15,20 @@ public:
    */
   PointSource(const TVector3& position, Double_t energy)
       : Source(position), fEnergy(energy){};
+  
+  PointSource(const TString& fname)
+      :  fInFileName(fname){};
 
-  /** Generte particle */
-  Track GenerateEvent() override;
-
-private:
-  /** energy of gammas emited from this source */
-  Double_t fEnergy;
-
-  ClassDef(PointSource, 1)
-};
-
-/** Source constructed from multiple point sources */
-class MultiPointSource : public Source {
-public:
-  MultiPointSource() = default;
-
-  /** Create multipoint source
-   * \param position position of source (all point source positions are treated
-   * as coordinates relative to this.
-   */
-  MultiPointSource(const TVector3& position) : Source(position){};
-
-  /** Add point source
-   *  Positions of all point sources is assumed to be speciied relative to
-   *  fPosition of this source.
-   */
-  void AddSourceElement(const PointSource& source);
   /** Generate particle */
   Track GenerateEvent() override;
 
-private:
-  /** List of point sources */
-  std::vector<PointSource> fSources;
-  /** Iterator pointing to one of list elements
-   *
-   * Iterator is not cyclic so GenerateEvent needs to ccontain logic
-   * responsible to reseting interator at the end.
-   */
-  std::vector<PointSource>::iterator fIterator = fSources.begin();
+  void Print(void);
 
-  ClassDef(MultiPointSource, 1)
+private:
+  /** Init() initializes source properties based on configuration file */
+  virtual Bool_t Init() override;
+
+  ClassDef(PointSource, 1)
 };
 
 #endif

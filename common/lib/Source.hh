@@ -10,23 +10,28 @@ class Source : public TObject {
 public:
   Source() = default;
 
-  /** Create source at certain position.
-   * \param position source position
+  /** Create source based on the input file
+      \param fname input file name
    */
-  Source(const TVector3& position) : fPosition(position){};
+  Source(const TString& fname) : fInFileName(fname){
+  };
 
   /** Generates particle represented by Track object. */
   virtual Track GenerateEvent() = 0;
 
-  /** Set max values of angles between generated particles and Y and Z axis.
-   *  \param angleY max angle between axis Y and direction of generated
-   *  particle.
-   *  \param angleZ max angle between axis Z and direction of generated
-   *  particle.
+  /** Set min and max values of angles between generated particles and -X axis.
+   *  \param minAngle min angle between negative part of xis -X and 
+   *  direction of generated particle.
+   *  \param maxAngle max angle between negative part of xis -X and 
+   *  direction of generated particle.
    */
-  void SetAngleRanges(Double_t angleY, Double_t angleZ) {
-    fAngleY = angleY;
-    fAngleZ = angleZ;
+  void SetAngleRange(Double_t minAngle, Double_t maxAngle) {
+    fMinAngle = minAngle;
+    fMaxAngle = maxAngle;
+  }
+  /** Set  source position   */
+  void SetPosition(const TVector3& position) {
+    fPosition = position;
   }
 
   /** Get name */
@@ -35,19 +40,28 @@ public:
   void SetName(TString name) { fName = name; }
 
 protected:
+  
+  /** Init() initializes source properties based on configuration file */
+  virtual Bool_t Init() = 0;
+  
   /** \brief Position of the source.
    *
    *  Exact meaning of this variable might differ between implementations,
    *  in most cases it will define where the center is located.
    */
-  TVector3 fPosition;
+  TVector3 fPosition(0,0,0);
+  /** File name of input file containing source configuration. */
+  TString fInFileName;
 
-  /** Max angle between axis Y and direction of generated particle. */
-  Double_t fAngleY = TMath::PiOver4();
+  /** Min angle between -X axis and direction of generated particle. */
+  Double_t fMinAngle = 0;
 
-  /** Max angle between axis Z and direction of generated particle. */
-  Double_t fAngleZ = TMath::PiOver4();
-
+  /** Max angle between -X axis and direction of generated particle. */
+  Double_t fMaxAngle = TMath::PiOver2();
+  
+  /**Energy of generated particle. */
+  Double_t fEnergy = 0;
+  
 private:
   TString fName = "generic_source"; ///< Object name
 
