@@ -12,7 +12,8 @@ using namespace std;
 /// ROOT file containing tree with simulation results and via set of
 /// getter function passes information to reconstruction classes, i.e.
 /// CCREconstruction and CCMLEM.
-
+/// Here, we have two types information: 1. the real information from the simulation 
+/// 2. the information of the reconstructed events 
 class InputReaderGeant : public InputReader {
 
 public:
@@ -51,24 +52,21 @@ public:
   double GetAbsThickz(void);
 
 private:
-  int fEventNumber; ///< Event number
-  bool fIdentified; ///< Flag indicating whether the event was labeled or not
-  //bool fSize;
-  Double_t fEnergy_Primary;
-  Double_t fRealEnergy_e; ///< Electron energy + uncertainty [MeV]
-  Double_t fRealEnergy_p; ///< Photon energy + uncertainty [MeV]
+  int fEventNumber;     ///< Event number
+  int fIdentified;      ///< Number of events were labeled 
+  Double_t fEnergy_Primary;     ///< Primary photon energy
+  Double_t fRealEnergy_e;       ///< Electron energy + uncertainty [MeV]
+  Double_t fRealEnergy_p;       ///< Photon energy + uncertainty [MeV]
   TVector3* fRealPosition_source;
   TVector3* fRealDirection_source;
-  TVector3* fRealPosition_e; ///< Electron creation position + uncertainty
-  TVector3*
-      fRealPosition_p; ///< Photon energy deposition position + incertainty
-  TVector3* fRealDirection_scatter; ///< Direction of the scattered photon +
+  TVector3* fRealPosition_e;        ///< Electron creation position + uncertainty
+  TVector3* fRealPosition_p;      ///< Photon energy deposition position + uncertainty
+  TVector3* fRealDirection_scatter;     ///< Direction of the scattered photon +
                                     ///< uncertainty
-  PhysicVar* fRecoEnergy_e;   ///< Electron energy + uncertainty [MeV]
-  PhysicVar* fRecoEnergy_p;   ///< Photon energy + uncertainty [MeV]
-  PhysicVec* fRecoPosition_e; ///< Electron creation position + uncertainty
-  PhysicVec*
-      fRecoPosition_p; ///< Photon energy deposition position + incertainty
+  PhysicVar* fRecoEnergy_e;     ///< Electron energy + uncertainty [MeV]
+  PhysicVar* fRecoEnergy_p;     ///< Photon energy + uncertainty [MeV]
+  PhysicVec* fRecoPosition_e;       ///< Electron creation position + uncertainty
+  PhysicVec* fRecoPosition_p;       ///< Photon energy deposition position + uncertainty
   PhysicVec* fRecoDirection_scatter; ///< Direction of the scattered photon +
                                      ///< uncertainty
   vector<PhysicVec*>*
