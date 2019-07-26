@@ -1,4 +1,5 @@
 #include "CCMLEM.hh"
+#include <CmdLineConfig.hh>
 #include "IsectionPoint.hh"
 #include <iostream>
 using namespace std;
@@ -9,7 +10,7 @@ int main(int argc, char* argv[]) {
     cout << "To run type: ./mlem path_to_config" << endl;
     return 0;
   }
-
+  CmdLineConfig::instance()->ReadCmdLine(argc, argv);
   TString path(argv[1]);
 
   CCMLEM* rec;
