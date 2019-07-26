@@ -59,7 +59,7 @@ CCSimulation::CCSimulation(TString name, Bool_t verbose) {
   Double_t size = 200.;
   Int_t nbins = 100;
   hSource =
-      new TH2F("hSource", "hSource", nbins, -size, size, nbins, -size, size);
+  new TH2F("hSource", "hSource", nbins, -size, size, nbins, -size, size);
   hSource->GetXaxis()->SetTitle("z [mm]");
   hSource->GetYaxis()->SetTitle("y [mm]");
   hScat = new TH2F("hScat", "hScat", nbins, -size, size, nbins, -size, size);
@@ -68,10 +68,10 @@ CCSimulation::CCSimulation(TString name, Bool_t verbose) {
   hAbs = new TH2F("hAbs", "hAbs", nbins, -size, size, nbins, -size, size);
   hAbs->GetXaxis()->SetTitle("z [mm]");
   hAbs->GetYaxis()->SetTitle("y [mm]");
-  hEnergy1 = new TH1F("hEnergy1", "energy loss", nbins, 0., 5.);
-  hEnergy1->GetXaxis()->SetTitle("energy [MeV]");
-  hEnergy = new TH1F("hEnergy", "energy of scattered gamma", nbins, 0., 5.);
-  hEnergy->GetXaxis()->SetTitle("energy [MeV]");
+  hEnergyLoss = new TH1F("hEnergyLoss", "energy loss", nbins, 0., 5.);
+  hEnergyLoss->GetXaxis()->SetTitle("energy [MeV]");
+  hEnergyAbs = new TH1F("hEnergyScattered", "energy of scattered gamma", nbins, 0., 5.);
+  hEnergyAbs->GetXaxis()->SetTitle("energy [MeV]");
 }
 //------------------------------------------------------------------
 /// Default destructor. Here the tree and 2D histograms are saved
@@ -84,8 +84,8 @@ CCSimulation::~CCSimulation() {
     hSource->Write();
     hScat->Write();
     hAbs->Write();
-    hEnergy->Write();
-    hEnergy1->Write();
+    hEnergyAbs->Write();
+    hEnergyLoss->Write();
     fFile->Close();
   }
   SaveGeometryTxt();
@@ -182,6 +182,10 @@ Bool_t CCSimulation::GenerateRay(void) {
   return kTRUE;
 }
 //------------------------------------------------------------------
+/// Sets the coordinate of the source.
+///\param x (Double_t) - x-component of source coordinate
+///\param y (Double_t) - y-component of source coordinate
+///\param z (Double_t) - z-component of source coordinate
 void CCSimulation::SetCoordinate(Double_t x, Double_t y, Double_t z) {
   fXofSource = x;
   fYofSource = y;
@@ -271,8 +275,8 @@ Bool_t CCSimulation::ProcessEvent(void) {
   hSource->Fill(fPoint0.Z(), fPoint0.Y());
   hScat->Fill(scatData.first.Z(), scatData.first.Y());
   hAbs->Fill(fPoint2.Z(), fPoint2.Y());
-  hEnergy1->Fill(fEnergy1);
-  hEnergy->Fill(fEnergy2);
+  hEnergyLoss->Fill(fEnergy1);
+  hEnergyAbs->Fill(fEnergy2);
   fNev++;
 
   return kTRUE;
