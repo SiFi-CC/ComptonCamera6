@@ -18,6 +18,9 @@
 #include "TVector3.h"
 #include "Track.hh"
 #include "TStyle.h"
+///Class for image reconstruction from events simulated in class CCSimulations
+///and using MLEM method based on ComptonCone class objects. More details about this class
+/// is available on wiki [LINK] (http://bragg.if.uj.edu.pl/gccbwiki/index.php/File:MK_20180513_Image_Reconstruction_Analysis_For_CC_Toy_Model.pptx)
 
 class CCMLEM : public TObject {
 
@@ -31,8 +34,7 @@ public:
   Bool_t GetSigmaError(void);
   Int_t AddIsectionPoint(TString dir, Double_t x, Double_t y, Double_t z);
   Double_t SmearGaus(double val, double sigma);
-  Double_t SmearBoxX(double x);
-  Double_t SmearBoxZ(double z);
+  Double_t SmearBox(double x, double resolution);
   Double_t GetSigmaE(double energy);
   static Double_t FitProjection(Double_t *x,Double_t *par);
   Bool_t ReadConfig(TString path);
@@ -43,49 +45,43 @@ public:
   void Clear(void);
 
 private:
-  TString fInputName;
-  Double_t fDistScatter;
-  Double_t fDistAbsorber;
-  Double_t fXofRecoPlane;
-  Double_t fYofRecoPlane;
-  Double_t fZofRecoPlane;
-  Double_t fDimZ;
-  Double_t fDimY;
-  Double_t fDimX;
-  Int_t fNbinsZ;
-  Int_t fNbinsY;
-  Int_t fNbinsX;
-  Bool_t fSmear;
-  Double_t fResolutionX;
-  Double_t fResolutionY;
-  Double_t fResolutionZ;
-  Double_t fP0;
-  Double_t fP1;
-  Double_t fP2;
-  Int_t fIter;
-  Bool_t fFreshOutput;
-  Int_t fStart;
-  Int_t fStop;
-  Bool_t fVerbose;
+  TString fInputName;       ///< Path to the file with simulation data
+  Double_t fXofRecoPlane;       ///< x-component of image plane coordinate
+  Double_t fYofRecoPlane;       ///< y-component of image plane coordinate
+  Double_t fZofRecoPlane;       ///< z-component of image plane coordinate
+  Double_t fDimZ;       ///< Size of image plane in direction z-axis
+  Double_t fDimY;       ///< Size of image plane in direction y-axis
+  Double_t fDimX;       ///< Size of image plane in direction x-axis
+  Int_t fNbinsZ;        ///< Numbers of bins of image plane in direction of z-axis
+  Int_t fNbinsY;        ///< Numbers of bins of image plane in direction of y-axis
+  Int_t fNbinsX;        ///< Numbers of bins of image plane in direction of x-axis
+  Bool_t fSmear;        ///< Smear flag for applying to camera performance 
+  Double_t fResolutionX;        ///< Position resolution in direction x-axis
+  Double_t fResolutionY;        ///< Position resolution in direction y-axis
+  Double_t fResolutionZ;        ///< Position resolution in direction z-axis
+  Double_t fP0;     ///< Fitting parameter
+  Double_t fP1;     ///< Fitting parameter
+  Double_t fP2;     ///< Fitting parameter
+  Int_t fIter;      ///< Number of iterations for MLEM
+  Bool_t fFreshOutput;      ///< FreshOutput flag to recreate or update output file
+  Int_t fStart;     ///< first event number
+  Int_t fStop;      ///< last event number
+  Bool_t fVerbose;      ///< Verbose level for print-outs on screen
 
-  Int_t fNIpoints;
-  Int_t fPoints;
-  Double_t fPixelSizeZ;
-  Double_t fPixelSizeY;
-  Double_t fPixelSizeX;
-  //Double_t fSigmaErr[100];
-  Double_t fSigma[100];
-  TTree* fTree;
-  TH1D* fHisto;
-  TFile* fOutputFile;
-  TH2F* fImage[150];
-  TH1F* fAngDiff;
-  TH1F* fGeoAng;
-  TH1F* fScatAng;
-  TClonesArray* fArray;
-  TClonesArray* fSM;
-  InputReader* fReader;
-  TGraph* fGraph;
+  Int_t fNIpoints;      ///< Numbers of intersection points for each Compton cone
+  Int_t fPoints;        ///< Numbers of intersection points for all Compton cones
+  Double_t fPixelSizeZ;     ///< Size of pixel in z-axis direction
+  Double_t fPixelSizeY;     ///< Size of pixel in y-axis direction
+  Double_t fPixelSizeX;     ///< Size of pixel in x-axis direction
+  Double_t fSigma[100];     ///< Relative sigma value to compare different iterations
+  TH1D* fHisto;     ///< Histogram containing energy resolution obtained by Geant4
+  TFile* fOutputFile;       ///< ROOT file containing reconstruction results 
+  TH2F* fImage[150];        ///< Reconstructed image histogram
+  //TH1F* fAngDiff;       
+  TClonesArray* fArray;     ///< Array of information for intersection of Compton cone with image plane
+  TClonesArray* fSM;        ///< Array of information for intersection of all Compton cones with image plane
+  InputReader* fReader;     ///< InputReader to read different given input simulation files
+  //TGraph* fGraph;
 
   ClassDef(CCMLEM, 0)
 };
