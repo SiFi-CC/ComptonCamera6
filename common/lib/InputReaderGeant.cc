@@ -39,6 +39,10 @@ InputReaderGeant::~InputReaderGeant() {
   if (fFile->IsOpen()) fFile->Close();
 }
 //------------------------------------------------------------------
+/// Accesses data of trees'branches in ROOT file.
+///\param name (TString) - name of tree.
+///\param name1 (TString) - name1 of tree.
+///\param name2 (TString) - name2 of tree.
 bool InputReaderGeant::AccessTree(TString name, TString name1, TString name2) {
 
   fTree = (TTree*)fFile->Get(name);
@@ -120,6 +124,8 @@ bool InputReaderGeant::AccessTree(TString name, TString name1, TString name2) {
   return true;
 }
 //------------------------------------------------------------------
+/// loads events from trees to analyze them in CCMLEM class.
+///\param i (int) - number of events
 bool InputReaderGeant::LoadEvent(int i) {
 
   int imax1 = fTree1->GetEntries();
@@ -261,7 +267,7 @@ double InputReaderGeant::GetAbsThickz(void) { return fAbsorberThickness_z; }
 //------------------------------------------------------------------
 void InputReaderGeant::Clear(void) {
   fEventNumber = -1;
-  fIdentified = false;
+  fIdentified = -1000;
   fEnergy_Primary = -1000;
   fRealEnergy_e = -1000;
   fRealEnergy_p = -1000;
