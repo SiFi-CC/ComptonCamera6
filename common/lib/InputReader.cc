@@ -40,21 +40,15 @@ bool InputReader::SetInputFile(TString path) {
 //------------------------------------------------------------------
 /// Opens tree containing simulations results. Sets branches addresses
 ///\param name (TString) - name of the tree
-bool InputReader::AccessTree(TString name1) {
+bool InputReader::AccessTree(TString name) {
 
-  fTree = (TTree*)fFile->Get(name1);
+  fTree = (TTree*)fFile->Get(name);
   if (fTree == NULL) {
     cout << "##### Error in InputReader::AccessTree()!" << endl;
-    cout << "Could not access tree: " << name1 << endl;
+    cout << "Could not access tree: " << name << endl;
     return false;
   }
-  /*fTree1 = (TTree*)fFile->Get(name2);
-  if (fTree1 == NULL) {
-    cout << "##### Error in InputReader::AccessTree()!" << endl;
-    cout << "Could not access tree: " << name2 << endl;
-    return false;
-  }
-*/
+  
   return true;
 }
 //------------------------------------------------------------------
@@ -63,7 +57,6 @@ bool InputReader::AccessTree(TString name1) {
 bool InputReader::LoadEvent(int i) {
 
   int imax = fTree->GetEntries();
-  // int imax1 = fTree1->GetEntries();
 
   if (i > imax) {
     cout << "##### Error in InputReader::LoadEvent()!" << endl;
@@ -73,7 +66,6 @@ bool InputReader::LoadEvent(int i) {
   }
 
   fTree->GetEntry(i);
-  // fTree1->GetEntry(i);
   return true;
 }
 //------------------------------------------------------------------
@@ -139,7 +131,7 @@ double InputReader::GetAbsThickz(void) { return -100; }
 void InputReader::Clear(void) {
   fFile = NULL;
   fTree = NULL;
-  //fTree1 = NULL;
+  
 }
 //------------------------------------------------------------------
 /// Prints details of the InputReader class object.
