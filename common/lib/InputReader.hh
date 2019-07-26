@@ -52,9 +52,7 @@ public:
 protected:
   TFile* fFile; ///< Input file
   TTree* fTree; ///< Tree containing simulation results
-  //TTree* fTree1;
-  //TTree* fTree2;
-  bool virtual AccessTree(TString name1);
+  bool virtual AccessTree(TString name);
   bool SetInputFile(TString path);
   //vector<PhysicVec*>* GetRecoClusterPosSize(void);
   
