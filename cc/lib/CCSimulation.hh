@@ -89,29 +89,29 @@ public:
   const char* GetName() const { return fName.Data(); };
 
 private:
-  TString fName; ///< Name of the object
-  TString fOutputName;
-  Bool_t fVerbose;   ///< Verbose level
-  Int_t fGenVersion; ///< Version of generator (numbers from 1 to 5)
-  Int_t fNev; ///< Counter of events currently in the acceptance of the absorber
-  TTree* fTree;         ///< Tree containing results of the simulations
-  TFile* fFile;         ///< Results ROOT file
-  PhysicsBase fPhysics; ///< Physics class for the simulations
-  DetPlane fScatterer;  ///< Scatterer plane
-  DetPlane fAbsorber;   ///< Absorber plane
-  Track fTrack1;        ///< Track representing gamma emitted from the source
-  Track* fTrack2;       ///< Track representing scattered gamma
-  TVector3 fPoint0;     ///< Source of emitted gamma ray
-  TVector3 fPoint1;     ///< Interaction point in the scatterer
-  TVector3 fPoint2;     ///< Interaction point in the absorber
-  TVector3 fVersor1;    ///< Direction of gamma ray comming from the source
-  TVector3 fVersor2;    ///< Direction of scattered gamma ray
-  Double_t fEnergy0;    ///< Initial gamma energy
-  Double_t fEnergy1;    ///< Energy loss due to Compton scattering
-  Double_t fEnergy2;    ///< Energy after Compton scattering
-  Double_t fXofSource;
-  Double_t fYofSource;
-  Double_t fZofSource;
+  TString fName;        ///< Name of the object
+  //TString fOutputName;
+  Bool_t fVerbose;      ///< Verbose level
+  Int_t fGenVersion;        ///< Version of generator (numbers from 1 to 5)
+  Int_t fNev;       ///< Counter of events currently in the acceptance of the absorber
+  TTree* fTree;     ///< Tree containing results of the simulations
+  TFile* fFile;     ///< Results ROOT file
+  PhysicsBase fPhysics;     ///< Physics class for the simulations
+  DetPlane fScatterer;      ///< Scatterer plane
+  DetPlane fAbsorber;       ///< Absorber plane
+  Track fTrack1;            ///< Track representing gamma emitted from the source
+  Track* fTrack2;           ///< Track representing scattered gamma
+  TVector3 fPoint0;         ///< Source of emitted gamma ray
+  TVector3 fPoint1;         ///< Interaction point in the scatterer
+  TVector3 fPoint2;         ///< Interaction point in the absorber
+  TVector3 fVersor1;        ///< Direction of gamma ray comming from the source
+  TVector3 fVersor2;        ///< Direction of scattered gamma ray
+  Double_t fEnergy0;        ///< Initial gamma energy
+  Double_t fEnergy1;        ///< Energy loss due to Compton scattering
+  Double_t fEnergy2;        ///< Energy after Compton scattering
+  Double_t fXofSource;      ///< x-component of source coordinate      
+  Double_t fYofSource;      ///< y-component of source coordinate 
+  Double_t fZofSource;      ///< z-component of source coordinate 
   Double_t
       fYgap; ///< For generator #4 - distance between two point-like sources
              /// along Y axis
@@ -120,11 +120,11 @@ private:
              /// along Z axis
   Double_t fRadius; ///< For generator #5 - radius of the gamma source
 
-  TH2F* hSource; ///< 2D histogram of distribution of the gamma source
-  TH2F* hScat;   ///< 2D histogram of distribution of evens on scatterer plane
-  TH2F* hAbs;    ///< 2D histogram of distribution of events on absorber plane
-  TH1F* hEnergy; ///< Histogram of scattered gammas energy
-  TH1F* hEnergy1;
+  TH2F* hSource;        ///< 2D histogram of distribution of the gamma source
+  TH2F* hScat;      ///< 2D histogram of distribution of evens on scatterer plane
+  TH2F* hAbs;       ///< 2D histogram of distribution of events on absorber plane
+  TH1F* hEnergyAbs;     ///< Histogram of scattered gammas energy
+  TH1F* hEnergyLoss;        ///< Histogram of energy loss
   ClassDef(CCSimulation, 1)
 };
 
