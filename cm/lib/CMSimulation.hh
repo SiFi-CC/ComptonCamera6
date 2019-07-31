@@ -57,16 +57,26 @@ private:
    * TODO: This data will be moved to Detector in the future.
    */
   TH2F* fH2Detector;
-  /** Distribution of theta angles in genrated particles
+  /** Distribution of theta angles of registered particles
    *
    * TODO: This data will be removed or moved to Source in the future.
    */
   TH1F* fH1Theta;
-  /** Distribution of phi angles in genrated particles
+  /** Distribution of theta angles of all generated particles
+   *
+   * TODO: This data will be removed or moved to Source in the future.
+   */
+  TH1F* fH1ThetaAll;
+  /** Distribution of phi angles of registered particles
    *
    * TODO: This data will be removed or moved to Source in the future.
    */
   TH1F* fH1Phi;
+  /** Distribution of phi angles of all generated particles
+   *
+   * TODO: This data will be removed or moved to Source in the future.
+   */
+  TH1F* fH1PhiAll;
 
   /**
    * Information about currently processed particle, needs to be kept in
