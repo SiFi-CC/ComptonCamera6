@@ -12,8 +12,8 @@
 #pragma link C++ class InputReaderGeant;
 
 #pragma link C++ class Source;
-#pragma link C++ class LineSource;
 #pragma link C++ class PointSource;
+#pragma link C++ class PlanarSource;
 #pragma link C++ class MultiPointSource;
 
 #pragma link C++ struct PhysicVar+;

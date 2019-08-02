@@ -4,7 +4,7 @@
 /gps/source/intensity 1
 /gps/particle gamma
 /gps/pos/type Point
-/gps/pos/centre 0 0 -1 cm
+/gps/pos/centre 0 0 0 cm
 /gps/ang/type iso
 # Direction of the gps is along -z axis
 # Minimum angle around the -z axis - so open for 180 - x 
@@ -18,7 +18,7 @@
 /gps/source/add 1
 /gps/particle gamma
 /gps/pos/type Point
-/gps/pos/centre -2 0 -1 cm
+/gps/pos/centre 1 0 -1 cm
 /gps/ang/type iso
 # Direction of the gps is along -z axis
 /gps/ang/mintheta 175 deg
@@ -31,7 +31,7 @@
 /gps/source/add 1
 /gps/particle gamma
 /gps/pos/type Point
-/gps/pos/centre -2 2 -1 cm
+/gps/pos/centre 2 2 -1 cm
 /gps/ang/type iso
 # Direction of the gps is along -z axis
 /gps/ang/mintheta 175 deg

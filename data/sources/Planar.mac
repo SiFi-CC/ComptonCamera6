@@ -7,8 +7,8 @@
 /gps/pos/halfx  5 cm 
 /gps/ang/type iso
 # Direction of the gps is along -z axis
-/gps/ang/maxtheta 0 deg
-
+/gps/ang/maxtheta 180 deg
+/gps/ang/mintheta 170 deg
 
 /gps/ene/type Lin
 /gps/ene/gradient 1

@@ -38,18 +38,12 @@ void CMSimulation::Init() {
                          maskZdim, nbinsy, -maskYdim, maskYdim);
   fH1Theta = new TH1F("hTheta", "theta angle of registered particles", 100, 0,
                       TMath::Pi());
-  fH1ThetaAll = new TH1F("hThetaAll", "theta angle of all generated particles", 100, 0,
-                      TMath::Pi());
   fH1Phi = new TH1F("hPhi", "phi angle of registered particles", 100,
-                    -TMath::Pi(), TMath::Pi());
-  fH1PhiAll = new TH1F("hPhiAll", "phi angle of all generated particles", 100,
                     -TMath::Pi(), TMath::Pi());
 }
 
 Bool_t CMSimulation::ProcessEvent() {
   Track sourceTrack = fSource->GenerateEvent();
-  fH1PhiAll->Fill(sourceTrack.GetVersor().Phi());
-  fH1ThetaAll->Fill(sourceTrack.GetVersor().Theta());
   
   auto maskCross = fMask->FindCrossPoint(sourceTrack);
   if (!maskCross.second) {
@@ -107,14 +101,10 @@ void CMSimulation::Write(TString name) const {
   fTree->SetDirectory(nullptr);
 
   log->debug("Save histograms");
-  fH1PhiAll->SetLineColor(kRed);
-  fH1ThetaAll->SetLineColor(kRed);
   fH2Source->Write("H2Source");
   fH2Detector->Write("H2Detector");
   fH1Theta->Write("H1Theta");
   fH1Phi->Write("H1Phi");
-  fH1ThetaAll->Write("H1ThetaAll");
-  fH1PhiAll->Write("H1PhiAll");
 
   log->debug("Save simulation configuration (source, mask, detector)");
   fSource->Write("source");
@@ -139,11 +129,11 @@ void CMSimulation::Write(TString name) const {
   canvas.Divide(3, 2);
 
   canvas.cd(1);
-  fH1ThetaAll->Draw();
+  fSource->GetThetaHisto()->DrawClone();
   fH1Theta->Draw("same");
 
   canvas.cd(4);
-  fH1PhiAll->Draw();
+  fSource->GetPhiHisto()->DrawClone();
   fH1Phi->Draw("same");
 
   canvas.cd(2);

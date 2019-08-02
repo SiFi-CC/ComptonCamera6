@@ -9,28 +9,43 @@ public:
   MultiPointSource() = default;
 
   /** Create multipoint source
-   * \param position position of source (all point source positions are treated
-   * as coordinates relative to this.
+   * \param fname filename of input file in style of Geant4 gps macro
+   * individual point-like sources must be separated by "#####...#  Point i" lines,
+   * example in data/sources
    */
-  MultiPointSource(const TVector3& position) : Source(position){};
+  MultiPointSource(const TString fname);
 
   /** Add point source
-   *  Positions of all point sources is assumed to be specified relative to
-   *  fPosition of this source.
    */
   void AddSourceElement(const PointSource& source);
+  
   /** Generate particle */
   Track GenerateEvent() override;
+  
+  /** Printing MultiPointSource configuration */
+  void Print() override;
 
 private:
+  /** Init method, empty for this class*/
+  Bool_t Init() override { return kTRUE;};
+  
+  /** Normalization of source intensities, such that they sum up to 1 */
+  Bool_t NormalizeIntensities();
+  
+  /** Dice source number, based on relative intensities*/
+  Int_t DiceSource();
+    
   /** List of point sources */
   std::vector<PointSource> fSources;
-  /** Iterator pointing to one of list elements
-   *
-   * Iterator is not cyclic so GenerateEvent needs to contain logic
-   * responsible to reseting interator at the end.
-   */
-  std::vector<PointSource>::iterator fIterator = fSources.begin();
+  
+  /** List of source relative intensities */
+  std::vector<Double_t> fIntensities;
+  
+  /** Number of sources in this MultiPointSource*/
+  Int_t fNumOfSources = 0;
+  
+  /** Iterator pointing to one of list elements*/
+  std::vector<PointSource>::iterator fIterator = fSources.begin(); //!
 
   ClassDef(MultiPointSource, 1)
 };

@@ -2,6 +2,8 @@
 #define __Source_H_ 1
 #include "Track.hh"
 #include <TObject.h>
+#include <TH1F.h>
+#include <TH2F.h>
 #include <TString.h>
 #include <TVector3.h>
 
@@ -27,6 +29,13 @@ public:
   virtual Track GenerateEvent() = 0;
 
   virtual void Print() = 0;
+  
+  /** Access to control histograms */
+  TH1F* GetThetaHisto(){ return fhTheta;};
+  /** Access to control histograms */
+  TH1F* GetPhiHisto(){ return fhPhi;};
+  /** Access to control histograms */
+  TH2F* GetZYHisto(){ return fhZY;};
 
   /** Set min and max values of angles between generated particles and -X axis.
    *  \param minAngle min angle between negative part of axis -X and 
@@ -39,10 +48,12 @@ public:
    *  In simple simulations, though, and in reco, gammas should fly mostly
    *  along negatice x axis. A rotation from one to the other coordinate system
    *  is taken care of in the source implementation classes.
+   *  In order to have particles flying to your detector always use large angles, e.g. (170, 180)
+   *  gives you a cone symmetric about -X axis, with opening angle o 10 degrees.
    */
   void SetAngleRange(Double_t minAngle, Double_t maxAngle) {
-    fMinAngle = minAngle;
-    fMaxAngle = maxAngle;
+        fMinAngle = TMath::Min(minAngle,maxAngle);
+        fMaxAngle = TMath::Max(minAngle,maxAngle);
   }
   /** Set  source position   */
   void SetPosition(const TVector3& position) {
@@ -67,13 +78,25 @@ protected:
   TVector3 fPosition;
   
   /** File name of input file containing source configuration. */
-  TString fInFileName;
+  TString fInFileName; //!
 
   /** Min angle between -X axis and direction of generated particle. */
   Double_t fMinAngle = 0;
 
   /** Max angle between -X axis and direction of generated particle. */
   Double_t fMaxAngle = TMath::PiOver2();
+  
+   /** Setting up control histograms */
+  void CreateHistograms();
+  
+   /** Distribution of theta angles of all generated particles */
+  TH1F* fhTheta; //->
+  
+  /** Distribution of phi angles of all generated particles */
+  TH1F* fhPhi; //->
+  
+  /** Spatial distribution of vertices of all generated particles */
+  TH2F* fhZY; //->
   
 private:
   TString fName = "generic_source"; ///< Object name

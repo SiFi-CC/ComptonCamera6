@@ -4,12 +4,11 @@
 #include "TObjArray.h"
 #include "TRandom.h"
 #include "TObjString.h"
-#include <iostream>
-#include <fstream>
 
 // -----------------------
 // PointSource
 // -----------------------
+
 
 PointSource::PointSource(const TString fname) {
     SetName("PointSource");
@@ -19,7 +18,7 @@ PointSource::PointSource(const TString fname) {
        message.Form("Exception in %s constructor!", this->ClassName());
        throw message.Data();
     }
-    SetName("PointSource");
+    CreateHistograms();
   }
 
 Track PointSource::GenerateEvent() {
@@ -27,7 +26,11 @@ Track PointSource::GenerateEvent() {
   TVector3 versor;
   versor.SetMagThetaPhi(1.,theta, gRandom->Uniform(0, TMath::TwoPi()));
   versor.RotateY(-TMath::Pi()/2);
-  return Track(fPosition, versor, fEnergy);
+  Track track(fPosition, versor, fEnergy);
+  fhTheta->Fill(track.GetVersor().Theta());
+  fhPhi->Fill(track.GetVersor().Phi());
+  fhZY->Fill(track.GetPoint().Z(), track.GetPoint().Y());
+  return track;
 }
 
 Bool_t PointSource::Init(){
@@ -37,19 +40,29 @@ Bool_t PointSource::Init(){
   }
   std::ifstream infile;
   infile.open(fInFileName.Data(), std::ios::in); 
-  if(!infile.is_open() || infile.fail() || infile.bad()) {
+  if(!infile.is_open() || infile.fail() || infile.bad()){
     std::cout<<"Input file "<<fInFileName<<" not opened correctly or corrupted"<<std::endl;
     std::cout<<infile.is_open() <<" "<< infile.fail() <<" "<< infile.bad()<<std::endl;
     return kFALSE;
   }
+  Bool_t result = Init(infile);
+  infile.close();
+  return result;
+}
   
-  TString line;
-  while(!infile.eof()){
+Bool_t PointSource::Init(std::ifstream& infile){
+  SetName("PointSource");
+  TString line="";
+  while(!infile.eof() && !(line.Contains("####") && line.Contains("Point"))){
     line.ReadLine(infile);
+    //std::cout<<"Read Line : "<<line<<std::endl;
     if(line.BeginsWith("#") || line.IsWhitespace())
       continue;
     
     TObjArray* words = line.Tokenize(" ");
+    //for(int i=0; i<words->GetEntries(); i++)
+    //    std::cout<<i<<"="<<((TObjString*)words->At(i))->GetString()<<",\t";
+    //std::cout<<std::endl;
     if(words->GetEntries()==0) continue;
     TString sitem;
     Double_t tmp;
@@ -78,6 +91,9 @@ Bool_t PointSource::Init(){
       if(sitem=="deg") tmp*=TMath::DegToRad();
       fMaxAngle = TMath::Pi()-tmp;
     }
+    else if(sitem.Contains("/gps/source/intensity") || sitem.Contains("/gps/source/add")){
+      fIntensity = ((TObjString*)words->At(1))->GetString().Atof();
+    }
     else if(sitem.Contains("/gps/ang/maxtheta")){
       tmp =  ((TObjString*)words->At(1))->GetString().Atof();
       sitem = ((TObjString*)words->At(2))->GetString();
@@ -99,12 +115,13 @@ Bool_t PointSource::Init(){
     else{
       std::cout<<"Command "<<sitem<<" unknown, thus ignored..."<<std::endl;
     }
-    
     delete words;
   }
   return kTRUE;
 }
 
+    
+    
 void PointSource::Print(){
-  std::cout<<"\n\nPointSource::Print():\nName =\t"<<GetName()<<"\nEnergy =\t"<<fEnergy<<" MeV"<<"\nPosition=\t("<<fPosition.X()<<" , "<<fPosition.Y()<<" , "<<fPosition.Z()<<")\nAngularRange =\t("<<fMinAngle<<" , "<<fMaxAngle<<") rad\n"<<std::endl; 
+  std::cout<<"\n\nPointSource::Print():\nName =\t"<<GetName()<<"\nEnergy =\t"<<fEnergy<<" MeV"<<"\nPosition=\t("<<fPosition.X()<<" , "<<fPosition.Y()<<" , "<<fPosition.Z()<<")\nAngularRange =\t("<<fMinAngle<<" , "<<fMaxAngle<<") rad wrt -X axis\nIntensity = \t"<<fIntensity<<std::endl; 
 }

@@ -2,6 +2,8 @@
 #include "CMSimulation.hh"
 #include "CmdLineConfig.hh"
 #include "Sources/PointSource.hh"
+#include "Sources/MultiPointSource.hh"
+#include "Sources/PlanarSource.hh"
 #include <TSystem.h>
 #include <iostream>
 
@@ -23,13 +25,11 @@ int main() {
                 ? (TH2F*)maskfile->Get("hMURA2d")
                 : (TH2F*)maskfile->Get("hMURA1d");
 
-//   MultiPointSource source(TVector3(0, 0, 0));
-//   source.AddSourceElement(PointSource(TVector3(0, 0, 0), 1));
-//   source.AddSourceElement(PointSource(TVector3(0, 0, 100), 1));
-//   source.AddSourceElement(PointSource(TVector3(0, 100, 0), 1));
-//   source.AddSourceElement(PointSource(TVector3(0, -100, -100), 1));
-//  PointSource source(TVector3(0, 0, 0), 4.4);
-  PointSource source("SinglePoint.mac");
+  //PointSource(TVector3(0,0,0), 4.4);
+  //PointSource source("SinglePoint.mac");
+  PlanarSource source("Planar.mac");
+  //MultiPointSource source("Multipoint.mac");
+  source.Print();
 
   // DetPlane detector(1, 0, 0, 600, 300, 300, "detector");
   // Mask mask(1, 0, 0, 500, 300, 300, h, "mask");
