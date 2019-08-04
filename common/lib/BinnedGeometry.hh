@@ -7,6 +7,8 @@
 #include <TObject.h>
 #include <TVector3.h>
 
+// Describes dimensions of 3d object that can be divided into segemnts along any
+// of three axis
 struct BinnedGeometry {
   std::pair<double, double> xRange;
   std::pair<double, double> yRange;

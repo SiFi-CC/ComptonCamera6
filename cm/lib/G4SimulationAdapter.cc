@@ -12,6 +12,12 @@ G4SimulationAdapter::G4SimulationAdapter(TString filename) {
     fFiles.push_back(
         new TFile(TString::Format("%s.%d", filename.Data(), i), "READ"));
   }
+  for (auto file : fFiles) {
+    if (!file->IsOpen()) {
+      log->error("Unable to open file {}", file->GetName());
+      throw "unable to open file";
+    }
+  }
   ReadMetadata();
 }
 
@@ -54,7 +60,6 @@ CameraGeometry G4SimulationAdapter::GetFirstReconstructData() {
 
   log->info("Picked reconstruction data for:");
   for (auto entryFromFirst : *firstUserInfo) {
-    // TODO: need to support string values in metadata
     if (TString(entryFromFirst->ClassName()) != "TParameter<double>") {
       continue;
     }
@@ -76,7 +81,6 @@ CameraGeometry G4SimulationAdapter::GetFirstReconstructData() {
 }
 
 bool G4SimulationAdapter::IsSimulationGeometryEqual(TList* sim1, TList* sim2) {
-
   /* very inefficient implementation */
   for (auto entryFromFirst : *sim1) {
     if (TString(entryFromFirst->ClassName()) != "TParameter<double>") {

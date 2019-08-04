@@ -34,6 +34,10 @@ int main(int argc, char** argv) {
 
   // TODO: switch to using collecton of hits instead of histogram
   TFile simulationFile(simFile, "READ");
+  if (!simulationFile.IsOpen()) {
+    spdlog::error("Unable to open file {}", simFile);
+    return -1;
+  }
   auto detectorImage = static_cast<TH2F*>(simulationFile.Get("energyDeposits"));
   adapter.VerifyForReconstruct(&simulationFile);
 
