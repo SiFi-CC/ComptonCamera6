@@ -3,26 +3,36 @@
 #include "G4Reconstruction.hh"
 #include "G4SimulationAdapter.hh"
 #include <TStopwatch.h>
+#include <CmdLineConfig.hh>
 
 int main(int argc, char** argv) {
-  spdlog::set_level(spdlog::level::debug);
-  if (argc != 4) {
-    spdlog::info(
-        "type: './cm_g4reconstruct [DETECTOR] [SIMULATIONS] [ITERATIONS]' to "
-        "start:\n\n"
-        "where:\n\n"
-        "DETECTOR - is a result of single simulation, detector image from "
-        "this file will be used to reconstruct source\n\n"
-        "SIMULATIONS - is a set of simulation results for difrent source "
-        "position\n\n"
-        "ITERATIONS - is the numer of iterations to be processed.\n\n");
-    return 1;
-  }
+  CmdLineOption cmdopt_output("Output", "-o", "Output file (string), default: reconstruct.root" , "reconstruct.root");
+  CmdLineOption cmdopt_iter("Iterations", "-n", "Number of iterations, default: 20 (integer)" , 20);
+  CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 
-  TString simFile(argv[1]);
-  TString dataFile(argv[2]);
-  TString reconstructFile("reconstruct.root");
-  Int_t iterations = TString(argv[3]).Atoi();
+  spdlog::set_level(spdlog::level::debug);
+
+  PositionalArgs pargs = CmdLineOption::GetPositionalArguments();
+  if (pargs.size() < 2) {
+    spdlog::error("Not enough arguments, {} are required", 2);
+
+    spdlog::info(
+        "type: './cm_g4reconstruct [DETECTOR] [SIMULATIONS] [-n ITERATIONS] [-o OUTPUTFILE]' to "
+        "start,\n"
+        " where:\n"
+        "  DETECTOR - is a result of single simulation, detector image from "
+        "this file will be used to reconstruct source\n"
+        "  SIMULATIONS - is a set of simulation results for difrent source "
+        "position\n"
+        "  ITERATIONS - is the numer of iterations to be processed, (default: 20)\n"
+        "  OUTPUTFILE - name of the output file (default: reconstruct.root\n");
+
+    abort();
+  }
+  TString simFile(pargs[0]);
+  TString dataFile(pargs[1]);
+  TString reconstructFile = CmdLineOption::GetStringValue("Output");
+  Int_t iterations = CmdLineOption::GetIntValue("Iterations");
 
   G4SimulationAdapter adapter(dataFile);
 
@@ -35,7 +45,7 @@ int main(int argc, char** argv) {
   // TODO: switch to using collecton of hits instead of histogram
   TFile simulationFile(simFile, "READ");
   if (!simulationFile.IsOpen()) {
-    spdlog::error("Unable to open file {}", simFile);
+    spdlog::error("Unable to open file {}", simFile.Data());
     return -1;
   }
   auto detectorImage = static_cast<TH2F*>(simulationFile.Get("energyDeposits"));
@@ -46,7 +56,7 @@ int main(int argc, char** argv) {
   spdlog::info("Run reconstruction");
   reconstruction.RunReconstruction(iterations);
 
-  spdlog::info("Save reconstruction to file {}.", reconstructFile);
+  spdlog::info("Save reconstruction to file {}.", reconstructFile.Data());
   reconstruction.Write(reconstructFile);
 
   spdlog::info("Finished simulation");
