@@ -5,7 +5,7 @@
 
 G4SimulationAdapter::G4SimulationAdapter(TString filename) {
   fFiles.push_back(new TFile(filename, "READ"));
-  log->info("{}", TString::Format("%s.%d", filename.Data(), 1));
+  log->info("{}", TString::Format("%s.%d", filename.Data(), 1).Data());
   for (int i = 1;
        !gSystem->AccessPathName(TString::Format("%s.%d", filename.Data(), i));
        i++) {
