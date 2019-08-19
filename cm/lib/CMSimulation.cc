@@ -36,9 +36,9 @@ void CMSimulation::Init() {
                        nbinsy, -maskYdim, maskYdim);
   fH2Detector = new TH2F("detectedYZ", "Y vs Z detected", nbinsz, -maskZdim,
                          maskZdim, nbinsy, -maskYdim, maskYdim);
-  fH1Theta = new TH1F("hTheta", "theta angle of generated particles", 100, 0,
+  fH1Theta = new TH1F("hTheta", "theta angle of registered particles", 100, 0,
                       TMath::Pi());
-  fH1Phi = new TH1F("hPhi", "phi angle of generated particles", 100,
+  fH1Phi = new TH1F("hPhi", "phi angle of registered particles", 100,
                     -TMath::Pi(), TMath::Pi());
 }
 
@@ -91,7 +91,8 @@ void CMSimulation::RunSimulation(Int_t nEvents) {
 }
 
 void CMSimulation::Write(TString name) const {
-  log->info("Saving results of simulation to file");
+  TString msg = "Saving results of simulation to file " + name;
+  log->info(msg);
 
   log->debug("Save raw data");
   TFile file(name, "RECREATE");
@@ -128,10 +129,12 @@ void CMSimulation::Write(TString name) const {
   canvas.Divide(3, 2);
 
   canvas.cd(1);
-  fH1Theta->Draw();
+  fSource->GetThetaHisto()->DrawClone();
+  fH1Theta->Draw("same");
 
   canvas.cd(4);
-  fH1Phi->Draw();
+  fSource->GetPhiHisto()->DrawClone();
+  fH1Phi->Draw("same");
 
   canvas.cd(2);
   fH2Source->Draw("COLZ");
