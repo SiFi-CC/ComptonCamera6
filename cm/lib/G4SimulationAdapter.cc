@@ -180,4 +180,3 @@ void G4SimulationAdapter::ParsePointSources(CameraGeometry* camera) {
   camera->source.yRange = {minY - segSizeY / 2, maxY + segSizeY / 2};
   camera->source.zRange = {-0.1, +0.1};
 }
-
