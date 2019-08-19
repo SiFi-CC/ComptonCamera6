@@ -47,7 +47,7 @@ private:
   
   
 
-  ClassDef(PlanarSource, 1)
+  ClassDefOverride(PlanarSource, 1)
 };
 
 #endif

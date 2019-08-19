@@ -47,7 +47,7 @@ private:
   /** Iterator pointing to one of list elements*/
   std::vector<PointSource>::iterator fIterator = fSources.begin(); //!
 
-  ClassDef(MultiPointSource, 1)
+  ClassDefOverride(MultiPointSource, 1)
 };
 
 #endif

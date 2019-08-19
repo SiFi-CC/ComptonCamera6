@@ -48,7 +48,7 @@ private:
   /** intensity of gammas emitted from this source, used in MultiPointSource */
   Double_t fIntensity=1.;
   
-  ClassDef(PointSource, 1)
+  ClassDefOverride(PointSource, 1)
 };
 
 #endif
