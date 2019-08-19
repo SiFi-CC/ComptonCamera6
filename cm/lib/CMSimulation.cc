@@ -44,7 +44,7 @@ void CMSimulation::Init() {
 
 Bool_t CMSimulation::ProcessEvent() {
   Track sourceTrack = fSource->GenerateEvent();
-  
+
   auto maskCross = fMask->FindCrossPoint(sourceTrack);
   if (!maskCross.second) {
     log->debug("No cross point with Mask");
