@@ -24,7 +24,7 @@ public:
 
   /** Destructor to delete control histograms  */
   ~Source();
-  
+
   /** Generates particle represented by Track object. */
   virtual Track GenerateEvent() = 0;
 

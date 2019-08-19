@@ -57,7 +57,7 @@ private:
   /** Distribution of theta angles of registered particles
    */
   TH1F* fH1Theta;
- 
+
   /** Distribution of phi angles of registered particles
    */
   TH1F* fH1Phi;

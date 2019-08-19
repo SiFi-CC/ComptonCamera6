@@ -7,10 +7,11 @@
 #include <TSystem.h>
 #include <iostream>
 
-int main() {
+int main(int argc, char** argv) {
 
   CmdLineOption _mask("mask", "-mask", "mask type, like 2d_29 or 1d_11",
                       "2d_23");
+  CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 
   spdlog::set_level(spdlog::level::info);
   TString maskFilename = CmdLineOption::GetStringValue("mask");
