@@ -1,0 +1,28 @@
+language: cpp
+compiler: gcc
+os: linux
+dist: bionic
+
+env:
+  global:
+    - MAKEFLAGS="-j 2"
+
+before_script:
+    - sudo apt-get update
+    - sudo apt-get install -y libcppunit-dev
+    - mkdir .aux_deps
+    - wget https://root.cern/download/root_v6.18.02.Linux-ubuntu18-x86_64-gcc7.4.tar.gz
+    - tar zxf root_v6.18.02.Linux-ubuntu18-x86_64-gcc7.4.tar.gz -C .aux_deps
+    - . ./.aux_deps/root/bin/thisroot.sh
+    - cd .aux_deps
+    - git clone https://github.com/SiFi-CC/CmdLineArgs
+    - pushd CmdLineArgs
+    - mkdir build && cd build
+    - cmake .. && sudo make install
+    - popd
+    - cd ..
+    - mkdir build && cd build
+    - cmake ..
+script:
+    - make
+    - make test

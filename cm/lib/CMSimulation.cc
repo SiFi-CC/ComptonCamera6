@@ -92,7 +92,7 @@ void CMSimulation::RunSimulation(Int_t nEvents) {
 
 void CMSimulation::Write(TString name) const {
   TString msg = "Saving results of simulation to file " + name;
-  log->info(msg);
+  log->info(msg.Data());
 
   log->debug("Save raw data");
   TFile file(name, "RECREATE");

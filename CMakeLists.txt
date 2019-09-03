@@ -65,6 +65,9 @@ add_subdirectory(tools)
 add_subdirectory(cm)
 add_subdirectory(cc)
 
+enable_testing()
+add_subdirectory(tests)
+
 #---Locating Doxygen and generating documentation
 
 option(BUILD_DOC "Build documentation" OFF)
