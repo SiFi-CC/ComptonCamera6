@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
   sim = new CCSimulation(
       Form("CCSimulation_gen%i_corr_%.0f_%.0f_%.0f_no.%i", gen, x, y, z, nev),
       kFALSE);
-  // sim->SetGenVersion(gen.Atoi());
+  sim->SetGenVersion(gen);
   sim->BuildSetup(200, 80, 80, 400, 100, 100);
   sim->SetCoordinate(x, y, z);
   sim->Loop(nev);
