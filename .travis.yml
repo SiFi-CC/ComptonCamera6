@@ -9,7 +9,7 @@ env:
 
 before_script:
     - sudo apt-get update
-    - sudo apt-get install -y libcppunit-dev
+    - sudo apt-get install -y libcppunit-dev lcov
     - mkdir .aux_deps
     - wget https://root.cern/download/root_v6.18.02.Linux-ubuntu18-x86_64-gcc7.4.tar.gz
     - tar zxf root_v6.18.02.Linux-ubuntu18-x86_64-gcc7.4.tar.gz -C .aux_deps
@@ -22,7 +22,7 @@ before_script:
     - popd
     - cd ..
     - mkdir build && cd build
-    - cmake ..
+    - cmake .. -DCODE_COVERAGE=1 -DCMAKE_BUILD_TYPE=Debug
 script:
     - make
     - make test

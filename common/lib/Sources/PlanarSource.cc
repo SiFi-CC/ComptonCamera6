@@ -166,11 +166,11 @@ Bool_t PlanarSource::Init() {
 }
 
 void PlanarSource::Print() {
-  std::cout << "\n\nPlanarSource::Print():\nName =\t" << GetName()
-            << "\nEnergy =\t" << fEnergy << " MeV"
-            << "\nPosition=\t(" << fPosition.X() << " , " << fPosition.Y()
+  std::cout << "\nName         =\t" << GetName()
+            << "\nEnergy       =\t" << fEnergy << " MeV"
+            << "\nPosition     =\t(" << fPosition.X() << " , " << fPosition.Y()
             << " , " << fPosition.Z() << ") mm"
-            << "\nSize=\t(" << 0 << " , " << fHalfY * 2 << " , " << fHalfZ * 2
+            << "\nSize         =\t(" << 0 << " , " << fHalfY * 2 << " , " << fHalfZ * 2
             << ") mm\nAngularRange =\t(" << fMinAngle << " , " << fMaxAngle
             << ") rad wrt -X axis" << std::endl;
   if (fEnergyDist)

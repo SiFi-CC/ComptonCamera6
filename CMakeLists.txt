@@ -69,7 +69,7 @@ include(c++-standards)
 include(code-coverage)
 include(sanitizers)
 
-cxx_17()
+cxx_11()
 add_code_coverage()
 
 add_subdirectory(common)
