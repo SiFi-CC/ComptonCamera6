@@ -13,16 +13,16 @@ public:
   IsectionPoint(Int_t bin, Double_t x, Double_t y, Double_t z);
   ~IsectionPoint();
 
-  /// Sets coordinates of intesection point and global bin number.
+  /// Sets coordinates of intersection point and global bin number.
   void SetBinPoint(Int_t bin, Double_t x, Double_t y, Double_t z);
-  /// Sets coordinates of intesection point.
+  /// Sets coordinates of intersection point.
   void SetPointCoordinates(Double_t x, Double_t y, Double_t z);
   /// Sets global bin number.
   void SetBin(Int_t b);
 
   void Print(void);
 
-  /// Returns coordinates of intesection point.
+  /// Returns coordinates of intersection point.
   TVector3* GetPointCoordinates(void);
   /// Returns global bin number.
   Int_t GetBin(void) const;
