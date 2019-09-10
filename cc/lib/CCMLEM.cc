@@ -96,11 +96,13 @@ Bool_t CCMLEM::SetInputReader(void) {
   if (file->Get("data")) {
     file->Close();
     fReader = new InputReaderSimple(fullName);
-  } else if (file->Get("G4SimulationData_Real") &&
+  } else if ((file->Get("G4SimulationData_Real") &&
              file->Get("G4SimulationData_Setup")&&
-             file->Get("G4SimulationData_Reconstruction")) {
+             file->Get("G4SimulationData_Reconstruction")) ||	// structure of simulation output before summer 2019
+			 (file->Get("Setup") && file->Get("Events")) ) {	// structure of simulation output after summer 2019
     file->Close();
     fReader = new InputReaderGeant(fullName);
+    dynamic_cast<InputReaderGeant*>(fReader)->SetFilter(fGeantFilter);
   } else if (file->Get("Pos&EnergyRecoClus") /*&&
              file->Get("Reco") && 
              file->Get("Real")*/) {
@@ -240,6 +242,7 @@ Bool_t CCMLEM::Reconstruct(void) {
 //       point_dir->SetXYZ(point_e->x()+point_dir->x()*distance, point_e->y()+point_dir->y()*distance, point_e->z()+point_dir->z()*distance);
 //       
        energy0 = 4.40;
+/*
        Double_t en = energy1 + energy2;
        if (fabs(energy0 - en) > 1.E-1) {
             //cout << "energy_e : "<< energy1 << "\t" << "+" << "\t" << "energy_p :" << energy2 << "\t" << " = " << "\t" << "total energy : " << en << endl;
@@ -276,7 +279,7 @@ Bool_t CCMLEM::Reconstruct(void) {
       }
 //    cout<<"---------------------"<<endl;
     //fAngDiff->Fill(point_abs_sc->Angle(*point_dir)*TMath::RadToDeg());
-   
+*/   
     if (fSmear) {
           point_e->SetXYZ(SmearBox(point_e->X(), fResolutionX),
                          SmearGaus(point_e->Y(), fResolutionY),
@@ -740,7 +743,8 @@ Bool_t CCMLEM::ReadConfig(TString path) {
 
   TString comment;
 
-  while (!config.eof()) {
+  while (!config.eof()) { // TODO: this reads past the last line, so will always
+						  //give a warning about unknown syntax of an empty comment
     comment.ReadLine(config);
     if (comment.Contains("Name of the input file")) {
       config >> fInputName;
@@ -790,6 +794,8 @@ Bool_t CCMLEM::ReadConfig(TString path) {
              << endl;
         return false;
       }
+    } else if (comment.Contains("Event filter Geant4")) {
+      config >> fGeantFilter;
     } else if (comment.Contains("Verbose flag")) {
       config >> fVerbose;
     } else {
@@ -948,6 +954,7 @@ void CCMLEM::Print(void) {
   cout << setw(35) << "FreshOutput level: \t" << fFreshOutput << endl;
   cout << setw(35) << "No. of first and last event: \t" << fStart << ", "
        << fStop << endl;
+  cout << setw(35) << "Event filter Geant4: \t" << fGeantFilter << endl;
   cout << setw(35) << "Verbose level: \t" << fVerbose << endl << endl;
 }
 //--------------------------------------
@@ -975,6 +982,7 @@ void CCMLEM::Clear(void) {
   fStop = -1000;
   fSmear = kFALSE;
   fFreshOutput = kFALSE;
+  fGeantFilter = 0;
   fVerbose = kFALSE;
   fNIpoints = -1000;
   fPoints = -1000;
