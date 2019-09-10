@@ -33,7 +33,7 @@ IsectionPoint::IsectionPoint(Int_t bin, Double_t x, Double_t y, Double_t z) {
 /// Deafault destructor
 IsectionPoint::~IsectionPoint() { delete fPoint; }
 //------------------------------------------------------------------
-/// Sets coordinates of intesection point and global bin number.
+/// Sets coordinates of intersection point and global bin number.
 ///\param bin (Int_t) - global bin number.
 ///\param x (Double_t) - x-component of intersection point.
 ///\param y (Double_t) - y-component of intersection point.
@@ -43,7 +43,7 @@ void IsectionPoint::SetBinPoint(Int_t bin, Double_t x, Double_t y, Double_t z) {
   fPoint->SetXYZ(x, y, z);
 }
 //------------------------------------------------------------------
-/// Sets coordinates of intesection point.
+/// Sets coordinates of intersection point.
 ///\param x (Double_t) - x-component of intersection point.
 ///\param y (Double_t) - y-component of intersection point.
 ///\param z (Double_t) - z-component of intersection point.
@@ -55,7 +55,7 @@ void IsectionPoint::SetPointCoordinates(Double_t x, Double_t y, Double_t z) {
 ///\param bin (Int_t) - global bin number.
 void IsectionPoint::SetBin(Int_t b) { fGlobalBin = b; }
 //------------------------------------------------------------------
-/// Returns coordinates of intesection point.
+/// Returns coordinates of intersection point.
 TVector3* IsectionPoint::GetPointCoordinates(void) { return fPoint; }
 //------------------------------------------------------------------
 /// Returns global bin number.
