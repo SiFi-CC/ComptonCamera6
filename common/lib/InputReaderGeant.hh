@@ -12,7 +12,8 @@ using namespace std;
 /// ROOT file containing tree with simulation results and via set of
 /// getter function passes information to reconstruction classes, i.e.
 /// CCREconstruction and CCMLEM.
-/// Here, we have two types information: 1. the real information from the simulation 
+/// Here, we have two types information: 
+/// 1. the real information from the simulation 
 /// 2. the information of the reconstructed events 
 class InputReaderGeant : public InputReader {
 
@@ -34,7 +35,6 @@ public:
   int GetRecoClusterPosSize(void);
    
   double GetEnergyPrimary(void);
-  double GetEnergyPrimaryReco(void);
   double GetEnergyLoss(void);
   double GetEnergyLossReco(void);
   double GetEnergyScattered(void);
@@ -51,24 +51,25 @@ public:
   double GetAbsThicky(void);
   double GetAbsThickz(void);
 
+  /// Set filter to select events. Used by CCMLEM. @see fFilter
+  void SetFilter(Int_t f) {fFilter = f;}; 
+
 private:
   int fEventNumber;     ///< Event number
-  int fIdentified;      ///< Number of events were labeled 
-  Double_t fEnergy_Primary;     ///< Primary photon energy
-  Double_t fRealEnergy_e;       ///< Electron energy + uncertainty [MeV]
-  Double_t fRealEnergy_p;       ///< Photon energy + uncertainty [MeV]
+  bool fIdentified;      ///< Number of events were labeled 
+  Double_t fEnergy_Primary;				///< Primary photon energy from simulation [MeV]
+  Double_t fRealEnergy_e;				///< Electron energy [MeV]
+  Double_t fRealEnergy_p;				///< Photon energy [MeV]
   TVector3* fRealPosition_source;
   TVector3* fRealDirection_source;
-  TVector3* fRealPosition_e;        ///< Electron creation position + uncertainty
-  TVector3* fRealPosition_p;      ///< Photon energy deposition position + uncertainty
-  TVector3* fRealDirection_scatter;     ///< Direction of the scattered photon +
-                                    ///< uncertainty
-  PhysicVar* fRecoEnergy_e;     ///< Electron energy + uncertainty [MeV]
-  PhysicVar* fRecoEnergy_p;     ///< Photon energy + uncertainty [MeV]
-  PhysicVec* fRecoPosition_e;       ///< Electron creation position + uncertainty
-  PhysicVec* fRecoPosition_p;       ///< Photon energy deposition position + uncertainty
-  PhysicVec* fRecoDirection_scatter; ///< Direction of the scattered photon +
-                                     ///< uncertainty
+  TVector3* fRealPosition_e;			///< Electron creation position [mm]
+  TVector3* fRealPosition_p;			///< Photon energy deposition position [mm]
+  TVector3* fRealDirection_scatter;		///< Direction of the scattered photon [mm]
+  PhysicVar* fRecoEnergy_e;				///< Electron energy + uncertainty [MeV]
+  PhysicVar* fRecoEnergy_p;				///< Photon energy + uncertainty [MeV]
+  PhysicVec* fRecoPosition_e;			///< Electron creation position + uncertainty
+  PhysicVec* fRecoPosition_p;			///< Photon energy deposition position + uncertainty
+  PhysicVec* fRecoDirection_scatter;	///< Direction of the scattered photon + uncertainty
   vector<PhysicVec*>*
       fRecoClusterPositions; ///< Positions cluster with uncertainties
   vector<PhysicVar*>*
@@ -82,7 +83,6 @@ private:
   TVector3* fPositionScatReco;
   TVector3* fPositionAbsReco;
   TVector3* fDirectionScatReco;
-  
   
   
   TVector3* fPositionSource;
@@ -101,6 +101,20 @@ private:
   Double_t fAbsorberThickness_y;
   Double_t fAbsorberThickness_z;
   Double_t fNumberOfSimulatedEvents;
+
+  ///\brief Filter to select events
+  ///\details Choose which events are returned by the standard getter
+  /// functions like GetEnergyLoss().
+  /// Both real and recontructed events can still be accessed by the
+  /// specific functions like GetEnergyLossReal() or GetEnergyLossReco().
+  /// Additionally, filters for conditions to get a specific subset of events
+  /// are specified
+  /// \par Indices for filter settings 
+  ///  0: not set, will cause CCMLEM to break\n
+  ///  1: real events\n
+  /// -1: reconstructed events\n
+  /// -2: reconstructed events which are flagged as correctly reconstructed
+  Int_t fFilter;
 
   bool AccessTree(TString name, TString name1, TString name2);
   TTree* fTree1;

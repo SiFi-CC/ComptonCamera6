@@ -7,7 +7,7 @@ ClassImp(InputReaderGeant);
 InputReaderGeant::InputReaderGeant() : InputReader() {
   Clear();
   cout << "##### Warning in InputReaderGeant constructor!" << endl;
-  cout << "You are usinf default constructor." << endl;
+  cout << "You are using default constructor." << endl;
 }
 //------------------------------------------------------------------
 /// Standard constructor.
@@ -156,23 +156,26 @@ bool InputReaderGeant::LoadEvent(int i) {
 }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetPositionPrimary(void) {
+  //TODO
   cout << "##### Warning in InputReaderGeant::GetPositionPrimary()!" << endl;
   cout << "\t Position of gamma source is unknown!" << endl;
   fPositionSource->SetX(fRealPosition_source->X());
   fPositionSource->SetY(fRealPosition_source->Y());
   fPositionSource->SetZ(fRealPosition_source->Z());
   return fPositionSource;
-  // return NULL;
 }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetPositionScattering(void) {
+  //TODO
   fPositionScat->SetX(fRealPosition_e->X());
   fPositionScat->SetY(fRealPosition_e->Y());
   fPositionScat->SetZ(fRealPosition_e->Z());
   return fPositionScat;
+  //return fRealPosition_e;
 }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetPositionScatteringReco(void) {
+  //TODO
   fPositionScatReco->SetX(fRecoPosition_e->position.X());
   fPositionScatReco->SetY(fRecoPosition_e->position.Y());
   fPositionScatReco->SetZ(fRecoPosition_e->position.Z());
@@ -180,6 +183,7 @@ TVector3* InputReaderGeant::GetPositionScatteringReco(void) {
 }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetPositionAbsorption(void) {
+  //TODO
   fPositionAbs->SetX(fRealPosition_p->X());
   fPositionAbs->SetY(fRealPosition_p->Y());
   fPositionAbs->SetZ(fRealPosition_p->Z());
@@ -187,6 +191,7 @@ TVector3* InputReaderGeant::GetPositionAbsorption(void) {
 }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetPositionAbsorptionReco(void) {
+  //TODO
   fPositionAbsReco->SetX(fRecoPosition_p->position.X());
   fPositionAbsReco->SetY(fRecoPosition_p->position.Y());
   fPositionAbsReco->SetZ(fRecoPosition_p->position.Z());
@@ -194,25 +199,26 @@ TVector3* InputReaderGeant::GetPositionAbsorptionReco(void) {
 }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetGammaDirPrimary(void) {
+  //TODO
   // cout << "##### Warning in InputReaderGeant::GetGammaDirPrimary()!" << endl;
   // cout << "\t Direction of primary gamma is unknown!" << endl;
   fDirectionSource->SetX(fRealDirection_source->X());
   fDirectionSource->SetY(fRealDirection_source->Y());
   fDirectionSource->SetZ(fRealDirection_source->Z());
   return fDirectionSource;
-  // return NULL;
 }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetGammaDirScattered(void) {
-  // TVector3* temp = new TVector3();
+  //TODO
   fDirectionScat->SetX(fRealDirection_scatter->X());
   fDirectionScat->SetY(fRealDirection_scatter->Y());
   fDirectionScat->SetZ(fRealDirection_scatter->Z());
   return fDirectionScat;
+  //return fRealDirection_scatter;
 }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetGammaDirScatteredReco(void) {
-  
+  //TODO 
   fDirectionScatReco->SetX(fRecoDirection_scatter->position.X());
   fDirectionScatReco->SetY(fRecoDirection_scatter->position.Y());
   fDirectionScatReco->SetZ(fRecoDirection_scatter->position.Z());
@@ -222,6 +228,7 @@ TVector3* InputReaderGeant::GetGammaDirScatteredReco(void) {
 int InputReaderGeant::GetRecoClusterPosSize(void) { return fRecoClusterPositions->size(); }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetScattererPosition(void) {
+  //TODO
   fScatPlanePos->SetX(fScattererPosition->X());
   fScatPlanePos->SetY(fScattererPosition->Y());
   fScatPlanePos->SetZ(fScattererPosition->Z());
@@ -229,6 +236,7 @@ TVector3* InputReaderGeant::GetScattererPosition(void) {
 }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetAbsorberPosition(void) {
+  //TODO
   fAbsPlanePos->SetX(fAbsorberPosition->X());
   fAbsPlanePos->SetY(fAbsorberPosition->Y());
   fAbsPlanePos->SetZ(fAbsorberPosition->Z());
@@ -236,13 +244,7 @@ TVector3* InputReaderGeant::GetAbsorberPosition(void) {
 }
 //------------------------------------------------------------------
 double InputReaderGeant::GetEnergyPrimary(void) {
-  double sum = fRealEnergy_e + fRealEnergy_p;
-  return sum;
-}
-//------------------------------------------------------------------
-double InputReaderGeant::GetEnergyPrimaryReco(void) {
-  double sum = fRecoEnergy_e->value + fRecoEnergy_p->value;
-  return sum;
+  return fEnergy_Primary;
 }
 //------------------------------------------------------------------
 double InputReaderGeant::GetEnergyLoss(void) { return fRealEnergy_e; }
@@ -267,7 +269,7 @@ double InputReaderGeant::GetAbsThickz(void) { return fAbsorberThickness_z; }
 //------------------------------------------------------------------
 void InputReaderGeant::Clear(void) {
   fEventNumber = -1;
-  fIdentified = -1000;
+  fIdentified = false;
   fEnergy_Primary = -1000;
   fRealEnergy_e = -1000;
   fRealEnergy_p = -1000;
@@ -309,6 +311,8 @@ void InputReaderGeant::Clear(void) {
   fAbsorberPosition = NULL;
   fScatPlanePos = NULL;
   fAbsPlanePos = NULL;
+
+  fFilter = 0;
 
   return;
 }

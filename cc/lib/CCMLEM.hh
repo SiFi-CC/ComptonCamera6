@@ -66,6 +66,7 @@ private:
   Bool_t fFreshOutput;      ///< FreshOutput flag to recreate or update output file
   Int_t fStart;     ///< first event number
   Int_t fStop;      ///< last event number
+  Int_t fGeantFilter;	///< Select which events to use from Geant4 simulation @see InputReaderGeant.fFilter
   Bool_t fVerbose;      ///< Verbose level for print-outs on screen
 
   Int_t fNIpoints;      ///< Numbers of intersection points for each Compton cone
