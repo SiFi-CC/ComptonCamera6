@@ -26,18 +26,23 @@ public:
   void Clear(void);
   TVector3* GetPositionPrimary(void);
   TVector3* GetPositionScattering(void);
+//  TVector3* GetPositionScatteringReal(void); //TODO
   TVector3* GetPositionScatteringReco(void);
   TVector3* GetPositionAbsorption(void);
+//  TVector3* GetPositionAbsorptionReal(void); //TODO
   TVector3* GetPositionAbsorptionReco(void);
   TVector3* GetGammaDirPrimary(void);
   TVector3* GetGammaDirScattered(void);
+//  TVector3* GetGammaDirScatteredReal(void); //TODO
   TVector3* GetGammaDirScatteredReco(void);
   int GetRecoClusterPosSize(void);
    
   double GetEnergyPrimary(void);
   double GetEnergyLoss(void);
+  double GetEnergyLossReal(void);
   double GetEnergyLossReco(void);
   double GetEnergyScattered(void);
+  double GetEnergyScatteredReal(void);
   double GetEnergyScatteredReco(void);
   
   
@@ -56,7 +61,15 @@ public:
 
 private:
   int fEventNumber;     ///< Event number
-  bool fIdentified;      ///< Number of events were labeled 
+  int fEventNumberReco;     ///< Event number from tree with reconstructed events, should be the same as fEventNumber
+  bool fBIdentified;      ///< Flag if reconstruction found one cluster in absorber und one cluster in scatterer (used until summer 2019)
+  /// Identifier which event configuration the reconstruction found (used from summer 2019)
+  /// 0: did not match one of the classes below
+  /// +-1: S1A1-EP
+  /// +-2: S1A1-PE
+  /// +-3: S1AX
+  /// A positive value means that the classification was correct, a negative value means, it was false 
+  Int_t fIIdentified;      
   Double_t fEnergy_Primary;				///< Primary photon energy from simulation [MeV]
   Double_t fRealEnergy_e;				///< Electron energy [MeV]
   Double_t fRealEnergy_p;				///< Photon energy [MeV]
@@ -116,9 +129,11 @@ private:
   /// -2: reconstructed events which are flagged as correctly reconstructed
   Int_t fFilter;
 
-  bool AccessTree(TString name, TString name1, TString name2);
-  TTree* fTree1;
-  TTree* fTree2;
+  bool AccessTree();
+  TTree* fTreeSetup;	///< tree containing placement of scatterer and absorber
+  TTree* fTreeReco;		///< only used in structure before summer 2019: separate tree with reconstructed events
+
+  bool fJointTree;		///< internal flag, if structure with two trees for real and reconstructed events is used or if they are both stored in one common tree
 
   ClassDef(InputReaderGeant, 0)
 };

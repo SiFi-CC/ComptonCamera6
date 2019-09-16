@@ -14,9 +14,12 @@ InputReaderGeant::InputReaderGeant() : InputReader() {
 ///\param path (TString) - path to the input file.
 InputReaderGeant::InputReaderGeant(TString path) : InputReader(path) {
 
-  if (!AccessTree("G4SimulationData_Real", "G4SimulationData_Setup", "G4SimulationData_Reconstruction")) {
+  if (!AccessTree()) {
     throw "##### Exception in InputReaderGeant constructor!";
   }
+
+  // Load setup
+  fTreeSetup->GetEntry(0);
 
   fPositionScat = new TVector3();
   fPositionAbs = new TVector3();
@@ -39,29 +42,36 @@ InputReaderGeant::~InputReaderGeant() {
   if (fFile->IsOpen()) fFile->Close();
 }
 //------------------------------------------------------------------
-/// Accesses data of trees'branches in ROOT file.
-///\param name (TString) - name of tree.
-///\param name1 (TString) - name1 of tree.
-///\param name2 (TString) - name2 of tree.
-bool InputReaderGeant::AccessTree(TString name, TString name1, TString name2) {
+/// Accesses data of trees' branches in ROOT file.
+bool InputReaderGeant::AccessTree() {
 
-  fTree = (TTree*)fFile->Get(name);
-  fTree1 = (TTree*)fFile->Get(name1);
-  fTree2 = (TTree*)fFile->Get(name2);
-  if (fTree == NULL) {
+  // Check structure of file: 
+  // 3 trees: G4SimulationData_Setup+G4SimulationData_Real+G4SimulationData_Reconstruction
+  // or 2 trees: Setup+Events
+  if (fFile->Get("G4SimulationData_Setup"))  fJointTree = false;
+  else if (fFile->Get("Setup")) fJointTree = true;
+  else {
     cout << "##### Error in InputReaderGeant::AccessTree()!" << endl;
-    cout << "Could not access the tree!" << endl;
     return false;
   }
-  if (fTree1 == NULL) {
-    cout << "##### Error in InputReaderGeant::AccessTree()!" << endl;
-    cout << "Could not access the tree!" << endl;
-    return false;
-  }
-  if (fTree2 == NULL) {
-    cout << "##### Error in InputReaderGeant::AccessTree()!" << endl;
-    cout << "Could not access the tree!" << endl;
-    return false;
+
+  if(fJointTree){ 
+    fTree = (TTree*)fFile->Get("Events");
+    fTreeSetup = (TTree*)fFile->Get("Setup");
+    if (fTree == NULL || fTreeSetup == NULL) {
+      cout << "##### Error in InputReaderGeant::AccessTree()!" << endl;
+      cout << "Could not access tree!" << endl;
+      return false;
+    }
+  } else {
+    fTree = (TTree*)fFile->Get("G4SimulationData_Real");
+    fTreeReco = (TTree*)fFile->Get("G4SimulationData_Reconstruction");
+    fTreeSetup = (TTree*)fFile->Get("G4SimulationData_Setup");
+    if (fTree == NULL || fTreeReco == NULL || fTreeSetup == NULL) {
+      cout << "##### Error in InputReaderGeant::AccessTree()!" << endl;
+      cout << "Could not access tree!" << endl;
+      return false;
+    }
   }
   
   fRecoEnergy_e = new PhysicVar();
@@ -81,6 +91,17 @@ bool InputReaderGeant::AccessTree(TString name, TString name1, TString name2) {
   fScattererPosition = new TVector3();
   fAbsorberPosition = new TVector3();
 
+  fTreeSetup->SetBranchAddress("ScattererThickness_x", &fScattererThickness_x);
+  fTreeSetup->SetBranchAddress("ScattererThickness_y", &fScattererThickness_y);
+  fTreeSetup->SetBranchAddress("ScattererThickness_z", &fScattererThickness_z);
+  fTreeSetup->SetBranchAddress("AbsorberThickness_x", &fAbsorberThickness_x);
+  fTreeSetup->SetBranchAddress("AbsorberThickness_y", &fAbsorberThickness_y);
+  fTreeSetup->SetBranchAddress("AbsorberThickness_z", &fAbsorberThickness_z);
+  fTreeSetup->SetBranchAddress("ScattererPosition", &fScattererPosition);
+  fTreeSetup->SetBranchAddress("AbsorberPosition", &fAbsorberPosition);
+  fTreeSetup->SetBranchAddress("NumberOfSimulatedEvents",
+                           &fNumberOfSimulatedEvents);
+
   fTree->SetBranchAddress("EventNumber", &fEventNumber);
   fTree->SetBranchAddress("Energy_Primary", &fEnergy_Primary);
   fTree->SetBranchAddress("RealEnergy_e", &fRealEnergy_e);
@@ -90,75 +111,67 @@ bool InputReaderGeant::AccessTree(TString name, TString name1, TString name2) {
   fTree->SetBranchAddress("RealPosition_e", &fRealPosition_e);
   fTree->SetBranchAddress("RealPosition_p", &fRealPosition_p);
   fTree->SetBranchAddress("RealDirection_scatter", &fRealDirection_scatter);
-  
-  fTree1->SetBranchAddress("ScattererThickness_x", &fScattererThickness_x);
-  fTree1->SetBranchAddress("ScattererThickness_y", &fScattererThickness_y);
-  fTree1->SetBranchAddress("ScattererThickness_z", &fScattererThickness_z);
-  fTree1->SetBranchAddress("AbsorberThickness_x", &fAbsorberThickness_x);
-  fTree1->SetBranchAddress("AbsorberThickness_y", &fAbsorberThickness_y);
-  fTree1->SetBranchAddress("AbsorberThickness_z", &fAbsorberThickness_z);
-  fTree1->SetBranchAddress("ScattererPosition", &fScattererPosition);
-  fTree1->SetBranchAddress("AbsorberPosition", &fAbsorberPosition);
-  fTree1->SetBranchAddress("NumberOfSimulatedEvents",
-                           &fNumberOfSimulatedEvents);
-  
-  fTree2->SetBranchAddress("EventNumber", &fEventNumber);
-  fTree2->SetBranchAddress("Identified", &fIdentified);
-  fTree2->SetBranchAddress("RecoEnergy_e", &fRecoEnergy_e);
-  fTree2->SetBranchAddress("RecoEnergy_p", &fRecoEnergy_p);
-  fTree2->SetBranchAddress("RecoPosition_e", &fRecoPosition_e);
-  fTree2->SetBranchAddress("RecoPosition_p", &fRecoPosition_p);
-  fTree2->SetBranchAddress("RecoDirection_scatter", &fRecoDirection_scatter);
-  fTree2->SetBranchAddress("RecoClusterPositions", &fRecoClusterPositions);
-  fTree2->SetBranchAddress("RecoClusterEnergies", &fRecoClusterEnergies);
 
-  cout << "\n\nIn InputReaderGeant::AccessTree()." << endl;
-  cout << fTree->GetName() << " tree accessed.\n" << endl;
+ 
+  if(fJointTree){ 
+    fTree->SetBranchAddress("Identified", &fIIdentified);
+    fTree->SetBranchAddress("RecoEnergy_e", &fRecoEnergy_e);
+    fTree->SetBranchAddress("RecoEnergy_p", &fRecoEnergy_p);
+    fTree->SetBranchAddress("RecoPosition_e", &fRecoPosition_e);
+    fTree->SetBranchAddress("RecoPosition_p", &fRecoPosition_p);
+    fTree->SetBranchAddress("RecoDirection_scatter", &fRecoDirection_scatter);
+    fTree->SetBranchAddress("RecoClusterPositions", &fRecoClusterPositions);
+    fTree->SetBranchAddress("RecoClusterEnergies", &fRecoClusterEnergies);
 
-  cout << "\n\nIn InputReaderGeant::AccessTree()." << endl;
-  cout << fTree1->GetName() << " tree accessed.\n" << endl;
-  
-  cout << "\n\nIn InputReaderGeant::AccessTree()." << endl;
-  cout << fTree2->GetName() << " tree accessed.\n" << endl;
-  
+  } else {
+    fTreeReco->SetBranchAddress("EventNumber", &fEventNumberReco);
+    fTreeReco->SetBranchAddress("Identified", &fBIdentified);
+    fTreeReco->SetBranchAddress("RecoEnergy_e", &fRecoEnergy_e);
+    fTreeReco->SetBranchAddress("RecoEnergy_p", &fRecoEnergy_p);
+    fTreeReco->SetBranchAddress("RecoPosition_e", &fRecoPosition_e);
+    fTreeReco->SetBranchAddress("RecoPosition_p", &fRecoPosition_p);
+    fTreeReco->SetBranchAddress("RecoDirection_scatter", &fRecoDirection_scatter);
+    fTreeReco->SetBranchAddress("RecoClusterPositions", &fRecoClusterPositions);
+    fTreeReco->SetBranchAddress("RecoClusterEnergies", &fRecoClusterEnergies);
+  }
+
   return true;
 }
 //------------------------------------------------------------------
 /// loads events from trees to analyze them in CCMLEM class.
-///\param i (int) - number of events
+///\param i (int) - number of event
 bool InputReaderGeant::LoadEvent(int i) {
 
-  int imax1 = fTree1->GetEntries();
-  fTree1->GetEntry(i);
-  
-  int imax2 = fTree2->GetEntries();
-  if (i > imax2) {
+  if (i > fTree->GetEntries()) {
     cout << "##### Error in InputReaderGeant::LoadEvent() in reconstruction tree!" << endl;
     cout << "Requested event number larger than number of events in the tree!"
-         << endl;
-    return false;
-  }
-  fTree2->GetEntry(i);
-  
-  int imax = fTree->GetEntries();
-  if (i > imax) {
-    cout << "##### Error in InputReaderGeant::LoadEvent() in real tree!" << endl;
-    cout << "Requested event number larger than number of events in the tree!"
-         << endl;
+         << fTree->GetName() << endl;
     return false;
   }
 
   fTree->GetEntry(i);
+  
+  if (!fJointTree) {
+    if (i > fTreeReco->GetEntries()) {
+      cout << "##### Error in InputReaderGeant::LoadEvent() in real tree!" << endl;
+      cout << "Requested event number larger than number of events in the tree!"
+           << fTreeReco->GetName() << endl;
+      return false;
+    }
 
-  if (0 == fRealPosition_e->X() || 0 == fRealPosition_p->X()) return false;
+    fTreeReco->GetEntry(i);
+  }
+
+  //filter
+  //if (0 == fRealEnergy_e->X() ) return false;
 
   return true;
 }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetPositionPrimary(void) {
   //TODO
-  cout << "##### Warning in InputReaderGeant::GetPositionPrimary()!" << endl;
-  cout << "\t Position of gamma source is unknown!" << endl;
+  //cout << "##### Warning in InputReaderGeant::GetPositionPrimary()!" << endl;
+  //cout << "\t Position of gamma source is unknown!" << endl;
   fPositionSource->SetX(fRealPosition_source->X());
   fPositionSource->SetY(fRealPosition_source->Y());
   fPositionSource->SetZ(fRealPosition_source->Z());
@@ -247,11 +260,15 @@ double InputReaderGeant::GetEnergyPrimary(void) {
   return fEnergy_Primary;
 }
 //------------------------------------------------------------------
-double InputReaderGeant::GetEnergyLoss(void) { return fRealEnergy_e; }
+double InputReaderGeant::GetEnergyLoss(void) { return fRealEnergy_e; } //TODO
+//------------------------------------------------------------------
+double InputReaderGeant::GetEnergyLossReal(void) { return fRealEnergy_e; }
 //------------------------------------------------------------------
 double InputReaderGeant::GetEnergyLossReco(void) { return fRecoEnergy_e->value; }
 //------------------------------------------------------------------
-double InputReaderGeant::GetEnergyScattered(void) { return fRealEnergy_p; }
+double InputReaderGeant::GetEnergyScattered(void) { return fRealEnergy_p; } //TODO
+//------------------------------------------------------------------
+double InputReaderGeant::GetEnergyScatteredReal(void) { return fRealEnergy_p; }
 //------------------------------------------------------------------
 double InputReaderGeant::GetEnergyScatteredReco(void) { return fRecoEnergy_p->value; }
 //------------------------------------------------------------------
@@ -269,7 +286,9 @@ double InputReaderGeant::GetAbsThickz(void) { return fAbsorberThickness_z; }
 //------------------------------------------------------------------
 void InputReaderGeant::Clear(void) {
   fEventNumber = -1;
-  fIdentified = false;
+  fEventNumberReco = -1;
+  fBIdentified = false;
+  fIIdentified = 0;
   fEnergy_Primary = -1000;
   fRealEnergy_e = -1000;
   fRealEnergy_p = -1000;
@@ -281,8 +300,8 @@ void InputReaderGeant::Clear(void) {
   fDirectionSource = NULL;
   fPositionSource = NULL;
   fTree = NULL;
-  fTree1 = NULL;
-  fTree2 = NULL;
+  fTreeReco = NULL;
+  fTreeSetup = NULL;
   fFile = NULL;
   fRealDirection_scatter = NULL;
   fRealDirection_source = NULL;
