@@ -199,17 +199,15 @@ Bool_t CCMLEM::Reconstruct(void) {
       
 
       fNIpoints = 0;
-
-      if (fVerbose)
-      cout << "CCMLEM::Reconstruct(...) event " << i << endl << endl;
-
-      status = fReader->LoadEvent(counter + i);
+      status = fReader->LoadEvent(counter + i);	// TODO: break when all events in file are processed
 
       if (status == false) {
          counter++;
+         i--;
          continue;
       }
- 
+      if (fVerbose)  cout << "CCMLEM::Reconstruct(...) event " << i+counter << endl;
+
       energy1 = fReader->GetEnergyLoss();
       energy2 = fReader->GetEnergyScattered();
       point_e = fReader->GetPositionScattering();
@@ -296,7 +294,7 @@ Bool_t CCMLEM::Reconstruct(void) {
     interactionPoint = cone->GetApex();
     coneAxis = cone->GetAxis();
     coneTheta = cone->GetAngle();
-    
+
     Double_t K = cos(coneTheta);
     Double_t a, b, c1, c2, c3, c4, c, z1, z2;
     Double_t d, e, f1, f2, f3, f4, f, y1, y2;
@@ -305,7 +303,7 @@ Bool_t CCMLEM::Reconstruct(void) {
      //for (m = 1; m <= fNbinsX; m++) {
     
     y = -A;
-    if (fVerbose) cout << "Loop over horizontal lines..." << endl;
+//    if (fVerbose) cout << "Loop over horizontal lines..." << endl;
 
     for (j = 0; j < fNbinsY + 1; j++) {
 
@@ -363,7 +361,7 @@ Bool_t CCMLEM::Reconstruct(void) {
     } // end of loop over horizontal lines
 
     z = -B;
-    if (fVerbose) cout << "Loop over vertical lines..." << endl;
+//    if (fVerbose) cout << "Loop over vertical lines..." << endl;
     for (k = 0; k < fNbinsZ + 1; k++) {
 
       d = 2 * (pow(-coneAxis.Y(), 2) - pow(K, 2));
@@ -534,7 +532,7 @@ Bool_t CCMLEM::Reconstruct(void) {
 ///\param z (Double_t) - z-component of intersection point on the image plane
 Int_t CCMLEM::AddIsectionPoint(TString dir, Double_t x, Double_t y,
                                Double_t z) {
-  if (fVerbose) cout << dir << "\t" << x << "\t" << y << "\t" << z << endl;
+  //if (fVerbose) cout << dir << "\t" << x << "\t" << y << "\t" << z << endl;
   dir.ToLower();
   if (dir != "hor" && dir != "ver") {
     // if(fVerbose) cout<<"Unknown direction of intrsecting line: "<<dir<<endl;
