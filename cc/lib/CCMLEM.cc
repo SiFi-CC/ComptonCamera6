@@ -196,19 +196,18 @@ Bool_t CCMLEM::Reconstruct(void) {
 /// skipped events. If you want to change this - remove 'counter' variable.
 
   for (Int_t i = fStart; i < fStop; i++) {
+      
 
-    fNIpoints = 0;
+      fNIpoints = 0;
+      status = fReader->LoadEvent(counter + i);	// TODO: break when all events in file are processed
 
-    if (fVerbose)
-      cout << "CCMLEM::Reconstruct(...) event " << i << endl << endl;
+      if (status == false) {
+         counter++;
+         i--;
+         continue;
+      }
+      if (fVerbose)  cout << "CCMLEM::Reconstruct(...) event " << i+counter << endl;
 
-    status = fReader->LoadEvent(counter + i);
-
-    if (status == false) {
-      counter++;
-      continue;
-    }
- 
       energy1 = fReader->GetEnergyLoss();
       energy2 = fReader->GetEnergyScattered();
       point_e = fReader->GetPositionScattering();
@@ -289,13 +288,13 @@ Bool_t CCMLEM::Reconstruct(void) {
       energy1 = SmearGaus(energy1, GetSigmaE(energy1));
       energy2 = SmearGaus(energy2, GetSigmaE(energy2));
     }
-
+    
     ComptonCone* cone =
         new ComptonCone(point_e, point_p, energy1 + energy2, energy2);
     interactionPoint = cone->GetApex();
     coneAxis = cone->GetAxis();
     coneTheta = cone->GetAngle();
-    
+
     Double_t K = cos(coneTheta);
     Double_t a, b, c1, c2, c3, c4, c, z1, z2;
     Double_t d, e, f1, f2, f3, f4, f, y1, y2;
@@ -304,7 +303,7 @@ Bool_t CCMLEM::Reconstruct(void) {
      //for (m = 1; m <= fNbinsX; m++) {
     
     y = -A;
-    if (fVerbose) cout << "Loop over horizontal lines..." << endl;
+//    if (fVerbose) cout << "Loop over horizontal lines..." << endl;
 
     for (j = 0; j < fNbinsY + 1; j++) {
 
@@ -362,7 +361,7 @@ Bool_t CCMLEM::Reconstruct(void) {
     } // end of loop over horizontal lines
 
     z = -B;
-    if (fVerbose) cout << "Loop over vertical lines..." << endl;
+//    if (fVerbose) cout << "Loop over vertical lines..." << endl;
     for (k = 0; k < fNbinsZ + 1; k++) {
 
       d = 2 * (pow(-coneAxis.Y(), 2) - pow(K, 2));
@@ -489,9 +488,10 @@ Bool_t CCMLEM::Reconstruct(void) {
            << endl;
 
   } // end of loop over events
-  //}
-
-  // SaveToFile(fAngDiff);
+  
+  
+  //cout<< "no. of Points : " << fPoints<<endl;
+  //SaveToFile(fAngDiff);
   fArray->Clear("C");
   //cout<< "number of events : " << count <<endl;
   SaveToFile(fImage[0]);
@@ -507,12 +507,14 @@ Bool_t CCMLEM::Reconstruct(void) {
           //cout<< "sigma value" << fSigma[100] << endl;
           return 0;
       }
+
+
   }
 
   //DrawHisto();
   //GetSigmaError();
    //t.Stop();
-   //t.Print();
+  // t.Print();
 
   return kTRUE;
 }
@@ -530,7 +532,7 @@ Bool_t CCMLEM::Reconstruct(void) {
 ///\param z (Double_t) - z-component of intersection point on the image plane
 Int_t CCMLEM::AddIsectionPoint(TString dir, Double_t x, Double_t y,
                                Double_t z) {
-  if (fVerbose) cout << dir << "\t" << x << "\t" << y << "\t" << z << endl;
+  //if (fVerbose) cout << dir << "\t" << x << "\t" << y << "\t" << z << endl;
   dir.ToLower();
   if (dir != "hor" && dir != "ver") {
     // if(fVerbose) cout<<"Unknown direction of intrsecting line: "<<dir<<endl;
@@ -550,7 +552,7 @@ Int_t CCMLEM::AddIsectionPoint(TString dir, Double_t x, Double_t y,
   Double_t zplus, zminus;
   if (dir == "hor") { // adding point from intersections with horizontal lines
     pixelZ = fImage[0]->GetXaxis()->FindBin(z);
-    // pixelX = fImage[0]->GetZaxis()->FindBin(x);
+    //pixelX = fImage[0]->GetZaxis()->FindBin(x);
     if (pixelZ > fNbinsZ) pixelZ = fNbinsZ; // inclusion of upper edges of histo
     // cout<<"pixelZ : " <<pixelZ<< endl;
     yplus = y + 0.0005 * fPixelSizeY;
@@ -575,7 +577,7 @@ Int_t CCMLEM::AddIsectionPoint(TString dir, Double_t x, Double_t y,
   }
   if (dir == "ver") { // adding point from intersections with vertical lines
     pixelY = fImage[0]->GetYaxis()->FindBin(y);
-    // pixelX = fImage[0]->GetZaxis()->FindBin(x);
+    //pixelX = fImage[0]->GetZaxis()->FindBin(x);
     if (pixelY > fNbinsY) pixelY = fNbinsY; // inclusion of upper edges of histo
     // cout<<"pixelY : " <<pixelY<< endl;
     zplus = z + 0.0005 * fPixelSizeZ;
@@ -694,7 +696,7 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
   for (int j = 20; j <= lastiter + 1; j = j + 10) {
        //cout << fSigma[100] << endl;
       if (fabs(sigma[j]) !=0) fSigma[100] = (fabs(sigma[j] - sigma[j - 10]))/fabs(sigma[j]);
-      //cout << fSigma[100] << endl;
+       //cout << fSigma[100] << endl;
       if (fSigma[100] < 0.01) {
           
           cout << "SigmaIter" << j << " - " << "SigmaIter" << j - 10 << " = " << "SigmaPercentageErr : " << fSigma[100] << endl;
@@ -717,7 +719,8 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
           return 0;
       }
   }
-  
+            
+            
   SaveToFile(hthisiter);
   return kTRUE;
 }
@@ -810,7 +813,6 @@ Bool_t CCMLEM::ReadConfig(TString path) {
 Bool_t CCMLEM::DrawHisto(void) {
 
   int lastiter = fIter;
-  // int iter = fIter - 10;
 
   TH1D* hProZ[150];
   TH1D* hProY[150];
@@ -828,8 +830,6 @@ Bool_t CCMLEM::DrawHisto(void) {
   //hProX[lastiter] = fImage[lastiter]->ProjectionZ();
   can->cd(2);
   hProZ[lastiter]->Draw();
-  // can->cd(5);
-  // hProY[iter]->Draw();
   can->cd(3);
   hProY[lastiter]->Draw();
   //can->cd(4);

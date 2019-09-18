@@ -26,14 +26,14 @@ public:
   void Clear(void);
   TVector3* GetPositionPrimary(void);
   TVector3* GetPositionScattering(void);
-//  TVector3* GetPositionScatteringReal(void); //TODO
+  TVector3* GetPositionScatteringReal(void);
   TVector3* GetPositionScatteringReco(void);
   TVector3* GetPositionAbsorption(void);
-//  TVector3* GetPositionAbsorptionReal(void); //TODO
+  TVector3* GetPositionAbsorptionReal(void);
   TVector3* GetPositionAbsorptionReco(void);
   TVector3* GetGammaDirPrimary(void);
   TVector3* GetGammaDirScattered(void);
-//  TVector3* GetGammaDirScatteredReal(void); //TODO
+  TVector3* GetGammaDirScatteredReal(void);
   TVector3* GetGammaDirScatteredReco(void);
   int GetRecoClusterPosSize(void);
    
@@ -123,10 +123,12 @@ private:
   /// Additionally, filters for conditions to get a specific subset of events
   /// are specified
   /// \par Indices for filter settings 
-  ///  0: not set, will cause CCMLEM to break\n
+  ///  0: not set, will cause CCMLEM to not read any events\n
   ///  1: real events\n
   /// -1: reconstructed events\n
-  /// -2: reconstructed events which are flagged as correctly reconstructed
+  /// -2: reconstructed events which are flagged as correctly reconstructed\n
+  ///  3: real events which are flagged as correctly reconstructed of type S1AX\n
+  /// -3: reconstructed events which are flagged as correctly reconstructed of type S1AX
   Int_t fFilter;
 
   bool AccessTree();
