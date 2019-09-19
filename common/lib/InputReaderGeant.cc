@@ -167,7 +167,7 @@ bool InputReaderGeant::LoadEvent(int i) {
   if ( 0 >  fFilter && -11 == fIIdentified ) return false; // TODO: -11 will be replaced by 0
   if ( 1 == fFilter || -1 == fFilter ) return true;
   else if (-2 == fFilter && (0 < fIIdentified || fBIdentified)) return true;
-  else if (-3 == fFilter && 3 ==  fIIdentified ) return true;
+  else if (-3 == fFilter && 3 ==  abs(fIIdentified) ) return true;
   else if (3 == fFilter && 3 ==  fIIdentified ) return true;
   else {
     return false;

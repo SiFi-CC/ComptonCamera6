@@ -196,17 +196,28 @@ Bool_t CCMLEM::Reconstruct(void) {
 /// skipped events. If you want to change this - remove 'counter' variable.
 
   for (Int_t i = fStart; i < fStop; i++) {
-      
 
       fNIpoints = 0;
-      status = fReader->LoadEvent(counter + i);	// TODO: break when all events in file are processed
+
+      // break when all events in file are processed
+      if(counter + i >= fReader->GetEntries()){ 
+        cout << "##### Warning in CCMLEM::Reconstruct()" << endl;
+        cout << "End of tree is reached. Only " << i-fStart
+          << " events instead of " << fStop-fStart << " events are analysed." << endl; 
+        break;
+      }
+
+      status = fReader->LoadEvent(counter + i);
+      if(true == status) {
+        status = fReader->ApplySelectionCut(counter + i, fSelectionCut);
+      }
 
       if (status == false) {
          counter++;
          i--;
          continue;
       }
-      if (fVerbose)  cout << "CCMLEM::Reconstruct(...) event " << i+counter << endl;
+      if (fVerbose)  cout << "CCMLEM::Reconstruct(): reconstruct event " << i+counter << endl;
 
       energy1 = fReader->GetEnergyLoss();
       energy2 = fReader->GetEnergyScattered();
@@ -686,8 +697,8 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
     //ProX[i] = fImage[i]->ProjectionZ();  
     ProY[i] = fImage[i]->ProjectionY();
     ProZ[i] = fImage[i]->ProjectionX();
-    ProZ[i]->Fit(func_z, "r");
-    //ProY[i]->Fit(func_y,"r");
+    ProZ[i]->Fit(func_z, "rq");
+    //ProY[i]->Fit(func_y,"rq");
     sigma[i] = func_z->GetParameter(2);
     // cout<< "i : \t" << i << "\t" << "sigma : \t " << sigma[i]<< endl;
   }
@@ -794,6 +805,13 @@ Bool_t CCMLEM::ReadConfig(TString path) {
       }
     } else if (comment.Contains("Event filter Geant4")) {
       config >> fGeantFilter;
+    } else if (comment.Contains("Selection cut")) {
+      TString cutString;
+      config >> cutString;
+      TCut tmpCut (cutString.Data());
+      fSelectionCut += tmpCut;
+      cutString.Clear();
+      tmpCut.Clear();
     } else if (comment.Contains("Verbose flag")) {
       config >> fVerbose;
     } else {
@@ -912,6 +930,8 @@ Double_t CCMLEM::SmearGaus(double val, double sigma) {
 //------------------------------------
 ///Returns a double value from Uniform function with respect to position resolution value.
 ///\param x (double) - the given position value.
+///\param resolution (double) - total width of box
+///\return (double) a random variable of a uniform distribution with width resolution and center x
 Double_t CCMLEM::SmearBox(double x, double resolution) {
   return gRandom->Uniform(x - (resolution / 2), x + (resolution / 2));
 }
@@ -953,6 +973,7 @@ void CCMLEM::Print(void) {
   cout << setw(35) << "No. of first and last event: \t" << fStart << ", "
        << fStop << endl;
   cout << setw(35) << "Event filter Geant4: \t" << fGeantFilter << endl;
+  cout << setw(35) << "Selection cut: \t" << fSelectionCut.GetTitle() << endl;
   cout << setw(35) << "Verbose level: \t" << fVerbose << endl << endl;
 }
 //--------------------------------------
@@ -981,6 +1002,7 @@ void CCMLEM::Clear(void) {
   fSmear = kFALSE;
   fFreshOutput = kFALSE;
   fGeantFilter = 0;
+  fSelectionCut = "";
   fVerbose = kFALSE;
   fNIpoints = -1000;
   fPoints = -1000;
@@ -999,7 +1021,7 @@ void CCMLEM::Clear(void) {
 Bool_t CCMLEM::SaveToFile(TObject* ob) {
   fOutputFile->cd();
   ob->Write();
-  cout << ob->ClassName() << " " << ob->GetName() << " saved in the file "
+  if(fVerbose) cout << ob->ClassName() << " " << ob->GetName() << " saved in the file "
        << fOutputFile->GetName() << endl;
   return kTRUE;
 }
