@@ -56,8 +56,9 @@ public:
   double GetAbsThicky(void);
   double GetAbsThickz(void);
 
-  /// Set filter to select events. Used by CCMLEM. @see fFilter
-  void SetFilter(Int_t f) {fFilter = f;}; 
+  /// Set if real or reconstructed information are to be read from tree 
+  ///\see fUseRealInformation
+  void SetUseRealInformation(bool b){fUseRealInformation = b;};
 
 private:
   int fEventNumber;     ///< Event number
@@ -115,27 +116,19 @@ private:
   Double_t fAbsorberThickness_z;
   Double_t fNumberOfSimulatedEvents;
 
-  ///\brief Filter to select events
-  ///\details Choose which events are returned by the standard getter
-  /// functions like GetEnergyLoss().
+  ///\brief Switch to use either real or reconstructed information from simulation
+  ///\detail The status of this variable defines, which events are returned by
+  /// the standard getter functions like GetEnergyLoss().
   /// Both real and recontructed events can still be accessed by the
   /// specific functions like GetEnergyLossReal() or GetEnergyLossReco().
-  /// Additionally, filters for conditions to get a specific subset of events
-  /// are specified
-  /// \par Indices for filter settings 
-  ///  0: not set, will cause CCMLEM to not read any events\n
-  ///  1: real events\n
-  /// -1: reconstructed events\n
-  /// -2: reconstructed events which are flagged as correctly reconstructed\n
-  ///  3: real events which are flagged as correctly reconstructed of type S1AX\n
-  /// -3: reconstructed events which are flagged as correctly reconstructed of type S1AX
-  Int_t fFilter;
+  /// The default behavior is to return the real information.
+  bool fUseRealInformation;
 
   bool AccessTree();
-  TTree* fTreeSetup;	///< tree containing placement of scatterer and absorber
-  TTree* fTreeReco;		///< only used in structure before summer 2019: separate tree with reconstructed events
+  TTree* fTreeSetup;	///< Tree containing placement of scatterer and absorber
+  TTree* fTreeReco;		///< Separate tree with reconstructed events (only used in structure before summer 2019)
 
-  bool fJointTree;		///< internal flag, if structure with two trees for real and reconstructed events is used or if they are both stored in one common tree
+  bool fJointTree;		///< Internal flag, if structure with two trees for real and reconstructed events is used or if they are both stored in one common tree
 
   ClassDef(InputReaderGeant, 0)
 };

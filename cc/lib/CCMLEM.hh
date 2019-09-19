@@ -67,7 +67,7 @@ private:
   Bool_t fFreshOutput;      ///< FreshOutput flag to recreate or update output file
   Int_t fStart;     ///< first event number
   Int_t fStop;      ///< last event number
-  Int_t fGeantFilter;	///< Select which events to use from Geant4 simulation \see InputReaderGeant.fFilter
+  Bool_t fGeantRealRecoSwitch; ///< Select which events to use from Geant4 simulation \see InputReaderGeant.fUseRealInformation
   TCut fSelectionCut;	///< Select which events to use from tree \see InputReader.ApplySelectionCut
   Bool_t fVerbose;      ///< Verbose level for print-outs on screen
 

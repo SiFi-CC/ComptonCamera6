@@ -102,7 +102,7 @@ Bool_t CCMLEM::SetInputReader(void) {
 			 (file->Get("Setup") && file->Get("Events")) ) {	// structure of simulation output after summer 2019
     file->Close();
     fReader = new InputReaderGeant(fullName);
-    dynamic_cast<InputReaderGeant*>(fReader)->SetFilter(fGeantFilter);
+    dynamic_cast<InputReaderGeant*>(fReader)->SetUseRealInformation(fGeantRealRecoSwitch);
   } else if (file->Get("Pos&EnergyRecoClus") /*&&
              file->Get("Reco") && 
              file->Get("Real")*/) {
@@ -803,8 +803,8 @@ Bool_t CCMLEM::ReadConfig(TString path) {
              << endl;
         return false;
       }
-    } else if (comment.Contains("Event filter Geant4")) {
-      config >> fGeantFilter;
+    } else if (comment.Contains("Use real information from Geant4")) {
+      config >> fGeantRealRecoSwitch;
     } else if (comment.Contains("Selection cut")) {
       TString cutString;
       config >> cutString;
@@ -972,7 +972,7 @@ void CCMLEM::Print(void) {
   cout << setw(35) << "FreshOutput level: \t" << fFreshOutput << endl;
   cout << setw(35) << "No. of first and last event: \t" << fStart << ", "
        << fStop << endl;
-  cout << setw(35) << "Event filter Geant4: \t" << fGeantFilter << endl;
+  cout << setw(35) << "Use real events from Geant4: \t" << fGeantRealRecoSwitch << endl;
   cout << setw(35) << "Selection cut: \t" << fSelectionCut.GetTitle() << endl;
   cout << setw(35) << "Verbose level: \t" << fVerbose << endl << endl;
 }
@@ -1001,7 +1001,7 @@ void CCMLEM::Clear(void) {
   fStop = -1000;
   fSmear = kFALSE;
   fFreshOutput = kFALSE;
-  fGeantFilter = 0;
+  fGeantRealRecoSwitch = kTRUE;
   fSelectionCut = "";
   fVerbose = kFALSE;
   fNIpoints = -1000;
