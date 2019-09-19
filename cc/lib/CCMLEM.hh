@@ -16,6 +16,7 @@
 #include "TString.h"
 #include "TTree.h"
 #include "TVector3.h"
+#include "TCut.h"
 #include "Track.hh"
 #include "TStyle.h"
 ///Class for image reconstruction from events simulated in class CCSimulations
@@ -42,7 +43,7 @@ public:
   Bool_t DrawHisto(void);
   Bool_t SaveToFile(TObject* ob);
   void Print(void);
-  void Clear(void);
+  void Clear(void); 
 
 private:
   TString fInputName;       ///< Path to the file with simulation data
@@ -66,7 +67,8 @@ private:
   Bool_t fFreshOutput;      ///< FreshOutput flag to recreate or update output file
   Int_t fStart;     ///< first event number
   Int_t fStop;      ///< last event number
-  Int_t fGeantFilter;	///< Select which events to use from Geant4 simulation @see InputReaderGeant.fFilter
+  Int_t fGeantFilter;	///< Select which events to use from Geant4 simulation \see InputReaderGeant.fFilter
+  TCut fSelectionCut;	///< Select which events to use from tree \see InputReader.ApplySelectionCut
   Bool_t fVerbose;      ///< Verbose level for print-outs on screen
 
   Int_t fNIpoints;      ///< Numbers of intersection points for each Compton cone

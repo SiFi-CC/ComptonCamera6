@@ -6,6 +6,7 @@
 #include "TString.h"
 #include "TTree.h"
 #include "TVector3.h"
+#include "TCut.h"
 #include <iostream>
 
 using namespace std;
@@ -23,7 +24,10 @@ public:
 
   void Print(void);
   void virtual Clear(void);
+  Int_t GetEntries(void);
   bool virtual LoadEvent(int i);
+  bool ApplySelectionCut(int i, TCut cut);
+
   TVector3 virtual* GetPositionPrimary(void);
   TVector3 virtual* GetPositionScattering(void);
   TVector3 virtual* GetPositionAbsorption(void);

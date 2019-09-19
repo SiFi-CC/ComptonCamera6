@@ -52,6 +52,18 @@ bool InputReader::AccessTree(TString name) {
   return true;
 }
 //------------------------------------------------------------------
+///\brief Get number of entries in tree
+///\details InputReader::AccessTree has to be called before.
+///\return number of events in fTree
+Int_t InputReader::GetEntries(void){
+  if (fTree == NULL) {
+    cout << "##### Error in InputReader::GetEntries()" << endl;
+    cout << "No tree loaded to read entries from." << endl;
+    return 0;
+  }
+  return fTree->GetEntries();
+}
+//------------------------------------------------------------------
 /// Loads requested event from the opened tree with simulations results.
 ///\param i (int) - number of the requested event.
 bool InputReader::LoadEvent(int i) {
@@ -130,5 +142,34 @@ void InputReader::Print(void) {
     cout << "It's empty!" << endl;
   }
   cout << "-------------------------------------------------------\n" << endl;
+}
+//------------------------------------------------------------------
+///\brief Check if a single event fulfils a given selection cut.
+///\details The cut is passes as a ROOT TCut element using the variable
+/// names from the tree. 
+/// For the Geant4 tree, a valid cut would for example be\n
+/// RecoEnergy_e.value+RecoEnergy_p.value>4.3\n\n
+/// Several cuts can be added as cut1+cut2.
+///\param i event number
+///\param cut selection cut
+///\return true if event i passes selection cut, false if it doesn't pass or in case of error
+bool InputReader::ApplySelectionCut(int i, TCut cut){
+  if (fTree == NULL) {
+    cout << "##### Error in InputReader::ApplySelectionCut()" << endl;
+    cout << "No tree loaded." << endl;
+    return false;
+  }
+  // no = 
+  // 1: event passed cut
+  // 0: event did not pass cut
+  //-1: error
+  int no = fTree->Draw("",cut,"goff",1,i);
+  if (1==no) return true;
+  else if (-1==no){
+    cout << "##### Error in InputReader::ApplySelectionCut" <<endl;
+    cout << "Applying selection " << cut.GetTitle() << " to event " << i 
+			<< " of tree "<< fTree->GetName() << " failed." <<endl;
+  }
+  return false;
 }
 //------------------------------------------------------------------
