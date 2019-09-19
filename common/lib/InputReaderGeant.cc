@@ -162,21 +162,11 @@ bool InputReaderGeant::LoadEvent(int i) {
     fTreeReco->GetEntry(i);
   }
 
-  if ( 0 == fFilter) return false;
-  if ( 0 <  fFilter && 0 == fRealEnergy_e ) return false;
-  if ( 0 >  fFilter && -11 == fIIdentified ) return false; // TODO: -11 will be replaced by 0
-  if ( 1 == fFilter || -1 == fFilter ) return true;
-  else if (-2 == fFilter && (0 < fIIdentified || fBIdentified)) return true;
-  else if (-3 == fFilter && 3 ==  abs(fIIdentified) ) return true;
-  else if (3 == fFilter && 3 ==  fIIdentified ) return true;
-  else {
-    return false;
-  }
-    //TODO: warn in case for unvalid filter
-    //cout << "##### Warning in InputReaderGeant::LoadEvent()" << endl;
-    //cout << "Unknown setting of fFilter, set to 3, 1, 0 ,-1 , -2 or -3" << endl;
-  
+  // Check if event contains valid data
+  if ( fUseRealInformation && 0 == fRealEnergy_e ) return false;
+  if ( !fUseRealInformation && (-11 == fIIdentified || 0 == fIIdentified )) return false;
 
+  return true;
 }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetPositionPrimary(void) {
@@ -187,7 +177,7 @@ TVector3* InputReaderGeant::GetPositionPrimary(void) {
 }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetPositionScattering(void) {
-  if(fFilter >= 0){
+  if(fUseRealInformation){
     fPositionScat->SetX(fRealPosition_e->X());
     fPositionScat->SetY(fRealPosition_e->Y());
     fPositionScat->SetZ(fRealPosition_e->Z());
@@ -214,7 +204,7 @@ TVector3* InputReaderGeant::GetPositionScatteringReco(void) {
 }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetPositionAbsorption(void) {
-  if(fFilter >= 0){
+  if(fUseRealInformation){
     fPositionAbs->SetX(fRealPosition_p->X());
     fPositionAbs->SetY(fRealPosition_p->Y());
     fPositionAbs->SetZ(fRealPosition_p->Z());
@@ -248,7 +238,7 @@ TVector3* InputReaderGeant::GetGammaDirPrimary(void) {
 }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetGammaDirScattered(void) {
-  if(fFilter >= 0){
+  if(fUseRealInformation){
     fDirectionScat->SetX(fRealDirection_scatter->X());
     fDirectionScat->SetY(fRealDirection_scatter->Y());
     fDirectionScat->SetZ(fRealDirection_scatter->Z());
@@ -295,7 +285,7 @@ double InputReaderGeant::GetEnergyPrimary(void) {
 }
 //------------------------------------------------------------------
 double InputReaderGeant::GetEnergyLoss(void) { 
-  if(fFilter >= 0)
+  if(fUseRealInformation)
     return fRealEnergy_e; 
   else
     return fRecoEnergy_e->value;
@@ -306,7 +296,7 @@ double InputReaderGeant::GetEnergyLossReal(void) { return fRealEnergy_e; }
 double InputReaderGeant::GetEnergyLossReco(void) { return fRecoEnergy_e->value; }
 //------------------------------------------------------------------
 double InputReaderGeant::GetEnergyScattered(void) {
-  if(fFilter >= 0)
+  if(fUseRealInformation)
     return fRealEnergy_p; 
   else
     return fRecoEnergy_p->value;
@@ -375,7 +365,7 @@ void InputReaderGeant::Clear(void) {
   fScatPlanePos = NULL;
   fAbsPlanePos = NULL;
 
-  fFilter = 0;
+  fUseRealInformation = true;
 
   return;
 }
