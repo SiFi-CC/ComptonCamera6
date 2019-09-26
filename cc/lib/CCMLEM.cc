@@ -736,8 +736,31 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
   return kTRUE;
 }
 //------------------------------------
+/**
+ \page pageWriteConfigFile Write CCMLEM Config File
+ The config file is read by CCMLEM.
+ The possible field are listed below.
+ If several values are expected, they are separated by whitespace.
+
+ Field		  | Type | Value 
+ ------------- | -----|---------
+ Name of the input file | String | Name of input file including path. Must be a ROOT file ending on .root (mandatory)
+ Size of image volume | Int Int Int | Image size in z, y, x direction in millimeter (mandatory)
+ No. of bins | Int Int Int | Number of bins of reconstructed image in z, y and x coordinate (mandatory)
+ Smear | Boolean | 1: smear data, 0: do not smear data (optional, default is 0)
+ Position resolution | Double Double Double | For x, y and z direction, used for smearing (mandatory, if smearing is used, can be omitted otherwise) 
+ Fitting parameters | Double Double Double | Used in iteration (TODO explain)
+ No. of MLEM iterations | Int | Maximum number of iterations (mandatory)
+ Fresh output | Boolean | 1: If output file exists, overwrite it, 0: Add new image histograms to existing file (optional, default is 0)
+ No. of first and last event | Int Int | Number of event in tree to start from, in total (last-first) events are analysed (mandatory)
+ Use real information from Geant4 | Boolean | Just used if reading data from a Geant4 simulation, 1: Anaylse real data, 0: Analyse reconstructed data (optional, default is 1)
+ Verbose flag | Boolean | 1: Display debugging output to screen, 0: Do not print out additional information to screen (optional, default is 0)
+ Selection cut | String | Cuts to set on events like they are passed as TCut to the TTree.Draw() function. You must not use whitespaces in the selection. This field can be used several times to add different cuts. (optional)
+*/
+//------------------------------------
 /// Reads configuration file and sets values of private class
 /// members according to read information.
+///\see \ref pageWriteConfigFile
 ///\param path (TString) - full path to the configuration file.
 Bool_t CCMLEM::ReadConfig(TString path) {
 
@@ -752,8 +775,8 @@ Bool_t CCMLEM::ReadConfig(TString path) {
 
   TString comment;
 
-  while (!config.eof()) { // TODO: this reads past the last line, so will always
-						  //give a warning about unknown syntax of an empty comment
+  while (!config.eof()) { ///\todo while (!config.eof()) reads past the last line, so will always
+						  ///give a warning about unknown syntax of an empty comment
     comment.ReadLine(config);
     if (comment.Contains("Name of the input file")) {
       config >> fInputName;
