@@ -230,6 +230,9 @@ Bool_t CCMLEM::Reconstruct(void) {
       //point_abs_sc->SetXYZ(point_p->X()-point_e->X(),
       //point_p->Y()-point_e->Y(), point_p->Z()-point_e->Z());
     
+      energy0 = 4.43891;
+      if(energy1+energy2<energy0) energy2 = energy0-energy1;
+
       Scatthick_z = fReader->GetScatThickz();
       Scatthick_x = fReader->GetScatThickx();
       Absthick_z = fReader->GetAbsThickz();
@@ -250,7 +253,6 @@ Bool_t CCMLEM::Reconstruct(void) {
 //       
 //       point_dir->SetXYZ(point_e->x()+point_dir->x()*distance, point_e->y()+point_dir->y()*distance, point_e->z()+point_dir->z()*distance);
 //       
-       energy0 = 4.40;
 /*
        Double_t en = energy1 + energy2;
        if (fabs(energy0 - en) > 1.E-1) {
