@@ -95,7 +95,9 @@ Bool_t PlanarSource::Init() {
       SetPosition(TVector3(pos));
       sitem = ((TObjString*)words->At(4))->GetString();
       if (sitem.Contains("cm"))
-        fPosition.SetMag(fPosition.Mag() * 10.); // default units in sim. are mm
+        if (fPosition.Mag() > 1e-14)
+          fPosition.SetMag(fPosition.Mag() *
+                           10.); // default units in sim. are mm
     } else if (sitem.Contains("/gps/ang/mintheta")) {
       tmp = ((TObjString*)words->At(1))->GetString().Atof();
       sitem = ((TObjString*)words->At(2))->GetString();

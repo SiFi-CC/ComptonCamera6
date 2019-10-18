@@ -34,7 +34,10 @@ private:
   void Init();
   Bool_t ProcessEvent();
   void BuildTGeometry(TString name) const;
+  void SetOutDir(TString outdir);
 
+  /** Output directory */
+  TString fOutDir;
   /** Source of radiation used in simulation */
   Source* fSource = nullptr;
   /** Mask implementation */

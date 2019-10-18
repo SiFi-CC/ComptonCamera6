@@ -1,9 +1,13 @@
 #include "CMSimulation.hh"
 #include "CLog.hh"
+#include "CmdLineConfig.hh"
 #include <TCanvas.h>
 #include <TH2F.h>
 #include <TMath.h>
 #include <TRandom.h>
+
+CmdLineOption _mask("outdir", "-outdir", "directory to store output",
+                    "results/");
 
 CMSimulation::~CMSimulation() {
   log->info("delete CMSimulation");
@@ -40,11 +44,30 @@ void CMSimulation::Init() {
                       TMath::Pi());
   fH1Phi = new TH1F("hPhi", "phi angle of registered particles", 100,
                     -TMath::Pi(), TMath::Pi());
+
+  TString outdir = CmdLineOption::GetStringValue("outdir");
+  SetOutDir(outdir);
 }
+
+void CMSimulation::SetOutDir(TString outdir) {
+  TString pwd = gSystem->Getenv("PWD");
+  if (outdir == "") outdir = ".";
+  if (outdir.EndsWith("/"))
+    fOutDir = outdir;
+  else
+    fOutDir = outdir + "/";
+  if (!gSystem->ChangeDirectory(outdir)) {
+    int stat = mkdir(outdir, 0777);
+    if (stat == -1) {
+      log->error("Output directory could not be created");
+      return;
+    }
+  }
+  gSystem->ChangeDirectory(pwd);
+};
 
 Bool_t CMSimulation::ProcessEvent() {
   Track sourceTrack = fSource->GenerateEvent();
-
   auto maskCross = fMask->FindCrossPoint(sourceTrack);
   if (!maskCross.second) {
     log->debug("No cross point with Mask");
@@ -91,11 +114,11 @@ void CMSimulation::RunSimulation(Int_t nEvents) {
 }
 
 void CMSimulation::Write(TString name) const {
-  TString msg = "Saving results of simulation to file " + name;
+  TString msg = "Saving results of simulation to file " + fOutDir + name;
   log->info(msg.Data());
 
   log->debug("Save raw data");
-  TFile file(name, "RECREATE");
+  TFile file(fOutDir + name, "RECREATE");
   fTree->SetDirectory(&file);
   fTree->Write();
   fTree->SetDirectory(nullptr);
@@ -152,6 +175,8 @@ void CMSimulation::Write(TString name) const {
   log->debug("Closing file");
   file.Close();
 
+  TString namegeo = name;
+  namegeo.ReplaceAll(".root", "_geometry.root");
   // BuildTGeometry(name);
 }
 
@@ -236,5 +261,5 @@ void CMSimulation::BuildTGeometry(TString name) const {
   //----- close geometry and save
   geom.CloseGeometry();
   geom.SetVisLevel(4);
-  geom.Export("results/" + name + "_geometry.root");
+  geom.Export(fOutDir + name + "_geometry.root");
 }

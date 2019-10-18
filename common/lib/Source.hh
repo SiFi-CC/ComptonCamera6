@@ -15,7 +15,7 @@ public:
   /** Create source at certain position.
    * \param position source position
    */
-  Source(const TVector3& position);
+  Source(const TVector3& position, const Bool_t histos = kTRUE);
 
   /** Create source based on the input file
       \param fname input file name
@@ -86,6 +86,9 @@ protected:
 
   /** Setting up control histograms */
   void CreateHistograms();
+
+  /** Deleting control histograms */
+  void DeleteHistograms();
 
   /** Distribution of theta angles of all generated particles */
   TH1F* fhTheta; //->

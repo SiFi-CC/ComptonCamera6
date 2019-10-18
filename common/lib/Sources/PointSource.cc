@@ -26,9 +26,9 @@ Track PointSource::GenerateEvent() {
   versor.SetMagThetaPhi(1., theta, gRandom->Uniform(0, TMath::TwoPi()));
   versor.RotateY(-TMath::Pi() / 2);
   Track track(fPosition, versor, fEnergy);
-  fhTheta->Fill(track.GetVersor().Theta());
-  fhPhi->Fill(track.GetVersor().Phi());
-  fhZY->Fill(track.GetPoint().Z(), track.GetPoint().Y());
+  if (fhTheta) fhTheta->Fill(track.GetVersor().Theta());
+  if (fhPhi) fhPhi->Fill(track.GetVersor().Phi());
+  if (fhZY) fhZY->Fill(track.GetPoint().Z(), track.GetPoint().Y());
   return track;
 }
 
@@ -85,7 +85,9 @@ Bool_t PointSource::Init(std::ifstream& infile) {
       SetPosition(TVector3(pos));
       sitem = ((TObjString*)words->At(4))->GetString();
       if (sitem.Contains("cm"))
-        fPosition.SetMag(fPosition.Mag() * 10.); // default units in sim. are mm
+        if (fPosition.Mag() > 1e-14)
+          fPosition.SetMag(fPosition.Mag() *
+                           10.); // default units in sim. are mm
     } else if (sitem.Contains("/gps/ang/mintheta")) {
       tmp = ((TObjString*)words->At(1))->GetString().Atof();
       sitem = ((TObjString*)words->At(2))->GetString();
