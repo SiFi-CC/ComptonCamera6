@@ -78,8 +78,7 @@ Bool_t PlanarSource::Init() {
                   << " found in source config file " << fInFileName
                   << std::endl;
       }
-    }
-    if (sitem.Contains("/gps/pos/shape")) {
+    } else if (sitem.Contains("/gps/pos/shape")) {
       sitem = ((TObjString*)words->At(1))->GetString();
       if (!sitem.Contains("Rectangle")) {
         std::cout << "PlanarSource::Init(): Inconsistency in source shapes. "
@@ -168,13 +167,13 @@ Bool_t PlanarSource::Init() {
 }
 
 void PlanarSource::Print() {
-  std::cout << "\n\nPlanarSource::Print():\nName =\t" << GetName()
-            << "\nEnergy =\t" << fEnergy << " MeV"
-            << "\nPosition=\t(" << fPosition.X() << " , " << fPosition.Y()
+  std::cout << "\nName         =\t" << GetName() << "\nEnergy       =\t"
+            << fEnergy << " MeV"
+            << "\nPosition     =\t(" << fPosition.X() << " , " << fPosition.Y()
             << " , " << fPosition.Z() << ") mm"
-            << "\nSize=\t(" << 0 << " , " << fHalfY * 2 << " , " << fHalfZ * 2
-            << ") mm\nAngularRange =\t(" << fMinAngle << " , " << fMaxAngle
-            << ") rad wrt -X axis" << std::endl;
+            << "\nSize         =\t(" << 0 << " , " << fHalfY * 2 << " , "
+            << fHalfZ * 2 << ") mm\nAngularRange =\t(" << fMinAngle << " , "
+            << fMaxAngle << ") rad wrt -X axis" << std::endl;
   if (fEnergyDist)
     std::cout << "Energy generated according to distribution f(E) = "
               << fEnergyDist->GetParameter(0) << " + E*"

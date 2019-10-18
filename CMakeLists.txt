@@ -17,13 +17,18 @@ set(PROJECT_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
 #--- You need to tell CMake where to find the ROOT installation.
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/Modules $ENV{ROOTSYS})
+list(APPEND CMAKE_MODULE_PATH
+    ${CMAKE_SOURCE_DIR}/Modules
+    $ENV{ROOTSYS}
+    ${CMAKE_SOURCE_DIR}/cmake-scripts
+)
 
 #---Locate the ROOT package and defines a number of variables (e.g. ROOT_INCLUDE_DIRS)
 find_package(ROOT REQUIRED COMPONENTS RIO Geom MathMore)
 set(ROOTSYS $ENV{ROOTSYS})
 
 find_package(CmdLineArgs REQUIRED)
+
 add_subdirectory(spdlog)
 include_directories(spdlog/include)
 
@@ -59,6 +64,13 @@ include_directories(common/lib)
 include_directories(tools/lib)
 
 link_directories(${ROOT_LIBRARY_DIRS})
+
+include(c++-standards)
+include(code-coverage)
+include(sanitizers)
+
+cxx_11()
+add_code_coverage()
 
 add_subdirectory(common)
 add_subdirectory(tools)
