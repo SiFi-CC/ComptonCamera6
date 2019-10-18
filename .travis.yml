@@ -17,6 +17,7 @@ before_script:
     - cd .aux_deps
     - git clone https://github.com/SiFi-CC/CmdLineArgs
     - pushd CmdLineArgs
+    - git submodule update --init --recursive
     - mkdir build && cd build
     - cmake .. && sudo make install
     - popd

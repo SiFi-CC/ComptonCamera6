@@ -2,19 +2,16 @@
 
 Source::Source() { CreateHistograms(); }
 
-Source::Source(const TVector3& position) : fPosition(position) {
-  CreateHistograms();
+Source::Source(const TVector3& position, const Bool_t histos)
+    : fPosition(position), fhTheta(nullptr), fhPhi(nullptr), fhZY(nullptr) {
+  if (histos) CreateHistograms();
 }
 
 Source::Source(const TString& fname) : fInFileName(fname) {
   CreateHistograms();
 }
 
-Source::~Source() {
-  if (fhTheta) delete fhTheta;
-  if (fhPhi) delete fhPhi;
-  if (fhZY) delete fhZY;
-}
+Source::~Source() { DeleteHistograms(); }
 
 void Source::CreateHistograms() {
   fhTheta = new TH1F("hThetaAll",
@@ -30,3 +27,9 @@ void Source::CreateHistograms() {
                "Y vs Z for vertices of all generated particles; z / mm; y / mm",
                300, -300, 300, 300, -300, 300);
 }
+
+void Source::DeleteHistograms() {
+  if (fhTheta) delete fhTheta;
+  if (fhPhi) delete fhPhi;
+  if (fhZY) delete fhZY;
+};

@@ -55,8 +55,8 @@ install(FILES
 INSTALL(DIRECTORY data/masks
     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/ComptonCamera6/)
 
-include_directories(common/lib)
-include_directories(tools/lib)
+include_directories(BEFORE common/lib)
+include_directories(BEFORE tools/lib)
 
 link_directories(${ROOT_LIBRARY_DIRS})
 

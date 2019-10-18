@@ -236,5 +236,5 @@ void CMSimulation::BuildTGeometry(TString name) const {
   //----- close geometry and save
   geom.CloseGeometry();
   geom.SetVisLevel(4);
-  geom.Export("results/" + name + "_geometry.root");
+  geom.Export(name + "_geometry.root");
 }

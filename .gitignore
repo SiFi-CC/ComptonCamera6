@@ -2,6 +2,7 @@
 html/
 build/
 
+.lcov_out
 
 ## Editor support
 ### vim

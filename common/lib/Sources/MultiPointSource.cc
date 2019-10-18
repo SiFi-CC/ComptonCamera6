@@ -27,7 +27,7 @@ MultiPointSource::MultiPointSource(const TString fname) {
   while (!infile.eof()) {
     while (!(line.Contains("####") && line.Contains("Point")))
       line.ReadLine(infile);
-    PointSource source;
+    PointSource source(TVector3(0, 0, 0), 0, kFALSE);
     Bool_t initres = source.Init(infile);
     if (initres) fSources.push_back(source);
     fIntensities.push_back(source.Intensity());

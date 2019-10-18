@@ -11,10 +11,13 @@ int main(int argc, char** argv) {
 
   CmdLineOption _mask("mask", "-mask", "mask type, like 2d_29 or 1d_11",
                       "2d_23");
+  CmdLineOption _nev("nev", "-nev", "number of events", 100);
   CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 
   spdlog::set_level(spdlog::level::info);
+
   TString maskFilename = CmdLineOption::GetStringValue("mask");
+  Int_t nev = CmdLineOption::GetIntValue("nev");
   TString path =
       TString(gSystem->Getenv("CC6DIR")) + "/share/ComptonCamera6/masks/";
   TString fullname = path + "hMURA" + maskFilename + ".root";
@@ -28,10 +31,10 @@ int main(int argc, char** argv) {
                 ? (TH2F*)maskfile->Get("hMURA2d")
                 : (TH2F*)maskfile->Get("hMURA1d");
 
-  // PointSource(TVector3(0,0,0), 4.4);
+  // PointSource source(TVector3(0,0,0), 4.4);
   // PointSource source("SinglePoint.mac");
-  PlanarSource source("Planar.mac");
-  // MultiPointSource source("Multipoint.mac");
+  // PlanarSource source("Planar.mac");
+  MultiPointSource source("Multipoint.mac");
   source.Print();
 
   // DetPlane detector(1, 0, 0, 600, 300, 300, "detector");
@@ -40,8 +43,8 @@ int main(int argc, char** argv) {
   Mask mask(1, 0, 0, 500, 300, 300, h, "mask");
 
   CMSimulation sim(&source, &mask, &detector);
-  sim.RunSimulation(10000);
-  sim.Write("results/simulation" + maskFilename + ".root");
+  sim.RunSimulation(nev);
+  sim.Write("sim_" + maskFilename + ".root");
 
   return 1;
 }
