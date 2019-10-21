@@ -231,7 +231,7 @@ Bool_t CCMLEM::Reconstruct(void) {
       //point_p->Y()-point_e->Y(), point_p->Z()-point_e->Z());
     
       energy0 = 4.43891;
-      if(energy1+energy2<energy0) energy2 = energy0-energy1;
+      //if(energy1+energy2<energy0) energy2 = energy0-energy1;
 
       Scatthick_z = fReader->GetScatThickz();
       Scatthick_x = fReader->GetScatThickx();

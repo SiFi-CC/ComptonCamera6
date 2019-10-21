@@ -117,7 +117,7 @@ private:
   Double_t fNumberOfSimulatedEvents;
 
   ///\brief Switch to use either real or reconstructed information from simulation
-  ///\detail The status of this variable defines, which events are returned by
+  ///\details The status of this variable defines, which events are returned by
   /// the standard getter functions like GetEnergyLoss().
   /// Both real and recontructed events can still be accessed by the
   /// specific functions like GetEnergyLossReal() or GetEnergyLossReco().
