@@ -76,6 +76,7 @@ private:
   Double_t fRealEnergy_p;				///< Photon energy [MeV]
   TVector3* fRealPosition_source;
   TVector3* fRealDirection_source;
+  TVector3* fComptonPosition;			///< Position of the Compton effect [mm]
   TVector3* fRealPosition_e;			///< Electron creation position [mm]
   TVector3* fRealPosition_p;			///< Photon energy deposition position [mm]
   TVector3* fRealDirection_scatter;		///< Direction of the scattered photon [mm]
