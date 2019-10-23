@@ -84,6 +84,7 @@ bool InputReaderGeant::AccessTree() {
   
   fRealPosition_source = new TVector3();
   fRealDirection_source = new TVector3();
+  fComptonPosition= new TVector3();
   fRealPosition_e = new TVector3();
   fRealPosition_p = new TVector3();
   fRealDirection_scatter = new TVector3();
@@ -108,6 +109,7 @@ bool InputReaderGeant::AccessTree() {
   fTree->SetBranchAddress("RealEnergy_p", &fRealEnergy_p);
   fTree->SetBranchAddress("RealPosition_source", &fRealPosition_source);
   fTree->SetBranchAddress("RealDirection_source", &fRealDirection_source);
+  fTree->SetBranchAddress("RealComptonPosition", &fComptonPosition);
   fTree->SetBranchAddress("RealPosition_e", &fRealPosition_e);
   fTree->SetBranchAddress("RealPosition_p", &fRealPosition_p);
   fTree->SetBranchAddress("RealDirection_scatter", &fRealDirection_scatter);
@@ -178,9 +180,9 @@ TVector3* InputReaderGeant::GetPositionPrimary(void) {
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetPositionScattering(void) {
   if(fUseRealInformation){
-    fPositionScat->SetX(fRealPosition_e->X());
-    fPositionScat->SetY(fRealPosition_e->Y());
-    fPositionScat->SetZ(fRealPosition_e->Z());
+    fPositionScat->SetX(fComptonPosition->X());
+    fPositionScat->SetY(fComptonPosition->Y());
+    fPositionScat->SetZ(fComptonPosition->Z());
   } else {
     fPositionScat->SetX(fRecoPosition_e->position.X());
     fPositionScat->SetY(fRecoPosition_e->position.Y());
@@ -205,9 +207,9 @@ TVector3* InputReaderGeant::GetPositionScatteringReco(void) {
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetPositionAbsorption(void) {
   if(fUseRealInformation){
-    fPositionAbs->SetX(fRealPosition_p->X());
-    fPositionAbs->SetY(fRealPosition_p->Y());
-    fPositionAbs->SetZ(fRealPosition_p->Z());
+    fPositionAbs->SetX(fComptonPosition->X()+fRealDirection_scatter->X());
+    fPositionAbs->SetY(fComptonPosition->Y()+fRealDirection_scatter->Y());
+    fPositionAbs->SetZ(fComptonPosition->Z()+fRealDirection_scatter->Z());
   } else {
     fPositionAbs->SetX(fRecoPosition_p->position.X());
     fPositionAbs->SetY(fRecoPosition_p->position.Y());
