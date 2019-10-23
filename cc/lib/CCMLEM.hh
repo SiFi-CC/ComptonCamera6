@@ -68,6 +68,7 @@ private:
   Int_t fStart;     ///< first event number
   Int_t fStop;      ///< last event number
   Bool_t fGeantRealRecoSwitch; ///< Select which events to use from Geant4 simulation \see InputReaderGeant.fUseRealInformation
+  Bool_t fIsGeantRealData;	///< Flag which is true if Geant4 data are read in and of these the real information are used
   TCut fSelectionCut;	///< Select which events to use from tree \see InputReader.ApplySelectionCut
   Bool_t fVerbose;      ///< Verbose level for print-outs on screen
 

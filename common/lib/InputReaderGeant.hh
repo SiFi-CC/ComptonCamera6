@@ -31,6 +31,7 @@ public:
   TVector3* GetPositionAbsorption(void);
   TVector3* GetPositionAbsorptionReal(void);
   TVector3* GetPositionAbsorptionReco(void);
+  TVector3* GetComptonPositionReal(void);
   TVector3* GetGammaDirPrimary(void);
   TVector3* GetGammaDirScattered(void);
   TVector3* GetGammaDirScatteredReal(void);
@@ -76,9 +77,9 @@ private:
   Double_t fRealEnergy_p;				///< Photon energy [MeV]
   TVector3* fRealPosition_source;
   TVector3* fRealDirection_source;
-  TVector3* fComptonPosition;			///< Position of the Compton effect [mm]
   TVector3* fRealPosition_e;			///< Electron creation position [mm]
   TVector3* fRealPosition_p;			///< Photon energy deposition position [mm]
+  TVector3* fRealComptonPosition;		///< Position of Compton effect in Geant4 [mm]
   TVector3* fRealDirection_scatter;		///< Direction of the scattered photon [mm]
   PhysicVar* fRecoEnergy_e;				///< Electron energy + uncertainty [MeV]
   PhysicVar* fRecoEnergy_p;				///< Photon energy + uncertainty [MeV]

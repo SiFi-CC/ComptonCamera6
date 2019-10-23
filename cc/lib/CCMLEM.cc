@@ -103,6 +103,7 @@ Bool_t CCMLEM::SetInputReader(void) {
     file->Close();
     fReader = new InputReaderGeant(fullName);
     dynamic_cast<InputReaderGeant*>(fReader)->SetUseRealInformation(fGeantRealRecoSwitch);
+	if(fGeantRealRecoSwitch) fIsGeantRealData = true;
   } else if (file->Get("Pos&EnergyRecoClus") /*&&
              file->Get("Reco") && 
              file->Get("Real")*/) {
@@ -229,6 +230,14 @@ Bool_t CCMLEM::Reconstruct(void) {
       //point_dir->Print();
       //point_abs_sc->SetXYZ(point_p->X()-point_e->X(),
       //point_p->Y()-point_e->Y(), point_p->Z()-point_e->Z());
+
+      // use information from interaction in Geant4 instead of positions from energy deposition
+      if(fIsGeantRealData){
+        point_e = dynamic_cast<InputReaderGeant*>(fReader)->GetComptonPositionReal();
+        point_p->SetX(dynamic_cast<InputReaderGeant*>(fReader)->GetComptonPositionReal()->X()+dynamic_cast<InputReaderGeant*>(fReader)->GetGammaDirScatteredReal()->X());
+        point_p->SetY(dynamic_cast<InputReaderGeant*>(fReader)->GetComptonPositionReal()->Y()+dynamic_cast<InputReaderGeant*>(fReader)->GetGammaDirScatteredReal()->Y());
+        point_p->SetZ(dynamic_cast<InputReaderGeant*>(fReader)->GetComptonPositionReal()->Z()+dynamic_cast<InputReaderGeant*>(fReader)->GetGammaDirScatteredReal()->Z());
+      }
     
       energy0 = 4.43891;
       //if(energy1+energy2<energy0) energy2 = energy0-energy1;
@@ -301,7 +310,7 @@ Bool_t CCMLEM::Reconstruct(void) {
       energy1 = SmearGaus(energy1, GetSigmaE(energy1));
       energy2 = SmearGaus(energy2, GetSigmaE(energy2));
     }
-    
+
     ComptonCone* cone =
         new ComptonCone(point_e, point_p, energy1 + energy2, energy2);
     interactionPoint = cone->GetApex();
@@ -1027,6 +1036,7 @@ void CCMLEM::Clear(void) {
   fSmear = kFALSE;
   fFreshOutput = kFALSE;
   fGeantRealRecoSwitch = kTRUE;
+  fIsGeantRealData = kFALSE;
   fSelectionCut = "";
   fVerbose = kFALSE;
   fNIpoints = -1000;
