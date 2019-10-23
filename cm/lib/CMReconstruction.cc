@@ -147,6 +147,16 @@ void CMReconstruction::RunReconstruction(Int_t nIterations) {
   }
 
   FillHMatrix();
+
+  // log->info("CMReconstruction::Write HMATRIX");
+  // TString filename("Hmatrix.root")
+  // TFile file(filename, "RECREATE");
+  // file.cd();
+  // fMatrixH.Write("matrixH");
+  // break;
+
+
+
   CalculateS();
 
   fRecoObject.push_back(TMatrixT<Double_t>(fObjectCoords.NBins(), 1));
