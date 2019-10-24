@@ -22,10 +22,10 @@ int main(int argc, char** argv) {
                               "Planar-type source, default: NO");
   CmdLineOption opt_detplane_dim(
       "Plane", "-detplane",
-      "Detector plane, 6 values required, default: 0:0:1:600:300:300", 0, 0);
+      "Detector plane, 6 values required, default: 1:0:0:600:300:300", 0, 0);
   CmdLineOption opt_maskplane_dim(
       "Mask", "-maskplane",
-      "Mask plane, 6 values required, default: 0:0:1:500:300:300", 0, 0);
+      "Mask plane, 6 values required, default: 1:0:0:500:300:300", 0, 0);
 
   CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 

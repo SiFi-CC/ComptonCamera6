@@ -58,6 +58,8 @@ CMReconstruction::CMReconstruction(TString simulationFile) {
 
 void CMReconstruction::FillHMatrix() {
   log->info("CMReconstruction::FillHMatrix");
+  // log->info("HI");
+  log->info("ObjBins = {} Imgbins = {}", fObjectCoords.NBins(),fImageCoords.NBins());
 
   int nIterations = 10000;
   for (int objBin = 0; objBin < fObjectCoords.NBins(); objBin++) {
@@ -73,7 +75,7 @@ void CMReconstruction::FillHMatrix() {
       PointSource src(TVector3(0, y, x), 1);
       CMSimulation sim(&src, &fMask, &fDetPlane);
       sim.SetLogLevel(spdlog::level::warn);
-      sim.RunSimulation(nIterations);
+      // sim.RunSimulation(nIterations);
       auto imgVec = vectorizeMatrix(convertHistogramToMatrix(sim.GetImage()));
 
       for (int imgBin = 0; imgBin < fImageCoords.NBins(); imgBin++) {
@@ -146,16 +148,30 @@ void CMReconstruction::RunReconstruction(Int_t nIterations) {
     throw "too many iterations";
   }
 
-  FillHMatrix();
+  // FillHMatrix();
 
-  // log->info("CMReconstruction::Write HMATRIX");
-  // TString filename("Hmatrix.root")
+  log->info("Changed");
+  TString filename("Hmatrix.root");
+  log->info("CMReconstruction::RunReconstruction({})", filename);
   // TFile file(filename, "RECREATE");
+  // TFile file(filename, "UPDATE");
   // file.cd();
   // fMatrixH.Write("matrixH");
-  // break;
 
+  // log->info("CMReconstruction::READ HMATRIX");
+  // TString filename("Hmatrix.root");
+  TFile file(filename);
+  file.cd();
+  // fMatrixH.Read("matrixH");
+  log->info("Fmask A = {}, B = {}, C = {}, D = {},DimY = {}, DimZ = {}", fMask.GetA(), fMask.GetB(),
+                         fMask.GetC(), fMask.GetD(), fMask.GetDimY(), fMask.GetDimZ());
+  log->info("Fdet A = {}, B = {}, C = {}, D = {},DimY = {}, DimZ = {}", fDetPlane.GetA(), fDetPlane.GetB(),
+                         fDetPlane.GetC(), fDetPlane.GetD(), fDetPlane.GetDimY(), fDetPlane.GetDimZ());
+  // fMask.Write("mask");
+  // fDetPlane.Write("detector");
+  // return;
 
+ 
 
   CalculateS();
 
