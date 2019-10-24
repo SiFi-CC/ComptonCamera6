@@ -32,6 +32,6 @@ int main(int argc, char** argv) {
 
 	CMReconstruction reconstruction(inputfile);
 	
-	reconstruction.HmatrixToFile(outputfile,1);
+	reconstruction.HmatrixToFile(outputfile,0);
 
 }

@@ -21,18 +21,18 @@ int main(int argc, char** argv) {
         "where:\n\n"
         "FILE - is an input file from simulations\n\n"
         "ITERATIONS - is the numer of iterations to be processed.\n\n"); 
-    // return 1;
+    return 1;
   }
 
   if(opt_hmatrix.GetStringValue()){ 
     spdlog::info("Hmatrix file: {}",opt_hmatrix.GetStringValue());
   } else {
-    spdlog::info("No Hmatrix detected");
+    spdlog::info("Hmatrix will be calculated");
   }
-  return 1;
+  // return 1;
 
-  TString filename(argv[1]);
-  Int_t iterations = TString(argv[2]).Atoi();
+  TString filename(args[0]);
+  Int_t iterations = TString(args[1]).Atoi();
 
   CMReconstruction reconstruction(filename);
   reconstruction.RunReconstruction(iterations);
