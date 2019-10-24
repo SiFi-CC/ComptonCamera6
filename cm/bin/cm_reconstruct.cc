@@ -2,17 +2,34 @@
 #include "CMReconstruction.hh"
 #include "G4SimulationAdapter.hh"
 #include <TStopwatch.h>
+#include "CmdLineConfig.hh"
 
 int main(int argc, char** argv) {
   spdlog::set_level(spdlog::level::info);
-  if (argc != 3) {
+
+
+  CmdLineOption opt_hmatrix("Hmatrix", "-hmat",
+                           "File with H matrix, default: Calculate","");
+
+  CmdLineConfig::instance()->ReadCmdLine(argc, argv);
+  PositionalArgs args = CmdLineOption::GetPositionalArguments();
+
+
+  if (args.size() != 2) {
     spdlog::info(
         "type: './cm_reconstruct [FILENAME] [ITERATIONS]' to start:\n\n"
         "where:\n\n"
         "FILE - is an input file from simulations\n\n"
-        "ITERATIONS - is the numer of iterations to be processed.\n\n");
-    return 1;
+        "ITERATIONS - is the numer of iterations to be processed.\n\n"); 
+    // return 1;
   }
+
+  if(opt_hmatrix.GetStringValue()){ 
+    spdlog::info("Hmatrix file: {}",opt_hmatrix.GetStringValue());
+  } else {
+    spdlog::info("No Hmatrix detected");
+  }
+  return 1;
 
   TString filename(argv[1]);
   Int_t iterations = TString(argv[2]).Atoi();

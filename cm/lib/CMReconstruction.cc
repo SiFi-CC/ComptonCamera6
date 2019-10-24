@@ -16,7 +16,8 @@ using SiFi::tools::vectorizeMatrix;
 CMReconstruction::~CMReconstruction() = default;
 
 CMReconstruction::CMReconstruction(TString simulationFile) {
-  log->info("Load simulation results from file");
+  // log->info("Load simulation results from file");
+  log->info("Load simulation results from file {}" , simulationFile);
   TFile file(simulationFile, "READ");
   file.Print();
 
@@ -260,4 +261,34 @@ void CMReconstruction::Write(TString filename) const {
 
   file.Close();
   log->debug("end CMReconstruction::Write({})", filename.Data());
+}
+
+
+
+//TODO: remove test and second argument
+void CMReconstruction::HmatrixToFile(TString filename, Int_t t) {
+  if (t == 0) {
+    TFile file(filename, "RECREATE");
+    file.cd();
+
+    log->info("FILL HMATRIX");
+    FillHMatrix();
+    log->info("WRITE");
+    fMatrixH.Write("matrixH");
+    fMask.Write("mask");
+    fDetPlane.Write("detector");
+
+    file.Close();
+  } else {
+    log->info("TEST");
+    
+    TFile file(filename, "READ");
+    file.cd();
+    fMatrixH.Read("matrixH");
+    log->info("Fmask A = {}, B = {}, C = {}, D = {},DimY = {}, DimZ = {}", fMask.GetA(), fMask.GetB(),
+                         fMask.GetC(), fMask.GetD(), fMask.GetDimY(), fMask.GetDimZ());
+    log->info("Fdet A = {}, B = {}, C = {}, D = {},DimY = {}, DimZ = {}", fDetPlane.GetA(), fDetPlane.GetB(),
+                         fDetPlane.GetC(), fDetPlane.GetD(), fDetPlane.GetDimY(), fDetPlane.GetDimZ());
+    file.Close();
+  }
 }

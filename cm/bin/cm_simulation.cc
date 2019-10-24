@@ -38,6 +38,7 @@ int main(int argc, char** argv) {
   spdlog::set_level(spdlog::level::info);
   TString path =
       TString(gSystem->Getenv("CC6DIR")) + "/share/ComptonCamera6/masks/";
+      // TString(gSystem->Getenv("CC6DIR"));
   TString fullname = path + "hMURA" + args[0] + ".root";
   TFile* maskfile = new TFile(fullname, "READ");
   if (maskfile == nullptr) {
