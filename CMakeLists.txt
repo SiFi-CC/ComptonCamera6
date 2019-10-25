@@ -32,6 +32,7 @@ find_package(CmdLineArgs REQUIRED)
 add_subdirectory(spdlog)
 include_directories(spdlog/include)
 
+
 include(GNUInstallDirs)
 
 ##### set paths

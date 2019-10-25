@@ -130,7 +130,7 @@ Bool_t CCSimulation::GenerateRay(void) {
   fZgap = -20.;
   fRadius = 15.;
   Double_t theta_circ, phi_circ;
-  Double_t rad;
+  Double_t x, y, z, rad;
   TVector3 circ;
 
   switch (fGenVersion) {
@@ -231,7 +231,6 @@ Bool_t CCSimulation::ProcessEvent(void) {
   fVersor2 = fTrack2->GetVersor();
   fEnergy2 = fTrack2->GetEnergy();
   // if(fEnergy2<=3.84){
-
   fEnergy1 = fEnergy0 - fEnergy2;
   //}
   // else{
@@ -287,7 +286,6 @@ Bool_t CCSimulation::ProcessEvent(void) {
 /// absorber to be simulated.
 void CCSimulation::Loop(Int_t nev) {
   Int_t i = 0;
-  // cout << "in loop..." << endl;
   while (fNev < nev) {
     ProcessEvent();
     i++;
