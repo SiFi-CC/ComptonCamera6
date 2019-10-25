@@ -160,7 +160,9 @@ void CMReconstruction::RunReconstruction(Int_t nIterations) {
     fMatrixHPrime.Transpose(fMatrixH);
     Mask fMaskCheck = *static_cast<Mask*>(hfile.Get("mask"));
     DetPlane fDetPlaneCheck = *static_cast<DetPlane*>(hfile.Get("detector"));
-
+    
+    // log->info("Mask Name: {}",H2Coords(fMaskCheck).NBins());
+//TODO: check mask order
     Double_t ma1 = fMaskCheck.GetA(), mb1 = fMaskCheck.GetB(), mc1 = fMaskCheck.GetC();
     Double_t md1 = fMaskCheck.GetD(), mY1 = fMaskCheck.GetDimY(), mZ1 = fMaskCheck.GetDimZ();
     Double_t da1 = fDetPlaneCheck.GetA(), db1 = fDetPlaneCheck.GetB(), dc1 = fDetPlaneCheck.GetC();
@@ -182,10 +184,10 @@ void CMReconstruction::RunReconstruction(Int_t nIterations) {
                   da1, db1, dc1, dd1, dY1, dZ1);
       log->info("Fmask InputDataFile: \n" 
                 " A = {}, B = {}, C = {}, D = {}, DimY = {}, DimZ = {} \n\n", 
-                  ma1, mb1, mc1, md1, mY1, mZ1);
+                  ma2, mb2, mc2, md2, mY2, mZ2);
       log->info("Fdet InputDataFile: \n"
                 " A = {}, B = {}, C = {}, D = {}, DimY = {}, DimZ = {} \n\n",
-                  da1, db1, dc1, dd1, dY1, dZ1);                        
+                  da2, db2, dc2, dd2, dY2, dZ2);                        
       throw;
     }
 
