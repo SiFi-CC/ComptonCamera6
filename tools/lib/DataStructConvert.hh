@@ -35,7 +35,8 @@ template <typename T> TMatrixT<T> vectorizeMatrix(const TMatrixT<T>& mat2D) {
 
   for (int row = 0; row < nRows; row++) {
     for (int col = 0; col < nCols; col++) {
-      matVec(col * nRows + row, 0) = mat2D(row, col);
+      // matVec(col * nRows + row, 0) = mat2D(row, col);
+      matVec(row * nCols + col, 0) = mat2D(row, col);
     }
   }
 
@@ -61,7 +62,8 @@ TMatrixT<T> unvectorizeMatrix(const TMatrixT<T>& matVec, Int_t nRows,
 
   for (int row = 0; row < nRows; row++) {
     for (int col = 0; col < nCols; col++) {
-      mat2D(row, col) = matVec(col * nRows + row, 0);
+      // mat2D(row, col) = matVec(col * nRows + row, 0);
+      mat2D(row, col) = matVec(row * nCols + col, 0);
     }
   }
 

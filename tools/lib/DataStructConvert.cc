@@ -10,7 +10,8 @@ TMatrixT<Double_t> convertHistogramToMatrix(TH2F* hist) {
 
   for (int binX = 1; binX <= nBinsX; binX++) {
     for (int binY = 1; binY <= nBinsY; binY++) {
-      matrix(nBinsY - binY, binX - 1) = hist->GetBinContent(binX, binY);
+      // matrix(nBinsY - binY, binX - 1) = hist->GetBinContent(binX, binY);
+      matrix(binY - 1, binX - 1) = hist->GetBinContent(binX, binY);
     }
   }
   return matrix;
@@ -27,7 +28,8 @@ TH2F convertMatrixToHistogram(const char* name, const char* title,
 
   for (int binX = 1; binX <= nBinsX; binX++) {
     for (int binY = 1; binY <= nBinsY; binY++) {
-      hist.SetBinContent(binX, binY, matrix(nBinsY - binY, binX - 1));
+      // hist.SetBinContent(binX, binY, matrix(nBinsY - binY, binX - 1));
+      hist.SetBinContent(binX, binY, matrix(binY - 1, binX - 1));
     }
   }
 
