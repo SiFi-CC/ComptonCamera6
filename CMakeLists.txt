@@ -10,9 +10,9 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 project(ComptonCamera6 CXX)
 string(TOUPPER "${PROJECT_NAME}" CAPS_PROJECT_NAME)
 
-set (VERSION_MAJOR 0)
+set (VERSION_MAJOR 1)
 set (VERSION_MINOR 0)
-set (VERSION_PATCH 1)
+set (VERSION_PATCH 0)
 set(PROJECT_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
 #--- You need to tell CMake where to find the ROOT installation.
@@ -27,7 +27,7 @@ list(APPEND CMAKE_MODULE_PATH
 find_package(ROOT REQUIRED COMPONENTS RIO Geom MathMore)
 set(ROOTSYS $ENV{ROOTSYS})
 
-find_package(CmdLineArgs REQUIRED)
+find_package(CmdLineArgs 2.0.0 REQUIRED)
 
 add_subdirectory(spdlog)
 include_directories(spdlog/include)

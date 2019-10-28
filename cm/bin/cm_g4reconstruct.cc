@@ -13,11 +13,15 @@ int main(int argc, char** argv) {
                               "reconstruct.root");
   CmdLineOption cmdopt_iter("Iterations", "-n",
                             "Number of iterations, default: 20 (integer)", 20);
+
+  CmdLineArg cmdarg_simf("simfile", "Simulation file", CmdLineArg::kString);
+  CmdLineArg cmdarg_dataf("datafile", "Data file", CmdLineArg::kString);
+
   CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 
   spdlog::set_level(spdlog::level::debug);
 
-  PositionalArgs pargs = CmdLineOption::GetPositionalArguments();
+  const Positional & pargs = CmdLineConfig::GetPositionalArguments();
   if (pargs.size() < 2) {
     spdlog::error("Not enough arguments, {} are required", 2);
 
@@ -36,8 +40,9 @@ int main(int argc, char** argv) {
 
     abort();
   }
-  TString simFile(pargs[0]);
-  TString dataFile(pargs[1]);
+  TString simFile(pargs.at("simfile")->GetStringValue());
+  TString dataFile(pargs.at("datafile")->GetStringValue());
+
   TString reconstructFile = CmdLineOption::GetStringValue("Output");
   Int_t iterations = CmdLineOption::GetIntValue("Iterations");
 
