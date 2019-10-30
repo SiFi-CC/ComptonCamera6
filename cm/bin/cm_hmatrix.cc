@@ -16,7 +16,6 @@ int main(int argc, char** argv) {
 	CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 	PositionalArgs args = CmdLineOption::GetPositionalArguments();
 
-	spdlog::info("Hello, Vitalii!");
 	if (args.size() != 1 ) {
 		spdlog::info(
 		    "type: './cm_reconstruct [INPUTFILENAME] ' to start:\n\n"
@@ -32,6 +31,6 @@ int main(int argc, char** argv) {
 
 	CMReconstruction reconstruction(inputfile);
 	
-	reconstruction.HmatrixToFile(outputfile,0);
+	reconstruction.HmatrixToFile(outputfile);
 
 }

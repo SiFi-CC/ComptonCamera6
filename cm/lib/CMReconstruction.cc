@@ -60,8 +60,6 @@ CMReconstruction::CMReconstruction(TString simulationFile) {
 
 void CMReconstruction::FillHMatrix() {
   log->info("CMReconstruction::FillHMatrix");
-  // log->info("HI");
-  log->info("ObjBins = {} Imgbins = {}", fObjectCoords.NBins(),fImageCoords.NBins());
 
   int nIterations = 10000;
   for (int objBin = 0; objBin < fObjectCoords.NBins(); objBin++) {
@@ -160,9 +158,14 @@ void CMReconstruction::RunReconstruction(Int_t nIterations) {
     fMatrixHPrime.Transpose(fMatrixH);
     Mask fMaskCheck = *static_cast<Mask*>(hfile.Get("mask"));
     DetPlane fDetPlaneCheck = *static_cast<DetPlane*>(hfile.Get("detector"));
-    
-    // log->info("Mask Name: {}",H2Coords(fMaskCheck).NBins());
-//TODO: check mask order
+
+    H2Coords fMaskCheckCoords(fMaskCheck.GetPattern());
+    H2Coords fMaskCoords(fMask.GetPattern());
+    Int_t fMaskCheckBins = fMaskCheckCoords.NBins();
+    Int_t fMaskBins = fMaskCoords.NBins();
+    log->info("Mask1 bins: {}",fMaskCheckCoords.NBins());
+    log->info("Mask2 bins: {}",fMaskCoords.NBins());
+
     Double_t ma1 = fMaskCheck.GetA(), mb1 = fMaskCheck.GetB(), mc1 = fMaskCheck.GetC();
     Double_t md1 = fMaskCheck.GetD(), mY1 = fMaskCheck.GetDimY(), mZ1 = fMaskCheck.GetDimZ();
     Double_t da1 = fDetPlaneCheck.GetA(), db1 = fDetPlaneCheck.GetB(), dc1 = fDetPlaneCheck.GetC();
@@ -174,17 +177,17 @@ void CMReconstruction::RunReconstruction(Int_t nIterations) {
     Double_t dd2 = fDetPlane.GetD(), dY2 = fDetPlane.GetDimY(), dZ2 = fDetPlane.GetDimZ();
 
 
-    if (ma1 != ma2 || mb1 != mb2 || mc1 != mc2 || md1 != md2 || mY1 != mY2 || mZ1 != mZ2){
+    if (fMaskCheckBins != fMaskBins || ma1 != ma2 || mb1 != mb2 || mc1 != mc2 || md1 != md2 || mY1 != mY2 || mZ1 != mZ2){
       log->error("Inconsistent parameters of H matrix and input data");
       log->info("Fmask HFile: \n"
-                " A = {}, B = {}, C = {}, D = {}, DimY = {}, DimZ = {} \n\n", 
-                  ma1, mb1, mc1, md1, mY1, mZ1);
+                " Nbins = {}, A = {}, B = {}, C = {}, D = {}, DimY = {}, DimZ = {} \n\n", 
+                  fMaskCheckBins, ma1, mb1, mc1, md1, mY1, mZ1);
       log->info("Fdet HFile: \n"
-                " A = {}, B = {}, C = {}, D = {}, DimY = {}, DimZ = {} \n\n", 
+                "A = {}, B = {}, C = {}, D = {}, DimY = {}, DimZ = {} \n\n", 
                   da1, db1, dc1, dd1, dY1, dZ1);
       log->info("Fmask InputDataFile: \n" 
-                " A = {}, B = {}, C = {}, D = {}, DimY = {}, DimZ = {} \n\n", 
-                  ma2, mb2, mc2, md2, mY2, mZ2);
+                "NBins = {},  A = {}, B = {}, C = {}, D = {}, DimY = {}, DimZ = {} \n\n", 
+                  fMaskBins, ma2, mb2, mc2, md2, mY2, mZ2);
       log->info("Fdet InputDataFile: \n"
                 " A = {}, B = {}, C = {}, D = {}, DimY = {}, DimZ = {} \n\n",
                   da2, db2, dc2, dd2, dY2, dZ2);                        
@@ -287,31 +290,17 @@ void CMReconstruction::Write(TString filename) const {
 }
 
 
-
-//TODO: remove test and second argument
-void CMReconstruction::HmatrixToFile(TString filename, Int_t t) {
-  if (t == 0) {
+void CMReconstruction::HmatrixToFile(TString filename) {
     TFile file(filename, "RECREATE");
     file.cd();
 
-    log->info("FILL HMATRIX");
+    log->info("FILL Hmatrix");
     FillHMatrix();
-    log->info("WRITE");
+
+    log->info("WRITE Hmatrix");
     fMatrixH.Write("matrixH");
     fMask.Write("mask");
     fDetPlane.Write("detector");
 
     file.Close();
-  } else {
-    log->info("TEST");
-    
-    TFile file(filename, "READ");
-    file.cd();
-    fMatrixH.Read("matrixH");
-    log->info("Fmask A = {}, B = {}, C = {}, D = {},DimY = {}, DimZ = {}", fMask.GetA(), fMask.GetB(),
-                         fMask.GetC(), fMask.GetD(), fMask.GetDimY(), fMask.GetDimZ());
-    log->info("Fdet A = {}, B = {}, C = {}, D = {},DimY = {}, DimZ = {}", fDetPlane.GetA(), fDetPlane.GetB(),
-                         fDetPlane.GetC(), fDetPlane.GetD(), fDetPlane.GetDimY(), fDetPlane.GetDimZ());
-    file.Close();
-  }
 }
