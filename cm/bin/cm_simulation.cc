@@ -27,19 +27,18 @@ int main(int argc, char** argv) {
       "Mask", "-maskplane",
       "Mask plane, 6 values required, default: 1:0:0:500:300:300", 0, 0);
 
+  CmdLineArg cmdarg_mask("mask", "Mask file", CmdLineArg::kString);
+  CmdLineArg cmdarg_source("source", "Source file", CmdLineArg::kString);
+
   CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 
-  PositionalArgs args = CmdLineOption::GetPositionalArguments();
-  if (args.size() < 2) {
-    spdlog::error("{} requires 2 arguments: mask source", argv[0]);
-    abort();
-  }
+  const Positional & args = CmdLineConfig::GetPositionalArguments();
 
   spdlog::set_level(spdlog::level::info);
   TString path =
       TString(gSystem->Getenv("CC6DIR")) + "/share/ComptonCamera6/masks/";
-      // TString(gSystem->Getenv("CC6DIR"));
-  TString fullname = path + "hMURA" + args[0] + ".root";
+
+  TString fullname = path + "hMURA" + args.at("mask")->GetStringValue() + ".root";
   TFile* maskfile = new TFile(fullname, "READ");
   if (maskfile == nullptr) {
     spdlog::error("File with mask: {} does not exist, exit...",
@@ -95,19 +94,19 @@ int main(int argc, char** argv) {
 
   printf("Detector plane : %g %g %g %g %g %g\n", da, db, dc, dd, de, df);
   printf("Mask plane     : %g %g %g %g %g %g\n", ma, mb, mc, md, me, mf);
-  printf("Mask type      : %s\n", args[0].Data());
-  printf("Source file    : %s\n", args[1].Data());
+  printf("Mask type      : %s\n", args.at("mask")->GetStringValue());
+  printf("Source file    : %s\n", args.at("source")->GetStringValue());
   printf("Source type    : [%c] point  [%c] multi-point  [%c] planar\n",
          source_p ? 'x' : ' ', source_mp ? 'x' : ' ', source_pl ? 'x' : ' ');
   printf("No. of events  : %d\n", opt_events.GetIntValue());
 
   Source* src = nullptr;
   if (source_pl)
-    src = new PlanarSource(args[1]);
+    src = new PlanarSource(args.at("source")->GetStringValue());
   else if (source_mp)
-    src = new MultiPointSource(args[1]);
+    src = new MultiPointSource(args.at("source")->GetStringValue());
   else if (source_p)
-    src = new PointSource(args[1]);
+    src = new PointSource(args.at("source")->GetStringValue());
   src->Print();
 
   DetPlane detector(da, db, dc, dd, de, df, "detector");
