@@ -176,7 +176,7 @@ void CMReconstruction::RunReconstruction(Int_t nIterations) {
     Double_t da2 = fDetPlane.GetA(), db2 = fDetPlane.GetB(), dc2 = fDetPlane.GetC();
     Double_t dd2 = fDetPlane.GetD(), dY2 = fDetPlane.GetDimY(), dZ2 = fDetPlane.GetDimZ();
 
-
+    //TODO: separate conditions in order to recognize reason of error
     if (fMaskCheckBins != fMaskBins || ma1 != ma2 || mb1 != mb2 || mc1 != mc2 || md1 != md2 || mY1 != mY2 || mZ1 != mZ2){
       log->error("Inconsistent parameters of H matrix and input data");
       log->info("Fmask HFile: \n"
@@ -191,7 +191,7 @@ void CMReconstruction::RunReconstruction(Int_t nIterations) {
       log->info("Fdet InputDataFile: \n"
                 " A = {}, B = {}, C = {}, D = {}, DimY = {}, DimZ = {} \n\n",
                   da2, db2, dc2, dd2, dY2, dZ2);                        
-      throw;
+      exit(EXIT_FAILURE);//exit(number = 'error code')
     }
 
   } else {

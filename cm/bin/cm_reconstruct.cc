@@ -11,28 +11,21 @@ int main(int argc, char** argv) {
   CmdLineOption opt_hmatrix("Hmatrix", "-hmat",
                            "File with H matrix, default: Calculate","");
 
+
+  CmdLineArg cmdarg_inputfile("input", "Input file", CmdLineArg::kString);
+  CmdLineArg cmdarg_iter("iter", "N iterations", CmdLineArg::kInt);
+
   CmdLineConfig::instance()->ReadCmdLine(argc, argv);
-  PositionalArgs args = CmdLineOption::GetPositionalArguments();
-
-
-  if (args.size() != 2) {
-    spdlog::info(
-        "type: './cm_reconstruct [FILENAME] [ITERATIONS]' to start:\n\n"
-        "where:\n\n"
-        "FILE - is an input file from simulations\n\n"
-        "ITERATIONS - is the numer of iterations to be processed.\n\n"); 
-    return 1;
-  }
+  const Positional& args = CmdLineConfig::GetPositionalArguments();
 
   if(opt_hmatrix.GetStringValue()){ 
     spdlog::info("Hmatrix file: {}",opt_hmatrix.GetStringValue());
   } else {
     spdlog::info("Hmatrix will be calculated");
   }
-  // return 1;
 
-  TString filename(args[0]);
-  Int_t iterations = TString(args[1]).Atoi();
+  TString filename(args.at("input")->GetStringValue());
+  Int_t iterations(args.at("iter")->GetIntValue());
 
   CMReconstruction reconstruction(filename);
   reconstruction.RunReconstruction(iterations);

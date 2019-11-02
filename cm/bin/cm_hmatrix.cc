@@ -13,20 +13,15 @@ int main(int argc, char** argv) {
                            "Output file (string), default: Hmatrix.root",
                            "Hmatrix.root");
 
+	CmdLineArg cmdarg_input("input", "Input file", CmdLineArg::kString);
+
 	CmdLineConfig::instance()->ReadCmdLine(argc, argv);
-	PositionalArgs args = CmdLineOption::GetPositionalArguments();
 
-	if (args.size() != 1 ) {
-		spdlog::info(
-		    "type: './cm_reconstruct [INPUTFILENAME] ' to start:\n\n"
-		    "where:\n\n"
-		    "INPUTFILENAME - is an input file from simulations\n\n");
-		return 1;
-	}		
-
+	const Positional& args = CmdLineConfig::GetPositionalArguments();	
+	
 	spdlog::info("Outputfile: {}",opt_output.GetStringValue());
 
-    TString inputfile(args[0]); //INPUT
+	TString inputfile(args.at("input")->GetStringValue()); //INPUT
     TString outputfile(opt_output.GetStringValue()); //OUTPUT
 
 	CMReconstruction reconstruction(inputfile);
