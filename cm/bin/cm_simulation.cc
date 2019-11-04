@@ -1,11 +1,14 @@
 #include "CLog.hh"
-#include "CMSimulation.hh"
+#include <iostream>
+
+#include <TSystem.h>
+
 #include "CmdLineConfig.hh"
+
 #include "Sources/MultiPointSource.hh"
 #include "Sources/PlanarSource.hh"
 #include "Sources/PointSource.hh"
-#include <TSystem.h>
-#include <iostream>
+#include "CMSimulation.hh"
 
 int main(int argc, char** argv) {
 
@@ -32,12 +35,14 @@ int main(int argc, char** argv) {
 
   CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 
-  const Positional & args = CmdLineConfig::GetPositionalArguments();
+  const Positional& args = CmdLineConfig::GetPositionalArguments();
 
   spdlog::set_level(spdlog::level::info);
   TString path =
       TString(gSystem->Getenv("CC6DIR")) + "/share/ComptonCamera6/masks/";
-  TString fullname = path + "hMURA" + args.at("mask")->GetStringValue() + ".root";
+
+  TString fullname =
+      path + "hMURA" + args.at("mask")->GetStringValue() + ".root";
   TFile* maskfile = new TFile(fullname, "READ");
   if (maskfile == nullptr) {
     spdlog::error("File with mask: {} does not exist, exit...",

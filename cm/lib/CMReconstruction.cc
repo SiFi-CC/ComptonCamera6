@@ -1,12 +1,16 @@
-#include "CMReconstruction.hh"
 #include "CLog.hh"
-#include "CMSimulation.hh"
-#include "DataStructConvert.hh"
-#include "Sources/PointSource.hh"
+
 #include <TCanvas.h>
 #include <TF2.h>
 #include <TMath.h>
 #include <TRandom.h>
+
+#include "CmdLineConfig.hh"
+
+#include "CMReconstruction.hh"
+#include "CMSimulation.hh"
+#include "DataStructConvert.hh"
+#include "Sources/PointSource.hh"
 
 using SiFi::tools::convertHistogramToMatrix;
 using SiFi::tools::convertMatrixToHistogram;
@@ -16,7 +20,6 @@ using SiFi::tools::vectorizeMatrix;
 CMReconstruction::~CMReconstruction() = default;
 
 CMReconstruction::CMReconstruction(TString simulationFile) {
-  log->info("Load simulation results from file");
   TFile file(simulationFile, "READ");
   file.Print();
 
@@ -75,7 +78,6 @@ void CMReconstruction::FillHMatrix() {
       sim.SetLogLevel(spdlog::level::warn);
       sim.RunSimulation(nIterations);
       auto imgVec = vectorizeMatrix(convertHistogramToMatrix(sim.GetImage()));
-
       for (int imgBin = 0; imgBin < fImageCoords.NBins(); imgBin++) {
         if (imgVec(imgBin, 0) == 0) {
           // fix for division by zero durring reconstruction
@@ -146,7 +148,82 @@ void CMReconstruction::RunReconstruction(Int_t nIterations) {
     throw "too many iterations";
   }
 
-  FillHMatrix();
+  if (CmdLineOption::GetStringValue("Hmatrix")) {
+    TString hfilename(CmdLineOption::GetStringValue("Hmatrix"));
+    log->info("Hmatrix file: {}", hfilename);
+    TFile hfile(hfilename);
+    hfile.cd();
+
+    fMatrixH.Read("matrixH");
+    fMatrixHPrime.Transpose(fMatrixH);
+    Mask fMaskCheck = *static_cast<Mask*>(hfile.Get("mask"));
+    DetPlane fDetPlaneCheck = *static_cast<DetPlane*>(hfile.Get("detector"));
+
+    H2Coords fMaskCheckCoords(fMaskCheck.GetPattern());
+    H2Coords fMaskCoords(fMask.GetPattern());
+    Int_t fMaskCheckBins = fMaskCheckCoords.NBins();
+    Int_t fMaskBins = fMaskCoords.NBins();
+    log->info("Mask1 bins: {}", fMaskCheckCoords.NBins());
+    log->info("Mask2 bins: {}", fMaskCoords.NBins());
+
+    Double_t ma1 = fMaskCheck.GetA(), mb1 = fMaskCheck.GetB(),
+             mc1 = fMaskCheck.GetC();
+    Double_t md1 = fMaskCheck.GetD(), mY1 = fMaskCheck.GetDimY(),
+             mZ1 = fMaskCheck.GetDimZ();
+    Double_t da1 = fDetPlaneCheck.GetA(), db1 = fDetPlaneCheck.GetB(),
+             dc1 = fDetPlaneCheck.GetC();
+    Double_t dd1 = fDetPlaneCheck.GetD(), dY1 = fDetPlaneCheck.GetDimY(),
+             dZ1 = fDetPlaneCheck.GetDimZ();
+
+    Double_t ma2 = fMask.GetA(), mb2 = fMask.GetB(), mc2 = fMask.GetC();
+    Double_t md2 = fMask.GetD(), mY2 = fMask.GetDimY(), mZ2 = fMask.GetDimZ();
+    Double_t da2 = fDetPlane.GetA(), db2 = fDetPlane.GetB(),
+             dc2 = fDetPlane.GetC();
+    Double_t dd2 = fDetPlane.GetD(), dY2 = fDetPlane.GetDimY(),
+             dZ2 = fDetPlane.GetDimZ();
+
+    if (fMaskCheckBins != fMaskBins) {
+      log->error("Inconsistent parameters of H matrix and input data");
+      log->info("Fmask HFile Nbins = {}", fMaskCheckBins);
+      log->info("Fmask InputDataFile Nbins = {}", fMaskBins);
+      exit(EXIT_FAILURE);
+    } else if (ma1 != ma2) {
+      log->error("Inconsistent parameters of H matrix and input data");
+      log->info("Fmask HFile A = {}", ma1);
+      log->info("Fmask InputDataFile A = {}", ma2);
+      exit(EXIT_FAILURE);
+    } else if (mb1 != mb2) {
+      log->error("Inconsistent parameters of H matrix and input data");
+      log->info("Fmask HFile B = {}", mb1);
+      log->info("Fmask InputDataFile B = {}", mb2);
+      exit(EXIT_FAILURE);
+    } else if (mc1 != mc2) {
+      log->error("Inconsistent parameters of H matrix and input data");
+      log->info("Fmask HFile C = {}", mc1);
+      log->info("Fmask InputDataFile C = {}", mc2);
+      exit(EXIT_FAILURE);
+    } else if (md1 != md2) {
+      log->error("Inconsistent parameters of H matrix and input data");
+      log->info("Fmask HFile D = {}", md1);
+      log->info("Fmask InputDataFile D = {}", md2);
+      exit(EXIT_FAILURE);
+    } else if (mY1 != mY2) {
+      log->error("Inconsistent parameters of H matrix and input data");
+      log->info("Fmask HFile DimY = {}", mY1);
+      log->info("Fmask InputDataFile DimY = {}", mY2);
+      exit(EXIT_FAILURE);
+    } else if (mZ1 != mZ2) {
+      log->error("Inconsistent parameters of H matrix and input data");
+      log->info("Fmask HFile DimZ = {}", mZ1);
+      log->info("Fmask InputDataFile DimZ = {}", mZ2);
+      exit(EXIT_FAILURE);
+    }
+
+  } else {
+    log->info("Hmatrix will be calculated");
+    FillHMatrix();
+  }
+
   CalculateS();
 
   fRecoObject.push_back(TMatrixT<Double_t>(fObjectCoords.NBins(), 1));
@@ -234,4 +311,19 @@ void CMReconstruction::Write(TString filename) const {
 
   file.Close();
   log->debug("end CMReconstruction::Write({})", filename.Data());
+}
+
+void CMReconstruction::HmatrixToFile(const TString& filename) {
+  TFile file(filename, "RECREATE");
+  file.cd();
+
+  log->info("FILL Hmatrix");
+  FillHMatrix();
+
+  log->info("WRITE Hmatrix");
+  fMatrixH.Write("matrixH");
+  fMask.Write("mask");
+  fDetPlane.Write("detector");
+
+  file.Close();
 }
