@@ -1,11 +1,12 @@
 #include "CLog.hh"
-#include "CMReconstruction.hh"
-#include "G4Reconstruction.hh"
-#include "G4SimulationAdapter.hh"
 
 #include <TStopwatch.h>
 
 #include <CmdLineConfig.hh>
+
+#include "CMReconstruction.hh"
+#include "G4Reconstruction.hh"
+#include "G4SimulationAdapter.hh"
 
 int main(int argc, char** argv) {
   CmdLineOption cmdopt_output("Output", "-o",
@@ -21,7 +22,7 @@ int main(int argc, char** argv) {
 
   spdlog::set_level(spdlog::level::debug);
 
-  const Positional & pargs = CmdLineConfig::GetPositionalArguments();
+  const Positional& pargs = CmdLineConfig::GetPositionalArguments();
   if (pargs.size() < 2) {
     spdlog::error("Not enough arguments, {} are required", 2);
 
