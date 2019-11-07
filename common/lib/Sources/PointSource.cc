@@ -21,11 +21,16 @@ PointSource::PointSource(const TString fname) {
 }
 
 Track PointSource::GenerateEvent() {
-  Double_t theta = gRandom->Uniform(fMinAngle, fMaxAngle);
-  TVector3 versor;
-  versor.SetMagThetaPhi(1., theta, gRandom->Uniform(0, TMath::TwoPi()));
-  versor.RotateY(-TMath::Pi() / 2);
+
+  Double_t costheta = cos(fMinAngle)-(cos(fMinAngle)-cos(fMaxAngle)) * gRandom->Uniform(0, 1);
+  Double_t sintheta = sqrt(1 - costheta*costheta);
+  Double_t phi = gRandom->Uniform(0, TMath::TwoPi());
+  Double_t x = -costheta;
+  Double_t y = sintheta*sin(phi);
+  Double_t z = sintheta*cos(phi);
+  TVector3 versor(x,y,z);  
   Track track(fPosition, versor, fEnergy);
+
   if (fhTheta) fhTheta->Fill(track.GetVersor().Theta());
   if (fhPhi) fhPhi->Fill(track.GetVersor().Phi());
   if (fhZY) fhZY->Fill(track.GetPoint().Z(), track.GetPoint().Y());
