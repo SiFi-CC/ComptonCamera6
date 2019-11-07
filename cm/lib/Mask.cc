@@ -33,9 +33,9 @@ Int_t Mask::IsOpaque(TVector3 point) {
   Int_t binx = fPattern->GetXaxis()->FindBin(point.Z());
   Int_t biny = fPattern->GetYaxis()->FindBin(point.Y());
   if (fPattern->GetBinContent(binx, biny) < 0.001)
-    return 0;
-  else
     return 1;
+  else
+    return 0;
 };
 //------------------------------------------------------------------
 void Mask::Print(void) {
