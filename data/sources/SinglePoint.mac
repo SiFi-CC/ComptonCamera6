@@ -1,0 +1,11 @@
+
+/gps/particle gamma
+/gps/pos/type Point
+/gps/pos/centre 0 0 -3 cm
+/gps/ang/type iso
+# Direction of the gps is along -z axis
+/gps/ang/mintheta 175 deg
+/gps/ene/type Mono
+/gps/energy 4.4 MeV
+
+#/run/beamOn 100

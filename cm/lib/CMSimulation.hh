@@ -46,10 +46,7 @@ private:
    * path is crossing mask and detector, otherwise is not scored anywhere.
    */
   TTree* fTree;
-  /** Histogram representing distribution of tracks in Source
-   *
-   * TODO: This data will be moved to Source in the future.
-   */
+  /** Histogram representing distribution of tracks in Source */
   TH2F* fH2Source;
   /** Histogram representing distribution of tracks in detector. This image is
    * used in reconstruction
@@ -57,14 +54,11 @@ private:
    * TODO: This data will be moved to Detector in the future.
    */
   TH2F* fH2Detector;
-  /** Distribution of theta angles in genrated particles
-   *
-   * TODO: This data will be removed or moved to Source in the future.
+  /** Distribution of theta angles of registered particles
    */
   TH1F* fH1Theta;
-  /** Distribution of phi angles in genrated particles
-   *
-   * TODO: This data will be removed or moved to Source in the future.
+
+  /** Distribution of phi angles of registered particles
    */
   TH1F* fH1Phi;
 

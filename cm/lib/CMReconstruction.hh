@@ -42,6 +42,9 @@ public:
   /** Save to file */
   void Write(TString filename) const;
 
+  /** Calculate H matrix and save it in file */
+  void HmatrixToFile(const TString& filename);
+
 private:
   /** calulate probability matrix */
   void FillHMatrix();
