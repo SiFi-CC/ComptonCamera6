@@ -13,7 +13,7 @@ public:
   ~Mask();
   void SetPattern(TH2F* h);
   TH2F* GetPattern(void) { return fPattern; };
-  Int_t IsOpaque(TVector3 point);
+  Bool_t IsOpaque(TVector3 point);
   void Print(void);
 
 private:
