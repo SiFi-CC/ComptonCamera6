@@ -217,6 +217,36 @@ void CMReconstruction::RunReconstruction(Int_t nIterations) {
       log->info("Fmask HFile DimZ = {}", mZ1);
       log->info("Fmask InputDataFile DimZ = {}", mZ2);
       exit(EXIT_FAILURE);
+    }else if (da1 != da2) {
+      log->error("Inconsistent parameters of H matrix and input data");
+      log->info("Detector HFile A = {}", da1);
+      log->info("Detector InputDataFile A = {}", da2);
+      exit(EXIT_FAILURE);
+    } else if (db1 != db2) {
+      log->error("Inconsistent parameters of H matrix and input data");
+      log->info("Detector HFile B = {}", db1);
+      log->info("Detector InputDataFile B = {}", db2);
+      exit(EXIT_FAILURE);
+    } else if (dc1 != dc2) {
+      log->error("Inconsistent parameters of H matrix and input data");
+      log->info("Detector HFile C = {}", dc1);
+      log->info("Detector InputDataFile C = {}", dc2);
+      exit(EXIT_FAILURE);
+    } else if (dd1 != dd2) {
+      log->error("Inconsistent parameters of H matrix and input data");
+      log->info("Detector HFile D = {}", dd1);
+      log->info("Detector InputDataFile D = {}", dd2);
+      exit(EXIT_FAILURE);
+    } else if (dY1 != dY2) {
+      log->error("Inconsistent parameters of H matrix and input data");
+      log->info("Detector HFile DimY = {}", dY1);
+      log->info("Detector InputDataFile DimY = {}", dY2);
+      exit(EXIT_FAILURE);
+    } else if (dZ1 != dZ2) {
+      log->error("Inconsistent parameters of H matrix and input data");
+      log->info("Detector HFile DimZ = {}", dZ1);
+      log->info("Detector InputDataFile DimZ = {}", dZ2);
+      exit(EXIT_FAILURE);
     }
 
   } else {
