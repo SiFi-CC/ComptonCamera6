@@ -35,7 +35,9 @@ public:
   TVector3 virtual* GetScattererPosition(void);
   TVector3 virtual* GetAbsorberPosition(void);
   
+  int virtual GetIdentified(void);
   int virtual GetRecoClusterPosSize(void);
+  double virtual GetEP(void);
   double virtual GetEnergyPrimary(void);
   double virtual GetEnergyPrimaryReco(void);
   double virtual GetEnergyLoss(void);
