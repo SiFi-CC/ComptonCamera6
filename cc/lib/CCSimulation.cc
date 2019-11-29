@@ -143,7 +143,7 @@ Bool_t CCSimulation::GenerateRay(void) {
       break;
     case 2: // uniform distribution along z axis (beam)
       maxz = fScatterer.GetDimZ() / 4.;
-      fPoint0.SetXYZ(fXofSource, fYofSource, gRandom->Uniform(-maxz, maxz));
+      fPoint0.SetXYZ(fXofSource, fYofSource, fZofSource + gRandom->Uniform(-maxz, maxz));
       theta = acos(gRandom->Uniform(-1, 1));             // rad
       phi = gRandom->Uniform(-TMath::Pi(), TMath::Pi()); // rad
       break;
