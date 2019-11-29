@@ -14,7 +14,7 @@ InputReaderGeant::InputReaderGeant() : InputReader() {
 ///\param path (TString) - path to the input file.
 InputReaderGeant::InputReaderGeant(TString path) : InputReader(path) {
 
-  if (!AccessTree("G4SimulationData_Real", "G4SimulationData_Setup", "G4SimulationData_Reconstruction")) {
+  if (!AccessTree("Setup", "Events")) {
     throw "##### Exception in InputReaderGeant constructor!";
   }
 
@@ -43,11 +43,11 @@ InputReaderGeant::~InputReaderGeant() {
 ///\param name (TString) - name of tree.
 ///\param name1 (TString) - name1 of tree.
 ///\param name2 (TString) - name2 of tree.
-bool InputReaderGeant::AccessTree(TString name, TString name1, TString name2) {
+bool InputReaderGeant::AccessTree(TString name, TString name1) {
 
   fTree = (TTree*)fFile->Get(name);
   fTree1 = (TTree*)fFile->Get(name1);
-  fTree2 = (TTree*)fFile->Get(name2);
+  //fTree2 = (TTree*)fFile->Get(name2);
   if (fTree == NULL) {
     cout << "##### Error in InputReaderGeant::AccessTree()!" << endl;
     cout << "Could not access the tree!" << endl;
@@ -58,11 +58,11 @@ bool InputReaderGeant::AccessTree(TString name, TString name1, TString name2) {
     cout << "Could not access the tree!" << endl;
     return false;
   }
-  if (fTree2 == NULL) {
-    cout << "##### Error in InputReaderGeant::AccessTree()!" << endl;
-    cout << "Could not access the tree!" << endl;
-    return false;
-  }
+//   if (fTree2 == NULL) {
+//     cout << "##### Error in InputReaderGeant::AccessTree()!" << endl;
+//     cout << "Could not access the tree!" << endl;
+//     return false;
+//   }
   
   fRecoEnergy_e = new PhysicVar();
   fRecoEnergy_p = new PhysicVar();
@@ -75,42 +75,43 @@ bool InputReaderGeant::AccessTree(TString name, TString name1, TString name2) {
   fRealPosition_source = new TVector3();
   fRealDirection_source = new TVector3();
   fRealPosition_e = new TVector3();
+  fRealComptonPosition = new TVector3();
   fRealPosition_p = new TVector3();
   fRealDirection_scatter = new TVector3();
   
   fScattererPosition = new TVector3();
   fAbsorberPosition = new TVector3();
-
-  fTree->SetBranchAddress("EventNumber", &fEventNumber);
-  fTree->SetBranchAddress("Energy_Primary", &fEnergy_Primary);
-  fTree->SetBranchAddress("RealEnergy_e", &fRealEnergy_e);
-  fTree->SetBranchAddress("RealEnergy_p", &fRealEnergy_p);
-  fTree->SetBranchAddress("RealPosition_source", &fRealPosition_source);
-  fTree->SetBranchAddress("RealDirection_source", &fRealDirection_source);
-  fTree->SetBranchAddress("RealPosition_e", &fRealPosition_e);
-  fTree->SetBranchAddress("RealPosition_p", &fRealPosition_p);
-  fTree->SetBranchAddress("RealDirection_scatter", &fRealDirection_scatter);
   
-  fTree1->SetBranchAddress("ScattererThickness_x", &fScattererThickness_x);
-  fTree1->SetBranchAddress("ScattererThickness_y", &fScattererThickness_y);
-  fTree1->SetBranchAddress("ScattererThickness_z", &fScattererThickness_z);
-  fTree1->SetBranchAddress("AbsorberThickness_x", &fAbsorberThickness_x);
-  fTree1->SetBranchAddress("AbsorberThickness_y", &fAbsorberThickness_y);
-  fTree1->SetBranchAddress("AbsorberThickness_z", &fAbsorberThickness_z);
-  fTree1->SetBranchAddress("ScattererPosition", &fScattererPosition);
-  fTree1->SetBranchAddress("AbsorberPosition", &fAbsorberPosition);
-  fTree1->SetBranchAddress("NumberOfSimulatedEvents",
+  fTree->SetBranchAddress("ScattererThickness_x", &fScattererThickness_x);
+  fTree->SetBranchAddress("ScattererThickness_y", &fScattererThickness_y);
+  fTree->SetBranchAddress("ScattererThickness_z", &fScattererThickness_z);
+  fTree->SetBranchAddress("AbsorberThickness_x", &fAbsorberThickness_x);
+  fTree->SetBranchAddress("AbsorberThickness_y", &fAbsorberThickness_y);
+  fTree->SetBranchAddress("AbsorberThickness_z", &fAbsorberThickness_z);
+  fTree->SetBranchAddress("ScattererPosition", &fScattererPosition);
+  fTree->SetBranchAddress("AbsorberPosition", &fAbsorberPosition);
+  fTree->SetBranchAddress("NumberOfSimulatedEvents",
                            &fNumberOfSimulatedEvents);
   
-  fTree2->SetBranchAddress("EventNumber", &fEventNumber);
-  fTree2->SetBranchAddress("Identified", &fIdentified);
-  fTree2->SetBranchAddress("RecoEnergy_e", &fRecoEnergy_e);
-  fTree2->SetBranchAddress("RecoEnergy_p", &fRecoEnergy_p);
-  fTree2->SetBranchAddress("RecoPosition_e", &fRecoPosition_e);
-  fTree2->SetBranchAddress("RecoPosition_p", &fRecoPosition_p);
-  fTree2->SetBranchAddress("RecoDirection_scatter", &fRecoDirection_scatter);
-  fTree2->SetBranchAddress("RecoClusterPositions", &fRecoClusterPositions);
-  fTree2->SetBranchAddress("RecoClusterEnergies", &fRecoClusterEnergies);
+  fTree1->SetBranchAddress("EventNumber", &fEventNumber);
+  fTree1->SetBranchAddress("Energy_Primary", &fEnergy_Primary);
+  fTree1->SetBranchAddress("RealEnergy_e", &fRealEnergy_e);
+  fTree1->SetBranchAddress("RealEnergy_p", &fRealEnergy_p);
+  fTree1->SetBranchAddress("RealPosition_source", &fRealPosition_source);
+  fTree1->SetBranchAddress("RealDirection_source", &fRealDirection_source);
+  fTree1->SetBranchAddress("RealPosition_e", &fRealPosition_e);
+  fTree1->SetBranchAddress("RealComptonPosition", &fRealComptonPosition);
+  fTree1->SetBranchAddress("RealPosition_p", &fRealPosition_p);
+  fTree1->SetBranchAddress("RealDirection_scatter", &fRealDirection_scatter);
+  fTree1->SetBranchAddress("Identified", &fIdentified);
+  fTree1->SetBranchAddress("PurCrossed", &fPurCrossed);
+  fTree1->SetBranchAddress("RecoEnergy_e", &fRecoEnergy_e);
+  fTree1->SetBranchAddress("RecoEnergy_p", &fRecoEnergy_p);
+  fTree1->SetBranchAddress("RecoPosition_e", &fRecoPosition_e);
+  fTree1->SetBranchAddress("RecoPosition_p", &fRecoPosition_p);
+  fTree1->SetBranchAddress("RecoDirection_scatter", &fRecoDirection_scatter);
+  fTree1->SetBranchAddress("RecoClusterPositions", &fRecoClusterPositions);
+  fTree1->SetBranchAddress("RecoClusterEnergies", &fRecoClusterEnergies);
 
   cout << "\n\nIn InputReaderGeant::AccessTree()." << endl;
   cout << fTree->GetName() << " tree accessed.\n" << endl;
@@ -118,8 +119,8 @@ bool InputReaderGeant::AccessTree(TString name, TString name1, TString name2) {
   cout << "\n\nIn InputReaderGeant::AccessTree()." << endl;
   cout << fTree1->GetName() << " tree accessed.\n" << endl;
   
-  cout << "\n\nIn InputReaderGeant::AccessTree()." << endl;
-  cout << fTree2->GetName() << " tree accessed.\n" << endl;
+//   cout << "\n\nIn InputReaderGeant::AccessTree()." << endl;
+//   cout << fTree2->GetName() << " tree accessed.\n" << endl;
   
   return true;
 }
@@ -128,29 +129,29 @@ bool InputReaderGeant::AccessTree(TString name, TString name1, TString name2) {
 ///\param i (int) - number of events
 bool InputReaderGeant::LoadEvent(int i) {
 
-  int imax1 = fTree1->GetEntries();
-  fTree1->GetEntry(i);
-  
-  int imax2 = fTree2->GetEntries();
-  if (i > imax2) {
-    cout << "##### Error in InputReaderGeant::LoadEvent() in reconstruction tree!" << endl;
-    cout << "Requested event number larger than number of events in the tree!"
-         << endl;
-    return false;
-  }
-  fTree2->GetEntry(i);
-  
-  int imax = fTree->GetEntries();
-  if (i > imax) {
-    cout << "##### Error in InputReaderGeant::LoadEvent() in real tree!" << endl;
-    cout << "Requested event number larger than number of events in the tree!"
-         << endl;
-    return false;
-  }
-
+  int imax1 = fTree->GetEntries();
   fTree->GetEntry(i);
+  
+//   int imax2 = fTree2->GetEntries();
+//   if (i > imax2) {
+//     cout << "##### Error in InputReaderGeant::LoadEvent() in reconstruction tree!" << endl;
+//     cout << "Requested event number larger than number of events in the tree!"
+//          << endl;
+//     return false;
+//   }
+//   fTree2->GetEntry(i);
+  
+  int imax = fTree1->GetEntries();
+  if (i > imax) {
+    cout << "##### Error in InputReaderGeant::LoadEvent() in Event tree!" << endl;
+    cout << "Requested event number larger than number of events in the tree!"
+         << endl;
+    return false;
+  }
 
-  if (0 == fRealPosition_e->X() || 0 == fRealPosition_p->X()) return false;
+  fTree1->GetEntry(i);
+
+   //if (0 == fRealPosition_e->X() || 0 == fRealPosition_p->X()) return false;
 
   return true;
 }
@@ -235,6 +236,11 @@ TVector3* InputReaderGeant::GetAbsorberPosition(void) {
   return fAbsPlanePos;
 }
 //------------------------------------------------------------------
+int InputReaderGeant::GetIdentified(void) {
+  
+  return fIdentified;
+}
+//------------------------------------------------------------------
 double InputReaderGeant::GetEnergyPrimary(void) {
   double sum = fRealEnergy_e + fRealEnergy_p;
   return sum;
@@ -255,6 +261,8 @@ double InputReaderGeant::GetEnergyScatteredReco(void) { return fRecoEnergy_p->va
 //------------------------------------------------------------------
 double InputReaderGeant::GetScatThickx(void) { return fScattererThickness_x; }
 //------------------------------------------------------------------
+double InputReaderGeant::GetEP(void) { return fEnergy_Primary; }
+//------------------------
 double InputReaderGeant::GetScatThicky(void) { return fScattererThickness_y; }
 //------------------------------------------------------------------
 double InputReaderGeant::GetScatThickz(void) { return fScattererThickness_z; }
@@ -268,10 +276,12 @@ double InputReaderGeant::GetAbsThickz(void) { return fAbsorberThickness_z; }
 void InputReaderGeant::Clear(void) {
   fEventNumber = -1;
   fIdentified = -1000;
+  fPurCrossed = false;
   fEnergy_Primary = -1000;
   fRealEnergy_e = -1000;
   fRealEnergy_p = -1000;
   fRealPosition_e = NULL;
+  fRealComptonPosition = NULL;
   fRealPosition_p = NULL;
   fPositionScat = NULL;
   fPositionAbs = NULL;
@@ -280,7 +290,7 @@ void InputReaderGeant::Clear(void) {
   fPositionSource = NULL;
   fTree = NULL;
   fTree1 = NULL;
-  fTree2 = NULL;
+  //fTree2 = NULL;
   fFile = NULL;
   fRealDirection_scatter = NULL;
   fRealDirection_source = NULL;
