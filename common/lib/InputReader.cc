@@ -96,6 +96,11 @@ TVector3* InputReader::GetGammaDirScatteredReco(void) { return NULL; }
 //------------------------------------------------------------------
 int InputReader::GetRecoClusterPosSize(void) { return -100; }
 //------------------------------------------------------------------
+int InputReader::GetIdentified(void) {return -1000;}
+
+//------------------------------------------------------------------
+double InputReader::GetEP(void) { return -100; }
+//------------------------
 /// Returns energy of the gamma emitted from the source [MeV].
 double InputReader::GetEnergyPrimary(void) { return -100; }
 //------------------------------------------------------------------
