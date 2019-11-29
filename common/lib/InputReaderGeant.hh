@@ -32,14 +32,15 @@ public:
   TVector3* GetGammaDirScattered(void);
   TVector3* GetGammaDirScatteredReco(void);
   int GetRecoClusterPosSize(void);
-   
+  
+  double GetEP(void);
   double GetEnergyPrimary(void);
   double GetEnergyPrimaryReco(void);
   double GetEnergyLoss(void);
   double GetEnergyLossReco(void);
   double GetEnergyScattered(void);
   double GetEnergyScatteredReco(void);
-  
+  int GetIdentified(void);
   
   TVector3* GetScattererPosition(void);
   TVector3* GetAbsorberPosition(void);
@@ -54,12 +55,14 @@ public:
 private:
   int fEventNumber;     ///< Event number
   int fIdentified;      ///< Number of events were labeled 
+  bool fPurCrossed;
   Double_t fEnergy_Primary;     ///< Primary photon energy
   Double_t fRealEnergy_e;       ///< Electron energy + uncertainty [MeV]
   Double_t fRealEnergy_p;       ///< Photon energy + uncertainty [MeV]
   TVector3* fRealPosition_source;
   TVector3* fRealDirection_source;
   TVector3* fRealPosition_e;        ///< Electron creation position + uncertainty
+  TVector3* fRealComptonPosition;
   TVector3* fRealPosition_p;      ///< Photon energy deposition position + uncertainty
   TVector3* fRealDirection_scatter;     ///< Direction of the scattered photon +
                                     ///< uncertainty
@@ -69,9 +72,9 @@ private:
   PhysicVec* fRecoPosition_p;       ///< Photon energy deposition position + uncertainty
   PhysicVec* fRecoDirection_scatter; ///< Direction of the scattered photon +
                                      ///< uncertainty
-  vector<PhysicVec*>*
+  vector<PhysicVec>*
       fRecoClusterPositions; ///< Positions cluster with uncertainties
-  vector<PhysicVar*>*
+  vector<PhysicVar>*
       fRecoClusterEnergies; ///< Energies cluster with uncertainties
 
 
@@ -102,9 +105,10 @@ private:
   Double_t fAbsorberThickness_z;
   Double_t fNumberOfSimulatedEvents;
 
-  bool AccessTree(TString name, TString name1, TString name2);
+  bool AccessTree(TString name, TString name1);
+  TTree* fTree;
   TTree* fTree1;
-  TTree* fTree2;
+  //TTree* fTree2;
 
   ClassDef(InputReaderGeant, 0)
 };
