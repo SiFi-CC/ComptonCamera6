@@ -64,6 +64,8 @@ void CMReconstruction::FillHMatrix() {
 
   int nIterations = 10000;
   for (int objBin = 0; objBin < fObjectCoords.NBins(); objBin++) {
+    double done = (double)objBin/fObjectCoords.NBins();
+    log->info("{} %",done*100);
     int objBinX, objBinY;
     std::tie(objBinX, objBinY) = fObjectCoords.BinXY(objBin);
     log->debug("Hmatrix ({}, {}) voxel", objBinX, objBinY);
@@ -272,6 +274,8 @@ void CMReconstruction::Write(TString filename) const {
   fObject.Write();
   fImage.Write();
   fMatrixH.Write("matrixH");
+  fMask.Write("mask");
+  fDetPlane.Write("detector");
   SiFi::tools::convertMatrixToHistogram(
       "histH", "histogram of matrix H(probability matrix)", fMatrixH)
       .Write();

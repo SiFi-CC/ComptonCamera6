@@ -35,7 +35,7 @@ template <typename T> TMatrixT<T> vectorizeMatrix(const TMatrixT<T>& mat2D) {
 
   for (int row = 0; row < nRows; row++) {
     for (int col = 0; col < nCols; col++) {
-      matVec(row * nCols + col, 0) = mat2D(row, col);
+      matVec(col * nRows + row, 0) = mat2D(row, col);
     }
   }
 
@@ -53,7 +53,9 @@ TMatrixT<T> unvectorizeMatrix(const TMatrixT<T>& matVec, Int_t nRows,
   }
   if (matVec.GetNrows() != nRows * nCols) {
     spdlog::error("unvectorizeMatrix: number of columns needs to be equal to "
-                  "nRows*nCols");
+                  "nRows*nCols\n nnumber of columns: {}, nRows: {}, nCols: {}", 
+                  matVec.GetNrows(), nRows, nCols);
+    
     throw "wrong matrix dimensions";
   }
 
@@ -61,7 +63,7 @@ TMatrixT<T> unvectorizeMatrix(const TMatrixT<T>& matVec, Int_t nRows,
 
   for (int row = 0; row < nRows; row++) {
     for (int col = 0; col < nCols; col++) {
-      mat2D(row, col) = matVec(row * nCols + col, 0);
+      mat2D(row, col) = matVec(col * nRows + row, 0);
     }
   }
 
