@@ -71,7 +71,8 @@ void CMReconstruction::FillHMatrix() {
     // TODO switch to angular bins
     Double_t x = fObject.GetXaxis()->GetBinCenter(objBinX + 1);
     Double_t y = fObject.GetYaxis()->GetBinCenter(objBinY + 1);
-
+    // Double_t y = fObject.GetYaxis()->GetBinCenter(fObject.GetNbinsY() - objBinY);
+    // log->info("Source coord ({}, {})", x, y);
     {
       PointSource src(TVector3(0, y, x), 1);
       CMSimulation sim(&src, &fMask, &fDetPlane);

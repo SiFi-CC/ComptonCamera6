@@ -29,6 +29,7 @@ public:
       return std::make_pair(-1, -1);
     }
     return std::make_pair(bin % fNBinsXY.first, bin / fNBinsXY.first);
+    // return std::make_pair(bin / fNBinsXY.first, bin % fNBinsXY.first);
   }
 
   std::string String() const {
