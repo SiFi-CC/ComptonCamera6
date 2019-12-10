@@ -10,6 +10,9 @@ build/
 *.swp
 *.swo
 
+## sublime
+*.sublime-workspace
+
 ## Language tooling
 ### clang
 .clang_complete
