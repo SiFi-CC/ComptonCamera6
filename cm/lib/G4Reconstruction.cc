@@ -201,7 +201,6 @@ void G4Reconstruction::Write(TString filename) const {
 
   SiFi::tools::convertMatrixToHistogram(
       "image", "image on detector",
-      // SiFi::tools::unvectorizeMatrix(fImage, 22, 22))
       SiFi::tools::unvectorizeMatrix(fImage, n, n))
       // SiFi::tools::unvectorizeMatrix(fImage, fParams.detector.binX, fParams.detector.binY))
       .Write();
