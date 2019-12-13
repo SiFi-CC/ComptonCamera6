@@ -76,12 +76,13 @@ include(sanitizers)
 cxx_11()
 add_code_coverage()
 
+enable_testing()
+
 add_subdirectory(common)
 add_subdirectory(tools)
 add_subdirectory(cm)
 add_subdirectory(cc)
 
-enable_testing()
 add_subdirectory(tests)
 
 #---Locating Doxygen and generating documentation
