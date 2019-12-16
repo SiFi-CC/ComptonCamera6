@@ -22,14 +22,18 @@ protected:
     void MoveTGraphErrorsTest();
 };
 
+//------------------------------------------------------------------
 CPPUNIT_TEST_SUITE_REGISTRATION( Tools_ScaleGraphAndMove );
 
+//------------------------------------------------------------------
 void Tools_ScaleGraphAndMove::setUp() {
 }
 
+//------------------------------------------------------------------
 void Tools_ScaleGraphAndMove::tearDown() {
 }
 
+//------------------------------------------------------------------
 void Tools_ScaleGraphAndMove::ScaleTest() {
 	const size_t n = 5;
 	double x[n] = { 1, 2, 3, 4, 5 };
@@ -47,6 +51,7 @@ void Tools_ScaleGraphAndMove::ScaleTest() {
 	delete gr;
 }
 
+//------------------------------------------------------------------
 void Tools_ScaleGraphAndMove::MoveTest() {
 	const size_t n = 5;
 	double x[n] = { 1, 2, 3, 4, 5 };
@@ -64,6 +69,7 @@ void Tools_ScaleGraphAndMove::MoveTest() {
 	delete gr;
 }
 
+//------------------------------------------------------------------
 void Tools_ScaleGraphAndMove::ScaleTGraphErrorsTest() {
     const size_t n = 5;
     double x[n]  = { 1, 2, 3, 4, 5 };
@@ -85,6 +91,7 @@ void Tools_ScaleGraphAndMove::ScaleTGraphErrorsTest() {
     delete gr;
 }
 
+//------------------------------------------------------------------
 void Tools_ScaleGraphAndMove::MoveTGraphErrorsTest() {
     const size_t n = 5;
     double x[n]  = { 1, 2, 3, 4, 5 };

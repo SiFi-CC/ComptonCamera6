@@ -7,7 +7,7 @@ void MathTools::ScaleGraphAndMove(TGraphErrors* g, Double_t factor, Double_t off
   for(Int_t i=0; i<g->GetN(); i++){
     g->GetPoint(i, x, y);
     g->SetPoint(i, x+offset, y*factor);
-    g->SetPointError(i, g->GetErrorX(i), g->GetErrorY(i)*factor); // TODO do errors scale the same?
+    g->SetPointError(i, g->GetErrorX(i), g->GetErrorY(i)*factor);
   }
   return;
   
