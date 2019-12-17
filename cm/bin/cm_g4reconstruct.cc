@@ -14,6 +14,9 @@ int main(int argc, char** argv) {
                               "reconstruct.root");
   CmdLineOption cmdopt_iter("Iterations", "-n",
                             "Number of iterations, default: 20 (integer)", 20);
+  CmdLineOption cmdopt_hmat("Hmatrix", "-hmat",
+                                "Data file provides H matrix, default: NO");
+
 
   CmdLineArg cmdarg_simf("simfile", "Simulation file", CmdLineArg::kString);
   CmdLineArg cmdarg_dataf("datafile", "Data file", CmdLineArg::kString);
@@ -47,15 +50,13 @@ int main(int argc, char** argv) {
   TString reconstructFile = CmdLineOption::GetStringValue("Output");
   Int_t iterations = CmdLineOption::GetIntValue("Iterations");
 
-  // G4SimulationAdapter adapter(dataFile);
+  G4SimulationAdapter adapter(dataFile);
 
   // for now I'm assuming only one set of data is available in file
-  CameraGeometry geometryData; //VU
-  // CameraGeometry geometryData = adapter.GetFirstReconstructDatah1();
-  // spdlog::info("Extracted {} inputs from data file",
-  //              geometryData.recoData.size());
-  // geometryData.Print();
-
+  CameraGeometry geometryData = adapter.GetFirstReconstructData();
+  spdlog::info("Extracted {} inputs from data file",
+               geometryData.recoData.size());
+  geometryData.Print();
 
   // TODO: switch to using collecton of hits instead of histogram
   TFile simulationFile(simFile, "READ");
@@ -64,7 +65,7 @@ int main(int argc, char** argv) {
     return -1;
   }
   auto detectorImage = static_cast<TH2F*>(simulationFile.Get("energyDeposits"));
-  // adapter.VerifyForReconstruct(&simulationFile); //VU
+  adapter.VerifyForReconstruct(&simulationFile);
 
   spdlog::info("Prepare reconstruction");
   G4Reconstruction reconstruction(geometryData, detectorImage);

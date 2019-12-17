@@ -3,22 +3,29 @@
 #include <TParameter.h>
 #include <TSystem.h>
 
+#include "CmdLineConfig.hh"
+
 G4SimulationAdapter::G4SimulationAdapter(TString filename) {
-  fFiles.push_back(new TFile(filename, "READ"));
-  log->info("{}", TString::Format("%s.%d", filename.Data(), 1).Data());
-  for (int i = 1;
-       !gSystem->AccessPathName(TString::Format("%s.%d", filename.Data(), i));
-       i++) {
-    fFiles.push_back(
-        new TFile(TString::Format("%s.%d", filename.Data(), i), "READ"));
-  }
-  for (auto file : fFiles) {
-    if (!file->IsOpen()) {
-      log->error("Unable to open file {}", file->GetName());
-      throw "unable to open file";
+  if (CmdLineOption::GetFlagValue("Hmatrix")){
+    fSelected = new TFile(filename, "READ");
+  } else {    
+    fFiles.push_back(new TFile(filename, "READ"));
+    log->info("{}", TString::Format("%s.%d", filename.Data(), 1).Data());
+    for (int i = 1;
+         !gSystem->AccessPathName(TString::Format("%s.%d", filename.Data(), i));
+         i++) {
+      fFiles.push_back(
+          new TFile(TString::Format("%s.%d", filename.Data(), i), "READ"));
     }
+    for (auto file : fFiles) {
+      if (!file->IsOpen()) {
+        log->error("Unable to open file {}", file->GetName());
+        throw "unable to open file";
+      }
+    }
+    ReadMetadata();
   }
-  ReadMetadata();
+  
 }
 
 G4SimulationAdapter::~G4SimulationAdapter() {
@@ -54,29 +61,36 @@ G4SimulationAdapter::Filter(std::function<bool(TFile*)> filter) {
  * will pick whathever is first on the list and find all matching to it.
  */
 CameraGeometry G4SimulationAdapter::GetFirstReconstructData() {
-  fSelected = *fSimulations.begin();
-  auto firstUserInfo =
-      static_cast<TTree*>(fSelected->Get("metadata"))->GetUserInfo();
-
-  log->info("Picked reconstruction data for:");
-  for (auto entryFromFirst : *firstUserInfo) {
-    if (TString(entryFromFirst->ClassName()) != "TParameter<double>") {
-      continue;
-    }
-    auto e = static_cast<TParameter<double>*>(entryFromFirst);
-    if (fIgnoredKeys.find(std::string(e->GetName())) != fIgnoredKeys.end()) {
-      continue;
-    }
-    log->info("key={}, value={}", e->GetName(), e->GetVal());
-  }
-
   CameraGeometry geometry;
-  ParseSelected(&geometry);
-  geometry.recoData = Filter([firstUserInfo, this](TFile* file) -> bool {
-    auto userInfo = static_cast<TTree*>(file->Get("metadata"))->GetUserInfo();
-    return IsSimulationGeometryEqual(userInfo, firstUserInfo);
-  });
-  ParsePointSources(&geometry);
+  if (CmdLineOption::GetFlagValue("Hmatrix")){
+    ParseSelected(&geometry);
+    fSelected->cd();
+    geometry.fMatrixHCam.Read("matrixH");
+  } else {
+    fSelected = *fSimulations.begin();
+    auto firstUserInfo =
+        static_cast<TTree*>(fSelected->Get("metadata"))->GetUserInfo();
+
+    log->info("Picked reconstruction data for:");
+    for (auto entryFromFirst : *firstUserInfo) {
+      if (TString(entryFromFirst->ClassName()) != "TParameter<double>") {
+        continue;
+      }
+      auto e = static_cast<TParameter<double>*>(entryFromFirst);
+      if (fIgnoredKeys.find(std::string(e->GetName())) != fIgnoredKeys.end()) {
+        continue;
+      }
+      log->info("key={}, value={}", e->GetName(), e->GetVal());
+    }
+
+    ParseSelected(&geometry);
+    geometry.recoData = Filter([firstUserInfo, this](TFile* file) -> bool {
+      auto userInfo = static_cast<TTree*>(file->Get("metadata"))->GetUserInfo();
+      return IsSimulationGeometryEqual(userInfo, firstUserInfo);
+    });
+    ParsePointSources(&geometry);
+  }
+  
   return geometry;
 }
 
@@ -142,6 +156,15 @@ void G4SimulationAdapter::ParseSelected(CameraGeometry* camera) {
   camera->mask.binX = map["maskBinX"];
   camera->mask.binY = map["maskBinY"];
   camera->mask.binZ = 1;
+
+  if (CmdLineOption::GetFlagValue("Hmatrix")){
+    camera->source.xRange = {map["sourceMinX"], map["sourceMaxX"]};
+    camera->source.yRange = {map["sourceMinY"], map["sourceMaxY"]};
+    camera->source.zRange = {-0.1, 0.1};
+    camera->source.binX = map["sourceBinX"];
+    camera->source.binY = map["sourceBinY"];
+    camera->source.binZ = 1;
+  };
 }
 
 void G4SimulationAdapter::ParsePointSources(CameraGeometry* camera) {

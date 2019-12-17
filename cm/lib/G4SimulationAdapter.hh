@@ -16,6 +16,8 @@ struct CameraGeometry {
   // each.
   std::vector<TFile*> recoData;
 
+  TMatrixT<Double_t> fMatrixHCam;
+
   void Print() {
     spdlog::info("Reconstructing for geometry");
     spdlog::info("Source");
