@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
                            "Output file (string), default: simulation.root",
                            "simulation.root");
   CmdLineOption opt_events("Events", "-n",
-                           "Number of events, default: 20 (integer)", 1000);
+                           "Number of events, default: 1000 (integer)", 1000);
   CmdLineOption opt_source_p("Point", "-point",
                              "Point-type source, default: YES");
   CmdLineOption opt_source_mp("MultiPoint", "-multipoint",

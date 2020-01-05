@@ -34,8 +34,10 @@ void CMSimulation::Init() {
   int nbinsy = fMask->GetPattern()->GetYaxis()->GetNbins();
   fH2Source = new TH2F("sourceYZ", "Y vs Z source", nbinsz, -maskZdim, maskZdim,
                        nbinsy, -maskYdim, maskYdim);
-  fH2Detector = new TH2F("detectedYZ", "Y vs Z detected", nbinsz, -maskZdim,
-                         maskZdim, nbinsy, -maskYdim, maskYdim);
+  double detZdim = fDetPlane->GetDimZ() / 2;
+  double detYdim = fDetPlane->GetDimY() / 2;
+  fH2Detector = new TH2F("detectedYZ", "Y vs Z detected", (int)fDetPlane->GetDimZ(), -detZdim,
+                         detZdim, (int)fDetPlane->GetDimY() , -detYdim, detYdim);
   fH1Theta = new TH1F("hTheta", "theta angle of registered particles", 100, 0,
                       TMath::Pi());
   fH1Phi = new TH1F("hPhi", "phi angle of registered particles", 100,
