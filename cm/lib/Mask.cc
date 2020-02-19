@@ -26,16 +26,16 @@ Mask::Mask(Double_t a, Double_t b, Double_t c, Double_t d, Double_t dimZ,
   SetPattern(h);
 }
 //------------------------------------------------------------------
-Int_t Mask::IsOpaque(TVector3 point) {
+Bool_t Mask::IsOpaque(TVector3 point) {
   // at the moment I assume fPattern->Xaxis() is along Z axis and
   // fPattern->Yaxis() is along y
   if (fPattern == 0) return 0;
   Int_t binx = fPattern->GetXaxis()->FindBin(point.Z());
   Int_t biny = fPattern->GetYaxis()->FindBin(point.Y());
   if (fPattern->GetBinContent(binx, biny) < 0.001)
-    return 0;
+    return kTRUE;
   else
-    return 1;
+    return kFALSE;
 };
 //------------------------------------------------------------------
 void Mask::Print(void) {
