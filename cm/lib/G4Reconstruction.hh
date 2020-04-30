@@ -22,7 +22,8 @@ public:
   void Write(TString filename) const;
 
 private:
-  void SingleIteration();
+  int SingleIteration();
+  Double_t CheckConvergence(TH2F reco);
 
   // Read simulation data from TTree containg all of the events
   TMatrixT<Double_t> ReadFromTTree(TBranch* branch);
@@ -32,6 +33,10 @@ private:
   std::vector<TMatrixT<Double_t>> fRecoObject;
   // vectorized column matrix representing detector image
   TMatrixT<Double_t> fImage;
+
+  //Sigmavalue
+  Double_t fSigma=100.0;
+  Int_t fIter=0;
 
   /** Probability matrix
    *  - row represent i-th detector pixel

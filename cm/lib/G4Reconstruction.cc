@@ -1,6 +1,8 @@
 #include "G4Reconstruction.hh"
 #include "DataStructConvert.hh"
 #include <TTree.h>
+#include <TVector.h>
+#include "TF1.h"
 
 #include "CmdLineConfig.hh"
 
@@ -100,12 +102,17 @@ TMatrixT<Double_t> G4Reconstruction::ReadFromTTree(TBranch* detBranch) {
 }
 
 void G4Reconstruction::RunReconstruction(int nIter) {
-  for (int iter = 0; iter < nIter; iter++) {
-    SingleIteration();
+  int goon = 1;
+  int iter = 0;
+
+  while (iter < nIter && goon == 1) {
+    fIter = iter+1;
+    goon = SingleIteration();
+    iter++;
   }
 }
 
-void G4Reconstruction::SingleIteration() {
+int G4Reconstruction::SingleIteration() {
   log->debug("CMReconstruction::SingleIteration()  iter={}",
              fRecoObject.size());
 
@@ -138,8 +145,23 @@ void G4Reconstruction::SingleIteration() {
 
   fRecoObject.push_back(nextIteration);
 
+  if(CmdLineOption::GetFlagValue("Autoiter") && fRecoObject.size() % 25 == 0 && fRecoObject.size() > 98){
+    Double_t sigma = CheckConvergence(SiFi::tools::convertMatrixToHistogram(
+          "reco", TString::Format("iteration %d", fRecoObject.size()).Data(),
+          SiFi::tools::unvectorizeMatrix(fRecoObject[fRecoObject.size()-1], fParams.source.binY,
+                                         fParams.source.binX),
+          fParams.source.xRange, fParams.source.yRange));
+    log->info("iter = {}, sigma = {}, relative = {}",fRecoObject.size(),sigma,abs(sigma-fSigma)/fSigma);
+    if (abs(sigma-fSigma)/fSigma > 0.01){
+      fSigma = sigma;
+    } else {
+      return 0;
+    }
+  }
+
   log->debug("end CMReconstruction::SingleIteration()  iter={}",
              fRecoObject.size() - 1);
+  return 1;
 }
 
 void G4Reconstruction::Write(TString filename) const {
@@ -162,14 +184,72 @@ void G4Reconstruction::Write(TString filename) const {
   for (int i = 0; i < nIterations; i++) {
     log->debug("saving iteration {}", i);
 
-    auto recoIteration = SiFi::tools::convertMatrixToHistogram(
+    TH2F recoIteration = SiFi::tools::convertMatrixToHistogram(
         "reco", TString::Format("iteration %d", i).Data(),
         SiFi::tools::unvectorizeMatrix(fRecoObject[i], fParams.source.binY,
                                        fParams.source.binX),
         fParams.source.xRange, fParams.source.yRange);
     recoIteration.Write();
+
   }
+  // log->info("Sigma {}",fSigma);
+  TVector sig(1);
+  sig[0] = fSigma;
+  sig.Write("sigma");
+
+  TVector iter(1);
+  iter[0] = fIter;
+  iter.Write("maxIter");
 
   file.Close();
+
   log->debug("end CMReconstruction::Write({})", filename.Data());
+}
+
+
+Double_t G4Reconstruction::CheckConvergence(TH2F reco){
+  TH1D *hx, *hy;
+  TF1 *fSignal;
+  Double_t sigmaX, sigmaY;
+
+
+  Double_t xmin = reco.GetXaxis()->GetXmin();
+  Double_t xmax = reco.GetXaxis()->GetXmax();
+  Double_t ymin = reco.GetYaxis()->GetXmin();
+  Double_t ymax = reco.GetYaxis()->GetXmax();
+
+  hx = reco.ProjectionX();
+  hx->SetTitle("ProjectionX");
+  hy = reco.ProjectionY();
+  hy->SetTitle("ProjectionY");
+
+  Double_t sx = hx->GetXaxis()->GetBinCenter( hx->GetMaximumBin() );
+  Double_t sy = hy->GetYaxis()->GetBinCenter( hy->GetMaximumBin() );
+
+  fSignal = new TF1("fSignal","gaus",sx-5,sx+5  );
+
+  fSignal->SetParameters(hx->GetMaximum(), sx,0.5,10);
+  hx->Fit("fSignal", "Q", "",sx-5, sx+5);
+
+  sigmaX = fSignal->GetParameter(2);
+
+
+  fSignal = new TF1("fSignal","gaus",sy-5,sy+5);
+
+  fSignal->SetParameters(hx->GetMaximum(), sy,0.5,10);
+  hy->Fit("fSignal", "Q", "",sy-5, sy+5);
+
+  sigmaY = fSignal->GetParameter(2);
+
+
+
+  // TFile file("out2.root", "UPDATE");
+  // file.cd();
+
+  // hx->Write("hx");
+  // hy->Write("hy");
+
+  // file.Close();
+
+  return 0.5*(sigmaX+sigmaY);
 }
