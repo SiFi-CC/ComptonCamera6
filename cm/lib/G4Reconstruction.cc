@@ -25,56 +25,56 @@ G4Reconstruction::G4Reconstruction(CameraGeometry sim, TH2F* detector)
   fImage = SiFi::tools::vectorizeMatrix(
       SiFi::tools::convertHistogramToMatrix(detector));
 
-  if (CmdLineOption::GetFlagValue("Hmatrix")){
+  // if (CmdLineOption::GetFlagValue("Hmatrix")){
     fMatrixH = sim.fMatrixHCam;
-  } else {
-    log->info("Building H matrix");
-    for (auto file : sim.recoData) {
-      auto srcBranch =
-          static_cast<TTree*>(file->Get("source"))->GetBranch("position");
-      auto detBranch =
-          static_cast<TTree*>(file->Get("deposits"))->GetBranch("position");
-      auto detHistogram = static_cast<TH2F*>(file->Get("energyDeposits"));
-      TVector3* srcPosition = new TVector3();
-      srcBranch->SetAddress(&srcPosition);
+  // } else {
+  //   log->info("Building H matrix");
+  //   for (auto file : sim.recoData) {
+  //     auto srcBranch =
+  //         static_cast<TTree*>(file->Get("source"))->GetBranch("position");
+  //     auto detBranch =
+  //         static_cast<TTree*>(file->Get("deposits"))->GetBranch("position");
+  //     auto detHistogram = static_cast<TH2F*>(file->Get("energyDeposits"));
+  //     TVector3* srcPosition = new TVector3();
+  //     srcBranch->SetAddress(&srcPosition);
 
-      // when source recording is disabled there should still be at least on event
-      srcBranch->GetEntry(0); // seting value on position variable
+  //     // when source recording is disabled there should still be at least on event
+  //     srcBranch->GetEntry(0); // seting value on position variable
 
-      // number of bin from position
-      auto sourceHistBin =
-          sim.source.getBin(srcPosition->X(), srcPosition->Y(), srcPosition->Z());
-      auto sourceMatBin =
-          std::make_tuple<int, int>(sim.source.binY - std::get<1>(sourceHistBin),
-                                    std::get<0>(sourceHistBin) - 1);
-      int colIndexMatrixH =
-          std::get<1>(sourceMatBin) * sim.source.binY + std::get<0>(sourceMatBin);
+  //     // number of bin from position
+  //     auto sourceHistBin =
+  //         sim.source.getBin(srcPosition->X(), srcPosition->Y(), srcPosition->Z());
+  //     auto sourceMatBin =
+  //         std::make_tuple<int, int>(sim.source.binY - std::get<1>(sourceHistBin),
+  //                                   std::get<0>(sourceHistBin) - 1);
+  //     int colIndexMatrixH =
+  //         std::get<1>(sourceMatBin) * sim.source.binY + std::get<0>(sourceMatBin);
 
-      log->debug("processing point source at {}, {} in histogram bin({}, {}) = "
-                 "matrix bin ({}, {}), colH = {}",
-                 srcPosition->X(), srcPosition->Y(), std::get<0>(sourceHistBin),
-                 std::get<1>(sourceHistBin), std::get<0>(sourceMatBin),
-                 std::get<1>(sourceMatBin),colIndexMatrixH);
+  //     log->debug("processing point source at {}, {} in histogram bin({}, {}) = "
+  //                "matrix bin ({}, {}), colH = {}",
+  //                srcPosition->X(), srcPosition->Y(), std::get<0>(sourceHistBin),
+  //                std::get<1>(sourceHistBin), std::get<0>(sourceMatBin),
+  //                std::get<1>(sourceMatBin),colIndexMatrixH);
 
-      TMatrixT<Double_t> column;
-      column.ResizeTo(sim.detector.nBins(), 1);
-      if (detBranch->GetEntries() == 0) {
-        column = ReadFromTH2F(detHistogram);
-      } else {
-        column = ReadFromTTree(detBranch);
-      }
+  //     TMatrixT<Double_t> column;
+  //     column.ResizeTo(sim.detector.nBins(), 1);
+  //     if (detBranch->GetEntries() == 0) {
+  //       column = ReadFromTH2F(detHistogram);
+  //     } else {
+  //       column = ReadFromTTree(detBranch);
+  //     }
 
-      double normFactor = 0;
-      for (int row = 0; row < fParams.detector.nBins(); row++) {
-        normFactor += column(row, 0);
-      }
+  //     double normFactor = 0;
+  //     for (int row = 0; row < fParams.detector.nBins(); row++) {
+  //       normFactor += column(row, 0);
+  //     }
 
-      for (int row = 0; row < sim.detector.nBins(); row++) {
-        fMatrixH(row, colIndexMatrixH) =
-            column(row, 0) == 0 ? 1e-9 : (column(row, 0) / normFactor);
-      }
-    }
-  }
+  //     for (int row = 0; row < sim.detector.nBins(); row++) {
+  //       fMatrixH(row, colIndexMatrixH) =
+  //           column(row, 0) == 0 ? 1e-9 : (column(row, 0) / normFactor);
+  //     }
+  //   }
+  // }
   fMatrixHTranspose.Transpose(fMatrixH);
 }
 
@@ -147,7 +147,7 @@ int G4Reconstruction::SingleIteration() {
 
   if(CmdLineOption::GetFlagValue("Autoiter") && fRecoObject.size() % 25 == 0 && fRecoObject.size() > 98){
     Double_t sigma = CheckConvergence(SiFi::tools::convertMatrixToHistogram(
-          "reco", TString::Format("iteration %d", fRecoObject.size()).Data(),
+          "reco", TString::Format("iteration %d", (int)fRecoObject.size()).Data(),
           SiFi::tools::unvectorizeMatrix(fRecoObject[fRecoObject.size()-1], fParams.source.binY,
                                          fParams.source.binX),
           fParams.source.xRange, fParams.source.yRange));
@@ -206,7 +206,7 @@ void G4Reconstruction::Write(TString filename) const {
   log->debug("end CMReconstruction::Write({})", filename.Data());
 }
 
-
+//Returns the average sigma value of X and Y Projections of a given 2D histogram
 Double_t G4Reconstruction::CheckConvergence(TH2F reco){
   TH1D *hx, *hy;
   TF1 *fSignal;

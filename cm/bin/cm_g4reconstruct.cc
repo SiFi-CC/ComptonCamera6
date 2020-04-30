@@ -14,8 +14,8 @@ int main(int argc, char** argv) {
                               "reconstruct.root");
   CmdLineOption cmdopt_iter("Iterations", "-n",
                             "Number of iterations, default: 20 (integer)", 20);
-  CmdLineOption cmdopt_hmat("Hmatrix", "-hmat",
-                                "Data file provides H matrix, default: NO");
+  // CmdLineOption cmdopt_hmat("Hmatrix", "-hmat",
+  //                               "Data file provides H matrix, default: NO");
   CmdLineOption cmdopt_autoiter("Autoiter", "-autoiter",
                                 "Dynamic number of iterations, but smaller then 'n', default: NO");
 

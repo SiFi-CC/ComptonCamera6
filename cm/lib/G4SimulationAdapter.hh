@@ -49,14 +49,14 @@ public:
   void VerifyForReconstruct(TFile* simulationFile);
 
 private:
-  void ReadMetadata();
+  // void ReadMetadata();
 
   // extract gemetry information from single simulation data file (fSelected)
   // and write it to camera object
   void ParseSelected(CameraGeometry* camera);
   // extract source geomtry by checking positions of all point sources and
   // assuming grid layout of those points
-  void ParsePointSources(CameraGeometry* camera);
+  // void ParsePointSources(CameraGeometry* camera);
   // verifies wheteher two simulations have the same geometry
   bool IsSimulationGeometryEqual(TList* sim1, TList* sim2);
 
