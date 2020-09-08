@@ -41,8 +41,9 @@ int main(int argc, char** argv) {
   TString path =
       TString(gSystem->Getenv("CC6DIR")) + "/share/ComptonCamera6/masks/";
 
-  TString fullname =
-      path + "hMURA" + args.at("mask")->GetStringValue() + ".root";
+//  TString fullname =
+  //    path + "hMURA" + args.at("mask")->GetStringValue() + ".root";
+  TString fullname = args.at("mask")->GetStringValue();
   TFile* maskfile = new TFile(fullname, "READ");
   if (maskfile == nullptr) {
     spdlog::error("File with mask: {} does not exist, exit...",

@@ -62,7 +62,7 @@ CMReconstruction::CMReconstruction(TString simulationFile) {
 void CMReconstruction::FillHMatrix() {
   log->info("CMReconstruction::FillHMatrix");
 
-  int nIterations = 100000;
+  int nIterations = 300000;
   for (int objBin = 0; objBin < fObjectCoords.NBins(); objBin++) {
     double done = (double)objBin/fObjectCoords.NBins();
     log->info("{} %",done*100);
