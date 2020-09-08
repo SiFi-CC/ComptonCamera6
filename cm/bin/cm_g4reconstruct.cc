@@ -18,6 +18,8 @@ int main(int argc, char** argv) {
   //                               "Data file provides H matrix, default: NO");
   CmdLineOption cmdopt_autoiter("Autoiter", "-autoiter",
                                 "Dynamic number of iterations, but smaller then 'n', default: NO");
+  // CmdLineOption cmdopt_subset("Subset", "-subset",
+  //                               "Dynamic number of iterations, but smaller then 'n', default: NO",1);
 
 
 
@@ -67,11 +69,56 @@ int main(int argc, char** argv) {
     spdlog::error("Unable to open file {}", simFile.Data());
     return -1;
   }
+
+
+  // TTree* fTree = (TTree*)simulationFile.Get("deposits");
+  // TTree* fTreeSource = (TTree*)simulationFile.Get("source");
+  // TVector3* fPosition = 0;
+  // Double_t energy = 0;
+  // Double_t energysource = 0;
+  // Double_t sumenergy = 0;
+  // Double_t sumenergysource = 0;
+  // TH2F* weightedhisto = new TH2F("weighted","weighted histogram",
+  //                               16,-8*1.3,8*1.3,
+  //                               16,-8*1.3,8*1.3);
+  
+  // fTree->SetBranchAddress("position",&fPosition);
+  // fTree->SetBranchAddress("energy",&energy);
+  // fTreeSource->SetBranchAddress("energy",&energysource);
+  // int size = fTree->GetEntries();
+  // spdlog::info("entries = {}", size);
+
+  // for (int i = 0; i < size; i++)
+  // {
+  //   fTree->GetEntry(i);
+  //   // spdlog::info("x = {}, y = {}, energy = {}",fPosition->X(),fPosition->Y(),energy);
+  //   // spdlog::info("x = {}",fPosition->X());
+  //   weightedhisto->Fill(fPosition->X(),fPosition->Y(),energy);
+  //   sumenergy += energy;
+  //   fTreeSource->GetEntry(i);
+  //   sumenergysource += energysource;
+  // }
+  // // TFile out("test.root", "RECREATE");
+  // // out.cd();
+  // // weightedhisto.Write();
+  // // out.Close();
+  // spdlog::info("totalenergyDeposited: {}", sumenergy);
+  // spdlog::info("totalenergySource: {}", sumenergysource);
+  // exit(0);
+
+
+
+
+
+
+
+
   auto detectorImage = static_cast<TH2F*>(simulationFile.Get("energyDeposits"));
   adapter.VerifyForReconstruct(&simulationFile);
 
   spdlog::info("Prepare reconstruction");
   G4Reconstruction reconstruction(geometryData, detectorImage);
+  // G4Reconstruction reconstruction(geometryData, weightedhisto);
   spdlog::info("Run reconstruction");
   reconstruction.RunReconstruction(iterations);
 

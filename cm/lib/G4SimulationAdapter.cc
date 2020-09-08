@@ -129,7 +129,7 @@ void G4SimulationAdapter::VerifyForReconstruct(TFile* simulationFile) {
     log->error(
         "Geometry of detector simulation does not match geometry of provided "
         "grid simulation data");
-    throw "input data mismatch";
+   // throw "input data mismatch";
   }
 }
 

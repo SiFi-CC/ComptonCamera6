@@ -20,6 +20,8 @@ public:
 
   void RunReconstruction(int nIter);
   void Write(TString filename) const;
+  TMatrixT<Double_t>* GetPSF(TMatrixT<Double_t>  fMatrixH);
+  TH2F* SmoothGauss(TH2F* hin, double sigma);
 
 private:
   int SingleIteration();
@@ -37,6 +39,14 @@ private:
   //Sigmavalue
   Double_t fSigma=100.0;
   Int_t fIter=0;
+
+  //OSEM
+  int Ns,T;
+  int **nums;
+  int *length;
+  Double_t sumH, sum2;
+  Double_t * product;
+  TMatrixT<Double_t> S;
 
   /** Probability matrix
    *  - row represent i-th detector pixel
