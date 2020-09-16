@@ -3,6 +3,7 @@
 #include <TTree.h>
 #include <TVector.h>
 #include "TF1.h"
+#include "TF2.h"
 
 #include "CmdLineConfig.hh"
 using namespace std;
@@ -399,9 +400,9 @@ TH2F* G4Reconstruction::SmoothGauss(TH2F* hin, double sigma){
   	ofstream myfile;
 	myfile.open("./data.txt");
 	myfile<< left << setw(15) << "x"<< left << setw(15)<<"y"<< left << setw(15)
+	<< left << setw(15) << "xFit"<< left << setw(15)<<"yFit"<< left << setw(15)
 	<<"sigmax"<< left << setw(15) <<"sigmay"<< left << setw(15) <<"height"<<endl;
-  Double_t paramX[6];
-	Double_t paramY[6];
+  Double_t param[5];
 
   // fImage.ResizeTo(detbins, 1);
   // psf->ResizeTo(sourcebins,4);
@@ -409,7 +410,7 @@ TH2F* G4Reconstruction::SmoothGauss(TH2F* hin, double sigma){
     // for (int j = 0; j < sourcebins; j++)
     for (int j =0; j < sourcebins; j++)
     {
-      // int j = 5080;
+      // int j = 5020;
       fRecoObject.clear();
       fRecoObject.push_back(TMatrixT<double>(sourcebins, 1));
       fRecoObject[0] = 1.0 / sourcebins;
@@ -430,55 +431,26 @@ TH2F* G4Reconstruction::SmoothGauss(TH2F* hin, double sigma){
       // log->info("x = {}, y = {}",sx,sy);
       // recoIteration.Write();
     
-      hx = recoIteration.ProjectionX();
-      // TH1F hy = recoIteration.ProjectionY();
-
-      // exit(0);
-      // double sy = 25;
-
-      // xmin = recoIteration.GetXaxis()->GetXmin();
-      // xmax = recoIteration.GetXaxis()->GetXmax();
-      histmax = recoIteration.GetMaximum();
-      // ymin = Image->GetYaxis()->GetXmin();
-      // ymax = Image->GetYaxis()->GetXmax();
       
-      // TF1* fSignal = new TF1("fSignal","[1]*exp(-0.5*((x-[2])/[3])^2)+[4]",sx-7,sx+7);
-      fGaus = new TF1("fGaus","gaus",sx-7,sx+7);
-      hx->SetTitle("ProjectionX");
-      // fSignal->SetParameters(hx->GetMaximum(), sx,0.5,7);
-      // fSignal->SetParameters(hx->GetMaximum(), sx,0.5,2);
-      fGaus->SetParameters(histmax, sx,0.2,7);
-      hx->Fit("fGaus", "", "",sx-5, sx+5);
-      fGaus->GetParameters(paramX);
-      
-      // hx->Write();
+      TF2* fGaus2D = new TF2("fGaus2D","[0]*exp(-0.5*((x-[1])^2/[2]^2+(y-[3])^2/[4]^2))",sx-7,sx+7,sy-7,sy+7);
+      // TF2* fGaus2D = new TF2("fGaus2D","[0]*exp(-0.5*((x-sx)^2/[1]^2+(y-sy)^2/[2]^2))",sx-7,sx+7,sy-7,sy+7);
+      fGaus2D->SetParameters(recoIteration.GetMaximum(), sx,0.5,sy,0.5);
+      // log->info("sx = {}, sy = {}, Maximum = {}",sx, sy,recoIteration.GetMaximum());
 
-
-      hy = recoIteration.ProjectionY();
-      // TH1F hy = recoIteration.ProjectionY();
-
-      // exit(0);
-      // double sy = 25;
-
-      // ymin = recoIteration.GetYaxis()->GetXmin();
-      // ymax = recoIteration.GetYaxis()->GetXmax();
-      histmax = recoIteration.GetMaximum();
-      // ymin = Image->GetYaxis()->GetXmin();
-      // ymax = Image->GetYaxis()->GetXmax();
-      
-      // TF1* fSignal = new TF1("fSignal","[1]*exp(-0.5*((x-[2])/[3])^2)+[4]",sx-7,sx+7);
-      fGaus = new TF1("fGaus","gaus",sy-7,sy+7);
-      hy->SetTitle("ProjectionY");
-      fGaus->SetParameters(histmax, sy,0.2,7);
-      hy->Fit("fGaus", "", "",sy-5, sy+5);
-      fGaus->GetParameters(paramY);
+      recoIteration.Fit("fGaus2D");
+      // recoIteration.Write();
+      // recoIteration.ProjectionX()->Write();
+      // recoIteration.ProjectionY()->Write();
+     
+      fGaus2D->GetParameters(param);
       
       // hy->Write();
 
       myfile << left << setw(15) << sx << left << setw(15)<< sy
-			<< left << setw(15) << abs(paramX[2])
-			<< left << setw(15) << abs(paramY[2])
-			<< left << setw(15) << histmax << endl;
+      << left << setw(15) << param[1] << left << setw(15)<< param[3]
+			<< left << setw(15) << abs(param[2])
+			<< left << setw(15) << abs(param[4])
+			<< left << setw(15) << param[0] << endl;
 
       fRecoObject.clear();
     }
