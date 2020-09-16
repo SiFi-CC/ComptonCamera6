@@ -5,6 +5,7 @@
 #include "TF1.h"
 
 #include "CmdLineConfig.hh"
+using namespace std;
 
 G4Reconstruction::G4Reconstruction(CameraGeometry sim, TH2F* detector)
     : fParams(sim) {
@@ -62,33 +63,32 @@ G4Reconstruction::G4Reconstruction(CameraGeometry sim, TH2F* detector)
 
   // if (CmdLineOption::GetFlagValue("Hmatrix")){
     fMatrixH = sim.fMatrixHCam;
+  if(0){
+    S.ResizeTo(fParams.source.nBins(), 1);
+    for (int j = 0; j < fParams.source.nBins(); j++){
+      S(j, 0) = 0.0;
+      for (int i = 0; i < fParams.detector.nBins(); i++)
+      {
+        fMatrixH(i,j) = fMatrixH(i,j)/10000.0;
+        // fMatrixH(i,j) = fMatrixH(i,j)/(1.5*1e6);
+        S(j,0) += fMatrixH(i,j);
+      }
+      // for (int i = 0; i < fParams.detector.nBins(); i++)
+      // {
+        // fMatrixH(i,j) = fMatrixH(i,j)/S(j,0);
+      // }
+    }
+  }
     fMatrixHTranspose.Transpose(fMatrixH);
-    TMatrixT<Double_t>* psf = new TMatrixT<Double_t>(fMatrixH.GetNcols(),4);
     // TMatrixT<Double_t>* psf;
     TMatrixT<Double_t> fMatrixH2;
-    TFile* file2 = new TFile("matr220_170_n15e5_nowallpet1cm_4lay_mask31_70mm_v2.root","READ");
+    TFile* file2 = new TFile("matr220_170_n15e5_nowallpet1cm_4lay_mask31_70mm_noNormalized.root","READ");
     file2->cd();
     fMatrixH2.Read("matrixH");
     file2->Close();
 
-    psf = GetPSF(fMatrixH);
+    GetPSF(fMatrixH2);
     exit(0);
-    // S.ResizeTo(fParams.source.nBins(), 1);
-  // for (int i = 0; i < sim.detector.nBins(); i++)
-  // {
-  //   fImage(i,0) = fMatrixH(i,70 * 100 + 13)*1000;
-  // }
-  
-    // for (int j = 0; j < fParams.source.nBins(); j++){
-    //   S(j, 0) = 0.0;
-    //   for (int i = 0; i < fParams.detector.nBins(); i++)
-    //   {
-    //     // fMatrixH(i,j) = fMatrixH(i,j)/1e7;
-    //     S(j,0) += fMatrixH(i,j);
-    //   }
-    //     log->info("S({}) = {}",j,S(j,0));
-    // }
-  // fMatrixHTranspose.Transpose(fMatrixH);
 }
 
 TMatrixT<Double_t> G4Reconstruction::ReadFromTH2F(TH2F* detHist) {
@@ -180,9 +180,22 @@ int G4Reconstruction::SingleIteration() {
              weightedImage.GetNrows(), weightedImage.GetNcols());
 
   TMatrixT<Double_t> nextIteration = fMatrixHTranspose * weightedImage;
-  for (int i = 0; i < fParams.source.nBins(); i++) {
-    // nextIteration(i, 0) = nextIteration(i, 0) * fRecoObject.back()(i, 0)/S(i,0);
-    nextIteration(i, 0) = nextIteration(i, 0) * fRecoObject.back()(i, 0);
+  
+  if(0){
+    for (int i = 0; i < fParams.source.nBins(); i++) {
+      if (fRecoObject.size() < 11)
+      {
+        nextIteration(i, 0) = nextIteration(i, 0) * fRecoObject.back()(i, 0);
+      } else {
+        nextIteration(i, 0) = nextIteration(i, 0) * fRecoObject.back()(i, 0)/S(i,0);
+      }
+    }
+  } else {
+
+    for (int i = 0; i < fParams.source.nBins(); i++) {
+      // nextIteration(i, 0) = nextIteration(i, 0) * fRecoObject.back()(i, 0)/S(i,0);
+      nextIteration(i, 0) = nextIteration(i, 0) * fRecoObject.back()(i, 0);
+    }
   }
   // if(fRecoObject.size()>100){
   // if(0){
@@ -195,7 +208,6 @@ int G4Reconstruction::SingleIteration() {
   //   TH2F* smoothed = SmoothGauss(&recoIterationTMP, 0.4);
   //   TMatrixT<double> nextiterationsmoothed = SiFi::tools::vectorizeMatrix(
   //       SiFi::tools::convertHistogramToMatrix(smoothed));
-
   //   fRecoObject.push_back(nextiterationsmoothed);
   // } else {
   fRecoObject.push_back(nextIteration);
@@ -368,27 +380,34 @@ TH2F* G4Reconstruction::SmoothGauss(TH2F* hin, double sigma){
   return hout;
 }
 
-
- TMatrixT<Double_t>* G4Reconstruction::GetPSF(TMatrixT<Double_t>  fMatrixH2){
+#include <fstream>
+ void G4Reconstruction::GetPSF(TMatrixT<Double_t>  fMatrixH2){
   
   
   int detbins = fMatrixH2.GetNrows();
   int sourcebins = fMatrixH2.GetNcols();
 
   TH1D* hx;
+  TH1D* hy;
   Double_t xmin, xmax, ymin, ymax, histmax;
   TF1* fGaus;
   TH2F recoIteration;
 
-  TFile file("test.root", "RECREATE");
-  file.cd();
+  // TFile file("test.root", "RECREATE");
+  // file.cd();
 
-  TMatrixT<Double_t>* psf = new  TMatrixT<Double_t>(sourcebins,4);
+  	ofstream myfile;
+	myfile.open("./data.txt");
+	myfile<< left << setw(15) << "x"<< left << setw(15)<<"y"<< left << setw(15)
+	<<"sigmax"<< left << setw(15) <<"sigmay"<< left << setw(15) <<"height"<<endl;
+  Double_t paramX[6];
+	Double_t paramY[6];
+
   // fImage.ResizeTo(detbins, 1);
   // psf->ResizeTo(sourcebins,4);
 
     // for (int j = 0; j < sourcebins; j++)
-    for (int j = 5020; j < 5035; j++)
+    for (int j =0; j < sourcebins; j++)
     {
       // int j = 5080;
       fRecoObject.clear();
@@ -396,7 +415,7 @@ TH2F* G4Reconstruction::SmoothGauss(TH2F* hin, double sigma){
       fRecoObject[0] = 1.0 / sourcebins;
       for (int i = 0; i < detbins; i++)
       {
-        fImage(i,0)=fMatrixH2(i,j)*1000;          
+        fImage(i,0)=fMatrixH2(i,j);          
       }
       int row = j%fParams.source.binY;
       int col = (j-row)/fParams.source.binY;
@@ -406,10 +425,10 @@ TH2F* G4Reconstruction::SmoothGauss(TH2F* hin, double sigma){
           SiFi::tools::unvectorizeMatrix(fRecoObject[fRecoObject.size()-1], fParams.source.binY,
                                         fParams.source.binX),
           fParams.source.xRange, fParams.source.yRange);
-      double sx = recoIteration.GetXaxis()->GetBinCenter(col);
-      double sy = -recoIteration.GetYaxis()->GetBinCenter(row);
-      log->info("x = {}, y = {}",sx,sy);
-      recoIteration.Write();
+      double sx = recoIteration.GetXaxis()->GetBinCenter(col+1);
+      double sy = -recoIteration.GetYaxis()->GetBinCenter(row+1);
+      // log->info("x = {}, y = {}",sx,sy);
+      // recoIteration.Write();
     
       hx = recoIteration.ProjectionX();
       // TH1F hy = recoIteration.ProjectionY();
@@ -417,8 +436,8 @@ TH2F* G4Reconstruction::SmoothGauss(TH2F* hin, double sigma){
       // exit(0);
       // double sy = 25;
 
-      xmin = recoIteration.GetXaxis()->GetXmin();
-      xmax = recoIteration.GetXaxis()->GetXmax();
+      // xmin = recoIteration.GetXaxis()->GetXmin();
+      // xmax = recoIteration.GetXaxis()->GetXmax();
       histmax = recoIteration.GetMaximum();
       // ymin = Image->GetYaxis()->GetXmin();
       // ymax = Image->GetYaxis()->GetXmax();
@@ -430,12 +449,40 @@ TH2F* G4Reconstruction::SmoothGauss(TH2F* hin, double sigma){
       // fSignal->SetParameters(hx->GetMaximum(), sx,0.5,2);
       fGaus->SetParameters(histmax, sx,0.2,7);
       hx->Fit("fGaus", "", "",sx-5, sx+5);
+      fGaus->GetParameters(paramX);
       
-      hx->Write();
+      // hx->Write();
+
+
+      hy = recoIteration.ProjectionY();
+      // TH1F hy = recoIteration.ProjectionY();
+
+      // exit(0);
+      // double sy = 25;
+
+      // ymin = recoIteration.GetYaxis()->GetXmin();
+      // ymax = recoIteration.GetYaxis()->GetXmax();
+      histmax = recoIteration.GetMaximum();
+      // ymin = Image->GetYaxis()->GetXmin();
+      // ymax = Image->GetYaxis()->GetXmax();
+      
+      // TF1* fSignal = new TF1("fSignal","[1]*exp(-0.5*((x-[2])/[3])^2)+[4]",sx-7,sx+7);
+      fGaus = new TF1("fGaus","gaus",sy-7,sy+7);
+      hy->SetTitle("ProjectionY");
+      fGaus->SetParameters(histmax, sy,0.2,7);
+      hy->Fit("fGaus", "", "",sy-5, sy+5);
+      fGaus->GetParameters(paramY);
+      
+      // hy->Write();
+
+      myfile << left << setw(15) << sx << left << setw(15)<< sy
+			<< left << setw(15) << abs(paramX[2])
+			<< left << setw(15) << abs(paramY[2])
+			<< left << setw(15) << histmax << endl;
+
       fRecoObject.clear();
     }
 
-    file.Close();
+    // file.Close();
 
-    return psf;
 }

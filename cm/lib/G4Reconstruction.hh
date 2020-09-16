@@ -20,7 +20,7 @@ public:
 
   void RunReconstruction(int nIter);
   void Write(TString filename) const;
-  TMatrixT<Double_t>* GetPSF(TMatrixT<Double_t>  fMatrixH);
+  void GetPSF(TMatrixT<Double_t>  fMatrixH);
   TH2F* SmoothGauss(TH2F* hin, double sigma);
 
 private:
