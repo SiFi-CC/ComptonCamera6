@@ -64,7 +64,7 @@ G4Reconstruction::G4Reconstruction(CameraGeometry sim, TH2F* detector)
 
   // if (CmdLineOption::GetFlagValue("Hmatrix")){
     fMatrixH = sim.fMatrixHCam;
-  if(0){
+  if(1){
     S.ResizeTo(fParams.source.nBins(), 1);
     for (int j = 0; j < fParams.source.nBins(); j++){
       S(j, 0) = 0.0;
@@ -81,15 +81,18 @@ G4Reconstruction::G4Reconstruction(CameraGeometry sim, TH2F* detector)
     }
   }
     fMatrixHTranspose.Transpose(fMatrixH);
-    // TMatrixT<Double_t>* psf;
-    TMatrixT<Double_t> fMatrixH2;
-    TFile* file2 = new TFile("matr220_170_n15e5_nowallpet1cm_4lay_mask31_70mm_noNormalized.root","READ");
-    file2->cd();
-    fMatrixH2.Read("matrixH");
-    file2->Close();
+    ReadFit("Fit1D_matr220_170_n15e5_nowallpet1cm_4lay_mask31_70mm_noNormalized.txt");
+    log->info("S1 = {}", S(1,0));
+    S = ImageSpaceConvolute(S);
+    
+    // TMatrixT<Double_t> fMatrixH2;
+    // TFile* file2 = new TFile("matr220_170_n15e5_nowallpet1cm_4lay_mask31_70mm_noNormalized.root","READ");
+    // file2->cd();
+    // fMatrixH2.Read("matrixH");
+    // file2->Close();
 
-    GetPSF(fMatrixH2);
-    exit(0);
+    // GetPSF(fMatrixH2);
+    // exit(0);
 }
 
 TMatrixT<Double_t> G4Reconstruction::ReadFromTH2F(TH2F* detHist) {
@@ -182,7 +185,7 @@ int G4Reconstruction::SingleIteration() {
 
   TMatrixT<Double_t> nextIteration = fMatrixHTranspose * weightedImage;
   
-  if(0){
+  if(1){
     for (int i = 0; i < fParams.source.nBins(); i++) {
       if (fRecoObject.size() < 11)
       {
@@ -457,4 +460,92 @@ TH2F* G4Reconstruction::SmoothGauss(TH2F* hin, double sigma){
 
     // file.Close();
 
+}
+
+void G4Reconstruction::ReadFit(TString  filename){
+
+  Double_t temp1;
+  Double_t temp2;
+  Double_t temp3;
+  Double_t temp4;
+  Double_t temp5;
+
+  sx.ResizeTo(fParams.source.nBins(), 1);
+  sy.ResizeTo(fParams.source.nBins(), 1);
+  sigmax.ResizeTo(fParams.source.nBins(), 1);
+  sigmay.ResizeTo(fParams.source.nBins(), 1);
+  histomax.ResizeTo(fParams.source.nBins(), 1);
+
+  ifstream file;
+  file.open(filename);
+
+  // while (!file.eof())
+  int n = 0;
+  while(file >> sx(n,0) >> sy(n,0) >> sigmax(n,0) >> sigmay(n,0) >> histomax(n,0))
+  {
+    // sx(n,0)=temp1;
+    // sy(n,0) = temp2;
+    // sigmax(n,0) = temp3;
+    // sigmay(n,0) = temp4;
+    // histomax(n,0) = temp5;
+    // log->info("{},  {}, {}, {}, {}",sx(n,0), sy(n,0),sigmax(n,0),sigmay(n,0),histomax(n,0));
+    n++;
+  }
+  log->info("total number {}",n);
+  file.close();
+}
+
+TMatrixT<Double_t> G4Reconstruction::ImageSpaceConvolute(TMatrixT<Double_t> image){
+
+  int detbins = fMatrixH.GetNrows();
+  int sourcebins = fMatrixH.GetNcols();
+
+  int minrow, maxrow, mincol, maxcol, rad;
+  int row, col, n;
+  int nRows = fParams.source.binY;
+  int nCols = fParams.source.binX;
+  double k, maxEl;
+
+  maxEl = 1;
+
+  rad = 3;
+  TMatrixT<Double_t> convoluted;
+
+  convoluted.ResizeTo(sourcebins,1);
+
+  for (int j = 0; j < sourcebins; j++)
+  {
+    convoluted(j,0) = 0.0;
+    row = j%fParams.source.binY;
+    col = (j-row)/fParams.source.binY;
+    minrow = row - rad < 0 ? 0 : row - rad;
+    maxrow = row + rad > nRows - 1 ? nRows - 1 : row + rad;
+    mincol = col - rad < 0 ? 0 : col - rad;
+    maxcol = col + rad > nCols - 1 ? nCols - 1 : col + rad;
+
+
+    if (row > 5 && row < 95 && col > 5 && col < 95){
+      for (int irow = minrow; irow <= maxrow; irow++)
+      {
+        for (int icol = mincol; icol <= maxcol; icol++)
+        {
+          n = col * nRows + row;
+          // k= histomax(j,0)*exp(-0.5*(pow(((sx(n,0)-sx(j,0))/sigmax(j,0)),2)+
+          //                         pow(((sy(n,0)-sy(j,0))/sigmay(j,0)),2)));
+          k= exp(-0.5*(pow(((sx(n,0)-sx(j,0))/sigmax(j,0)),2)+
+                                  pow(((sy(n,0)-sy(j,0))/sigmay(j,0)),2)));
+          convoluted(j,0) += image(n,0)*k;
+        }
+      }
+      if (convoluted(j,0) > maxEl) maxEl = convoluted(j,0);
+    }
+    // log->info("image({}) = {}, convoluted({}) = {}",j,image(j,0), j,convoluted(j,0));
+    // log->info("image({}) = {}",j,image(j,0));
+  }
+    for (int j = 0; j < sourcebins; j++)
+    {
+      convoluted(j,0) /= maxEl;
+      if (convoluted(j,0) == 0) convoluted(j,0) = maxEl;
+    }
+    return convoluted;
 }

@@ -21,6 +21,8 @@ public:
   void RunReconstruction(int nIter);
   void Write(TString filename) const;
   void GetPSF(TMatrixT<Double_t>  fMatrixH);
+  TMatrixT<Double_t> ImageSpaceConvolute(TMatrixT<Double_t> image);
+  void ReadFit(TString filename);
   TH2F* SmoothGauss(TH2F* hin, double sigma);
 
 private:
@@ -47,6 +49,8 @@ private:
   Double_t sumH, sum2;
   Double_t * product;
   TMatrixT<Double_t> S;
+  TMatrixT<Double_t> sx, sy, sigmax, sigmay, histomax;
+  // correspond to "b", "c", "sigmax", "sigmay" and "a" in Jan paper
 
   /** Probability matrix
    *  - row represent i-th detector pixel
