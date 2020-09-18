@@ -23,7 +23,7 @@ public:
   void GetPSF(TMatrixT<Double_t>  fMatrixH);
   TMatrixT<Double_t> ImageSpaceConvolute(TMatrixT<Double_t> image);
   void ReadFit(TString filename);
-  TH2F* SmoothGauss(TH2F* hin, double sigma);
+  TH2F* SmoothGauss(TH2F* hin, double sigma) const;
 
 private:
   int SingleIteration();

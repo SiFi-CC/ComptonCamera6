@@ -167,7 +167,7 @@ int G4Reconstruction::SingleIteration() {
   // log->debug("Hmatrix = {}, {}, FReco ",
   //              fMatrixH.GetNrows(),fMatrixH.GetNcols() );
 
-  auto hfProduct = fMatrixH * fRecoObject.back();
+  auto hfProduct = fMatrixH * ImageSpaceConvolute(fRecoObject.back());
   log->debug("SingleIteration  H * f_k ({}, {})", hfProduct.GetNrows(),
              hfProduct.GetNcols());
 
@@ -183,7 +183,7 @@ int G4Reconstruction::SingleIteration() {
   log->debug("SingleIteration Image / (H * f_k) ({}, {})",
              weightedImage.GetNrows(), weightedImage.GetNcols());
 
-  TMatrixT<Double_t> nextIteration = fMatrixHTranspose * weightedImage;
+  TMatrixT<Double_t> nextIteration = ImageSpaceConvolute(fMatrixHTranspose * weightedImage);
   
   if(1){
     for (int i = 0; i < fParams.source.nBins(); i++) {
@@ -261,6 +261,11 @@ void G4Reconstruction::Write(TString filename) const {
         SiFi::tools::unvectorizeMatrix(fRecoObject[i], fParams.source.binY,
                                        fParams.source.binX),
         fParams.source.xRange, fParams.source.yRange);
+    if((i+1)%100  == 0){
+    // if(i == 500){
+      TH2F* smoothed = SmoothGauss(&recoIteration, 1.3);
+      smoothed->Write();
+    }
     recoIteration.Write();
 
   }
@@ -326,7 +331,7 @@ Double_t G4Reconstruction::CheckConvergence(TH2F reco){
   return 0.5*(sigmaX+sigmaY);
 }
 
-TH2F* G4Reconstruction::SmoothGauss(TH2F* hin, double sigma){
+TH2F* G4Reconstruction::SmoothGauss(TH2F* hin, double sigma) const{
 
   if(sigma <= 0){
     std::cout << "Smearing with sigma = " << sigma 
@@ -497,6 +502,8 @@ void G4Reconstruction::ReadFit(TString  filename){
 
 TMatrixT<Double_t> G4Reconstruction::ImageSpaceConvolute(TMatrixT<Double_t> image){
 
+  // return image;
+
   int detbins = fMatrixH.GetNrows();
   int sourcebins = fMatrixH.GetNcols();
 
@@ -508,7 +515,7 @@ TMatrixT<Double_t> G4Reconstruction::ImageSpaceConvolute(TMatrixT<Double_t> imag
 
   maxEl = 1;
 
-  rad = 3;
+  rad = 1;
   TMatrixT<Double_t> convoluted;
 
   convoluted.ResizeTo(sourcebins,1);
@@ -524,12 +531,12 @@ TMatrixT<Double_t> G4Reconstruction::ImageSpaceConvolute(TMatrixT<Double_t> imag
     maxcol = col + rad > nCols - 1 ? nCols - 1 : col + rad;
 
 
-    if (row > 5 && row < 95 && col > 5 && col < 95){
+    // if (row > 3 && row < 97 && col > 5 && col < 95){
       for (int irow = minrow; irow <= maxrow; irow++)
       {
         for (int icol = mincol; icol <= maxcol; icol++)
         {
-          n = col * nRows + row;
+          n = icol * nRows + irow;
           // k= histomax(j,0)*exp(-0.5*(pow(((sx(n,0)-sx(j,0))/sigmax(j,0)),2)+
           //                         pow(((sy(n,0)-sy(j,0))/sigmay(j,0)),2)));
           k= exp(-0.5*(pow(((sx(n,0)-sx(j,0))/sigmax(j,0)),2)+
@@ -538,14 +545,15 @@ TMatrixT<Double_t> G4Reconstruction::ImageSpaceConvolute(TMatrixT<Double_t> imag
         }
       }
       if (convoluted(j,0) > maxEl) maxEl = convoluted(j,0);
-    }
+      if (convoluted(j,0) == 0) convoluted(j,0)=1e-9;
+    // }
     // log->info("image({}) = {}, convoluted({}) = {}",j,image(j,0), j,convoluted(j,0));
     // log->info("image({}) = {}",j,image(j,0));
   }
-    for (int j = 0; j < sourcebins; j++)
-    {
-      convoluted(j,0) /= maxEl;
-      if (convoluted(j,0) == 0) convoluted(j,0) = maxEl;
-    }
+    // for (int j = 0; j < sourcebins; j++)
+    // {
+    //   convoluted(j,0) /= maxEl;
+    //   if (convoluted(j,0) == 0) convoluted(j,0) = 1;
+    // }
     return convoluted;
 }
