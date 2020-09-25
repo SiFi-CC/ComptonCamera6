@@ -20,6 +20,8 @@ public:
 
   void RunReconstruction(int nIter);
   void Write(TString filename) const;
+  TH2F* SmoothGauss(TH2F* hin, double sigma) const;
+
 
 private:
   int SingleIteration();
@@ -46,6 +48,7 @@ private:
    * segment of source.
    */
   TMatrixT<Double_t> fMatrixH;
+  TMatrixT<Double_t> S;
   // transposition of H matrix for performance reasons
   TMatrixT<Double_t> fMatrixHTranspose;
 

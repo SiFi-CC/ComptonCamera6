@@ -25,56 +25,33 @@ G4Reconstruction::G4Reconstruction(CameraGeometry sim, TH2F* detector)
   fImage = SiFi::tools::vectorizeMatrix(
       SiFi::tools::convertHistogramToMatrix(detector));
 
-  // if (CmdLineOption::GetFlagValue("Hmatrix")){
-    fMatrixH = sim.fMatrixHCam;
-  // } else {
-  //   log->info("Building H matrix");
-  //   for (auto file : sim.recoData) {
-  //     auto srcBranch =
-  //         static_cast<TTree*>(file->Get("source"))->GetBranch("position");
-  //     auto detBranch =
-  //         static_cast<TTree*>(file->Get("deposits"))->GetBranch("position");
-  //     auto detHistogram = static_cast<TH2F*>(file->Get("energyDeposits"));
-  //     TVector3* srcPosition = new TVector3();
-  //     srcBranch->SetAddress(&srcPosition);
-
-  //     // when source recording is disabled there should still be at least on event
-  //     srcBranch->GetEntry(0); // seting value on position variable
-
-  //     // number of bin from position
-  //     auto sourceHistBin =
-  //         sim.source.getBin(srcPosition->X(), srcPosition->Y(), srcPosition->Z());
-  //     auto sourceMatBin =
-  //         std::make_tuple<int, int>(sim.source.binY - std::get<1>(sourceHistBin),
-  //                                   std::get<0>(sourceHistBin) - 1);
-  //     int colIndexMatrixH =
-  //         std::get<1>(sourceMatBin) * sim.source.binY + std::get<0>(sourceMatBin);
-
-  //     log->debug("processing point source at {}, {} in histogram bin({}, {}) = "
-  //                "matrix bin ({}, {}), colH = {}",
-  //                srcPosition->X(), srcPosition->Y(), std::get<0>(sourceHistBin),
-  //                std::get<1>(sourceHistBin), std::get<0>(sourceMatBin),
-  //                std::get<1>(sourceMatBin),colIndexMatrixH);
-
-  //     TMatrixT<Double_t> column;
-  //     column.ResizeTo(sim.detector.nBins(), 1);
-  //     if (detBranch->GetEntries() == 0) {
-  //       column = ReadFromTH2F(detHistogram);
-  //     } else {
-  //       column = ReadFromTTree(detBranch);
-  //     }
-
-  //     double normFactor = 0;
-  //     for (int row = 0; row < fParams.detector.nBins(); row++) {
-  //       normFactor += column(row, 0);
-  //     }
-
-  //     for (int row = 0; row < sim.detector.nBins(); row++) {
-  //       fMatrixH(row, colIndexMatrixH) =
-  //           column(row, 0) == 0 ? 1e-9 : (column(row, 0) / normFactor);
-  //     }
-  //   }
-  // }
+  fMatrixH = sim.fMatrixHCam;
+ if(1){
+    S.ResizeTo(fParams.source.nBins(), 1);
+    for (int j = 0; j < fParams.source.nBins(); j++){
+      S(j, 0) = 0.0;
+      for (int i = 0; i < fParams.detector.nBins(); i++)
+      {
+        // fMatrixH(i,j) = fMatrixH(i,j)/10000.0;
+        // fMatrixH(i,j) = fMatrixH(i,j)/(1.5*1e6);
+        S(j,0) += fMatrixH(i,j);
+      }
+      for (int i = 0; i < fParams.detector.nBins(); i++)
+      {
+        fMatrixH(i,j) = fMatrixH(i,j)/S(j,0);
+      }
+    }
+  }
+  //  TH2F histoS = SiFi::tools::convertMatrixToHistogram(
+    //       "S", "Senesetivity map",
+    //       SiFi::tools::unvectorizeMatrix(S, fParams.source.binY,
+    //                                     fParams.source.binX),
+    //       fParams.source.xRange, fParams.source.yRange);
+    // TFile* fileS = new TFile("S.root","RECREATE");
+    // fileS->cd();
+    // histoS.Write();
+    // fileS->Close();
+    // exit(0); 
   fMatrixHTranspose.Transpose(fMatrixH);
 }
 
@@ -189,8 +166,12 @@ void G4Reconstruction::Write(TString filename) const {
         SiFi::tools::unvectorizeMatrix(fRecoObject[i], fParams.source.binY,
                                        fParams.source.binX),
         fParams.source.xRange, fParams.source.yRange);
+    if((i+1)%100  == 0){
+    // if(i == 500){
+      TH2F* smoothed = SmoothGauss(&recoIteration, 1.3);
+      smoothed->Write();
+    }
     recoIteration.Write();
-
   }
   // log->info("Sigma {}",fSigma);
   TVector sig(1);
@@ -252,4 +233,63 @@ Double_t G4Reconstruction::CheckConvergence(TH2F reco){
   // file.Close();
 
   return 0.5*(sigmaX+sigmaY);
+}
+
+
+TH2F* G4Reconstruction::SmoothGauss(TH2F* hin, double sigma) const{
+
+  if(sigma <= 0){
+    std::cout << "Smearing with sigma = " << sigma 
+              << " will not work, provide a positive number here..." << std::endl;
+    return nullptr;
+  }
+  
+  TH2F* hout = dynamic_cast<TH2F*>(hin->Clone(Form("%s_smooth", hin->GetName())));
+  hout->Reset();
+  const int nbinsx = hin->GetNbinsX();
+  const int nbinsy = hin->GetNbinsY();
+  double binwx = hin->GetXaxis()->GetBinWidth(1);
+  double binwy = hin->GetYaxis()->GetBinWidth(1);
+  
+  double kernelx[nbinsx];
+  double kernely[nbinsy];
+  
+  TF1* gaus = new TF1("gaus", "gaus");
+  gaus->SetParameters(1./sqrt(TMath::TwoPi())/sigma, 0, sigma);
+
+  for(int i=0; i<nbinsx; i++)
+    kernelx[i] = gaus->Eval(binwx*i);
+  for(int i=0; i<nbinsy; i++)
+    kernely[i] = gaus->Eval(binwy*i);
+
+  int deltabin = 0;
+  double z = 0;
+
+  //smearing in rows
+  for(int biny=1; biny<nbinsy; biny++){
+    for(int binx=1; binx<nbinsx; binx++){
+      z = 0;
+      for(int binxp=1; binxp<nbinsx; binxp++){
+        deltabin = abs(binxp-binx);
+        z += kernelx[deltabin]*hin->GetBinContent(binxp, biny);
+      }
+      hout->SetBinContent(binx, biny, z);      
+    }
+  }
+  TH2F* htmp = dynamic_cast<TH2F*>(hout->Clone());
+  hout->Reset();
+  
+  //smearing in columns
+  for(int binx=1; binx<nbinsx; binx++){
+    for(int biny=1; biny<nbinsy; biny++){
+      z = 0;
+      for(int binyp=1; binyp<nbinsy; binyp++){
+        deltabin = abs(binyp-biny);
+        z += kernely[deltabin]*htmp->GetBinContent(binx, binyp);        
+      }
+      hout->SetBinContent(binx, biny, z);      
+    }
+  }
+
+  return hout;
 }
