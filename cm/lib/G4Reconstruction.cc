@@ -19,7 +19,7 @@ G4Reconstruction::G4Reconstruction(CameraGeometry sim, TH2F* detector)
   fMatrixH.ResizeTo(sim.detector.nBins(), sim.source.nBins());
   fMatrixHTranspose.ResizeTo(sim.source.nBins(), sim.detector.nBins());
   fRecoObject.push_back(TMatrixT<double>(sim.source.nBins(), 1));
-  fRecoObject[0] = 1.0 / sim.source.nBins();
+  // fRecoObject[0] = 1.0 / sim.source.nBins();
   fImage.ResizeTo(sim.detector.nBins(), 1);
 
   fImage = SiFi::tools::vectorizeMatrix(
@@ -42,6 +42,7 @@ G4Reconstruction::G4Reconstruction(CameraGeometry sim, TH2F* detector)
       }
     }
   }
+  fRecoObject[0] = S;
   //  TH2F histoS = SiFi::tools::convertMatrixToHistogram(
     //       "S", "Senesetivity map",
     //       SiFi::tools::unvectorizeMatrix(S, fParams.source.binY,
@@ -110,6 +111,11 @@ int G4Reconstruction::SingleIteration() {
   // with current iteration.
   TMatrixT<Double_t> weightedImage(fParams.detector.nBins(), 1);
   for (int i = 0; i < fParams.detector.nBins(); i++) {
+    // if (fRecoObject.size() < 50){
+    //   weightedImage(i, 0) = 1 / hfProduct(i, 0);
+    // } else {
+    //   weightedImage(i, 0) = fImage(i, 0) / hfProduct(i, 0);
+    // }
     weightedImage(i, 0) = fImage(i, 0) / hfProduct(i, 0);
   }
   log->debug("SingleIteration Image / (H * f_k) ({}, {})",
@@ -119,6 +125,22 @@ int G4Reconstruction::SingleIteration() {
   for (int i = 0; i < fParams.source.nBins(); i++) {
     nextIteration(i, 0) = nextIteration(i, 0) * fRecoObject.back()(i, 0);
   }
+  // if(1){
+  //   for (int i = 0; i < fParams.source.nBins(); i++) {
+  //     if (fRecoObject.size() < 11)
+  //     {
+  //       nextIteration(i, 0) = nextIteration(i, 0) * fRecoObject.back()(i, 0);
+  //     } else {
+  //       nextIteration(i, 0) = nextIteration(i, 0) * fRecoObject.back()(i, 0)/S(i,0);
+  //     }
+  //   }
+  // } else {
+
+  //   for (int i = 0; i < fParams.source.nBins(); i++) {
+  //     // nextIteration(i, 0) = nextIteration(i, 0) * fRecoObject.back()(i, 0)/S(i,0);
+  //     nextIteration(i, 0) = nextIteration(i, 0) * fRecoObject.back()(i, 0);
+  //   }
+  // }
 
   fRecoObject.push_back(nextIteration);
 
