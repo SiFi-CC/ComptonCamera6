@@ -12,6 +12,7 @@ int main(int argc, char** argv) {
 
   CmdLineOption opt_hmatrix("Hmatrix", "-hmat",
                             "File with H matrix, default: Calculate", "");
+  CmdLineOption opt_outputfile("output","-o", "Output file", CmdLineArg::kString);
 
   CmdLineArg cmdarg_inputfile("input", "Input file", CmdLineArg::kString);
   CmdLineArg cmdarg_iter("iter", "N iterations", CmdLineArg::kInt);
@@ -30,7 +31,11 @@ int main(int argc, char** argv) {
 
   CMReconstruction reconstruction(filename);
   reconstruction.RunReconstruction(iterations);
-  reconstruction.Write(filename.ReplaceAll(".root", "_reconstruct.root"));
+  if (opt_outputfile.GetStringValue()){
+    reconstruction.Write(opt_outputfile.GetStringValue());
+  } else {
+    reconstruction.Write(filename.ReplaceAll(".root", "_reconstruct.root"));
+  }
 
   spdlog::info("Finished simulation");
 

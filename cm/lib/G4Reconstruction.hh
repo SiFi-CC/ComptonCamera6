@@ -20,7 +20,6 @@ public:
 
   void RunReconstruction(int nIter);
   void Write(TString filename) const;
-  TH2F* SmoothGauss(TH2F* hin, double sigma) const;
 
 
 private:

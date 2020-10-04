@@ -47,6 +47,10 @@ void CMSimulation::Init() {
 Bool_t CMSimulation::ProcessEvent() {
   Track sourceTrack = fSource->GenerateEvent();
 
+  fH2Source->Fill(sourceTrack.GetPoint().Z(), sourceTrack.GetPoint().Y());
+  fH1Theta->Fill(sourceTrack.GetVersor().Theta());
+  fH1Phi->Fill(sourceTrack.GetVersor().Phi());
+
   auto maskCross = fMask->FindCrossPoint(sourceTrack);
   if (!maskCross.second) {
     log->debug("No cross point with Mask");
@@ -67,9 +71,6 @@ Bool_t CMSimulation::ProcessEvent() {
   fPersist.absorbed = !fMask->IsOpaque(maskCross.first);
   fTree->Fill();
 
-  fH2Source->Fill(sourceTrack.GetPoint().Z(), sourceTrack.GetPoint().Y());
-  fH1Theta->Fill(sourceTrack.GetVersor().Theta());
-  fH1Phi->Fill(sourceTrack.GetVersor().Phi());
   if (!fPersist.absorbed) {
     fH2Detector->Fill(detCross.first.Z(), detCross.first.Y());
   }

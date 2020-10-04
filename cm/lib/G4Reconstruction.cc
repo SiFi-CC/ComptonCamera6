@@ -1,5 +1,6 @@
 #include "G4Reconstruction.hh"
 #include "DataStructConvert.hh"
+#include "Smoothing.hh"
 #include <TTree.h>
 #include <TVector.h>
 #include "TF1.h"
@@ -19,7 +20,7 @@ G4Reconstruction::G4Reconstruction(CameraGeometry sim, TH2F* detector)
   fMatrixH.ResizeTo(sim.detector.nBins(), sim.source.nBins());
   fMatrixHTranspose.ResizeTo(sim.source.nBins(), sim.detector.nBins());
   fRecoObject.push_back(TMatrixT<double>(sim.source.nBins(), 1));
-  // fRecoObject[0] = 1.0 / sim.source.nBins();
+  fRecoObject[0] = 1.0;
   fImage.ResizeTo(sim.detector.nBins(), 1);
 
   fImage = SiFi::tools::vectorizeMatrix(
@@ -42,17 +43,7 @@ G4Reconstruction::G4Reconstruction(CameraGeometry sim, TH2F* detector)
       }
     }
   }
-  fRecoObject[0] = S;
-  //  TH2F histoS = SiFi::tools::convertMatrixToHistogram(
-    //       "S", "Senesetivity map",
-    //       SiFi::tools::unvectorizeMatrix(S, fParams.source.binY,
-    //                                     fParams.source.binX),
-    //       fParams.source.xRange, fParams.source.yRange);
-    // TFile* fileS = new TFile("S.root","RECREATE");
-    // fileS->cd();
-    // histoS.Write();
-    // fileS->Close();
-    // exit(0); 
+  // fRecoObject[0] = S;
   fMatrixHTranspose.Transpose(fMatrixH);
 }
 
@@ -124,6 +115,7 @@ int G4Reconstruction::SingleIteration() {
   TMatrixT<Double_t> nextIteration = fMatrixHTranspose * weightedImage;
   for (int i = 0; i < fParams.source.nBins(); i++) {
     nextIteration(i, 0) = nextIteration(i, 0) * fRecoObject.back()(i, 0);
+    // nextIteration(i, 0) = nextIteration(i, 0) * fRecoObject.back()(i, 0)/S(i,0);
   }
   // if(1){
   //   for (int i = 0; i < fParams.source.nBins(); i++) {
@@ -190,7 +182,7 @@ void G4Reconstruction::Write(TString filename) const {
         fParams.source.xRange, fParams.source.yRange);
     if((i+1)%100  == 0){
     // if(i == 500){
-      TH2F* smoothed = SmoothGauss(&recoIteration, 1.3);
+      TH2F* smoothed = SiFi::tools::SmoothGauss(&recoIteration, 1.5);
       smoothed->Write();
     }
     recoIteration.Write();
@@ -203,6 +195,13 @@ void G4Reconstruction::Write(TString filename) const {
   TVector iter(1);
   iter[0] = fIter;
   iter.Write("maxIter");
+
+  TH2F histoS = SiFi::tools::convertMatrixToHistogram(
+      "S", "Senesitivity map",
+      SiFi::tools::unvectorizeMatrix(S, fParams.source.binY,
+                                    fParams.source.binX),
+      fParams.source.xRange, fParams.source.yRange);
+  histoS.Write("SensitivityMap");
 
   file.Close();
 
@@ -257,61 +256,3 @@ Double_t G4Reconstruction::CheckConvergence(TH2F reco){
   return 0.5*(sigmaX+sigmaY);
 }
 
-
-TH2F* G4Reconstruction::SmoothGauss(TH2F* hin, double sigma) const{
-
-  if(sigma <= 0){
-    std::cout << "Smearing with sigma = " << sigma 
-              << " will not work, provide a positive number here..." << std::endl;
-    return nullptr;
-  }
-  
-  TH2F* hout = dynamic_cast<TH2F*>(hin->Clone(Form("%s_smooth", hin->GetName())));
-  hout->Reset();
-  const int nbinsx = hin->GetNbinsX();
-  const int nbinsy = hin->GetNbinsY();
-  double binwx = hin->GetXaxis()->GetBinWidth(1);
-  double binwy = hin->GetYaxis()->GetBinWidth(1);
-  
-  double kernelx[nbinsx];
-  double kernely[nbinsy];
-  
-  TF1* gaus = new TF1("gaus", "gaus");
-  gaus->SetParameters(1./sqrt(TMath::TwoPi())/sigma, 0, sigma);
-
-  for(int i=0; i<nbinsx; i++)
-    kernelx[i] = gaus->Eval(binwx*i);
-  for(int i=0; i<nbinsy; i++)
-    kernely[i] = gaus->Eval(binwy*i);
-
-  int deltabin = 0;
-  double z = 0;
-
-  //smearing in rows
-  for(int biny=1; biny<nbinsy; biny++){
-    for(int binx=1; binx<nbinsx; binx++){
-      z = 0;
-      for(int binxp=1; binxp<nbinsx; binxp++){
-        deltabin = abs(binxp-binx);
-        z += kernelx[deltabin]*hin->GetBinContent(binxp, biny);
-      }
-      hout->SetBinContent(binx, biny, z);      
-    }
-  }
-  TH2F* htmp = dynamic_cast<TH2F*>(hout->Clone());
-  hout->Reset();
-  
-  //smearing in columns
-  for(int binx=1; binx<nbinsx; binx++){
-    for(int biny=1; biny<nbinsy; biny++){
-      z = 0;
-      for(int binyp=1; binyp<nbinsy; binyp++){
-        deltabin = abs(binyp-biny);
-        z += kernely[deltabin]*htmp->GetBinContent(binx, binyp);        
-      }
-      hout->SetBinContent(binx, biny, z);      
-    }
-  }
-
-  return hout;
-}

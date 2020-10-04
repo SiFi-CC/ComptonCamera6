@@ -10,6 +10,7 @@
 #include "CMReconstruction.hh"
 #include "CMSimulation.hh"
 #include "DataStructConvert.hh"
+#include "Smoothing.hh"
 #include "Sources/PointSource.hh"
 
 using SiFi::tools::convertHistogramToMatrix;
@@ -62,10 +63,12 @@ CMReconstruction::CMReconstruction(TString simulationFile) {
 void CMReconstruction::FillHMatrix() {
   log->info("CMReconstruction::FillHMatrix");
 
-  int nIterations = 300000;
+  int nIterations = 100000;
   for (int objBin = 0; objBin < fObjectCoords.NBins(); objBin++) {
     double done = (double)objBin/fObjectCoords.NBins();
-    log->info("{} %",done*100);
+    if(std::floor(1000*done) == 1000*done){
+      log->info("{} %",done*100);
+    }
     int objBinX, objBinY;
     std::tie(objBinX, objBinY) = fObjectCoords.BinXY(objBin);
     log->debug("Hmatrix ({}, {}) voxel", objBinX, objBinY);
