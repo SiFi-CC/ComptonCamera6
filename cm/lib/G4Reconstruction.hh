@@ -19,7 +19,7 @@ public:
   virtual ~G4Reconstruction() = default;
 
   void RunReconstruction(int nIter);
-  void Write(TString filename) const;
+  void Write(TString filename, TH2F* simHist) const;
 
 
 private:

@@ -68,6 +68,7 @@ int main(int argc, char** argv) {
     return -1;
   }
   auto detectorImage = static_cast<TH2F*>(simulationFile.Get("energyDeposits"));
+  auto sourceHist = static_cast<TH2F*>(simulationFile.Get("sourceHist"));
   adapter.VerifyForReconstruct(&simulationFile);
 
   spdlog::info("Prepare reconstruction");
@@ -76,7 +77,14 @@ int main(int argc, char** argv) {
   reconstruction.RunReconstruction(iterations);
 
   spdlog::info("Save reconstruction to file {}.", reconstructFile.Data());
-  reconstruction.Write(reconstructFile);
+  reconstruction.Write(reconstructFile, sourceHist);
+
+  TFile file(reconstructFile, "UPDATE");
+  file.cd();
+
+  detectorImage->Write("energyDeposits");
+  sourceHist->Write("sourceHist");
+  file.Close();
 
   spdlog::info("Finished simulation");
 

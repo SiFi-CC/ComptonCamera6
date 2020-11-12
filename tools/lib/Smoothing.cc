@@ -62,5 +62,67 @@ TH2F* SmoothGauss(TH2F* hin, double sigma){
 }
 
 
+std::vector<Double_t> UQI_MSE(TH2F* sourceImage, TH2F* recoImage){
+  std::vector<Double_t> params;
+  // spdlog::info("Hello");
+  // params[0] = 0.0;
+  // params[1] = 0.0;
+  params.push_back(0.0);
+  params.push_back(0.0);
+  if (sourceImage->GetNbinsX() != recoImage->GetNbinsX() || 
+      sourceImage->GetNbinsY() != recoImage->GetNbinsY()) 
+  {   
+      spdlog::error("Inconsistent parameters of source and reco histogram");
+      // exit(EXIT_FAILURE);
+      return params;
+  }
+
+  int N = recoImage->GetNbinsX()*recoImage->GetNbinsY();
+  //Normalization
+  double sourcemax = sourceImage->GetMaximum();
+  sourceImage->Scale(1/sourcemax);
+  double recomax = recoImage->GetMaximum();
+  double recomin = recoImage->GetMinimum();
+
+  double sourceSum=0;
+  double recoSum=0;
+  double sourceVal,recoVal;
+        
+  double mse = 0;
+        
+  for(int i = 0; i < N; i++){
+      recoVal = (recoImage->GetBinContent(i)-recomin)/(recomax-recomin);
+      sourceVal = sourceImage->GetBinContent(i);
+      sourceSum += sourceVal;
+      recoSum += recoVal;
+      mse += pow(recoVal-sourceVal,2);
+  }
+  double sourceMean = sourceSum/N;
+  double recoMean = recoSum/N;
+
+  double sourceSigma = 0;
+  double recoSigma = 0;
+  double cov = 0;
+
+  for(int i = 0; i < N; i++){
+      sourceVal = sourceImage->GetBinContent(i);
+      recoVal = (recoImage->GetBinContent(i)-recomin)/(recomax-recomin);
+
+      sourceSigma += pow(sourceVal-sourceMean,2);
+      recoSigma += pow(recoVal-recoMean,2);
+      cov += (sourceVal-sourceMean)*(recoVal-recoMean);
+  }
+  sourceSigma /=(N-1);
+  recoSigma /=(N-1);
+  cov /=(N-1);
+
+  params[0] = mse/N;
+  params[1] = 4 * cov * sourceMean * recoMean / (sourceSigma+recoSigma) 
+  / (pow(sourceMean,2)+pow(recoMean,2)); 
+   spdlog::info("MSE = {}", params[0]);
+   spdlog::info("UQI = {}", params[1]);
+  return params;
+}
+
 } // namespace tools
 } // namespace SiFi

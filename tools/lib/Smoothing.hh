@@ -11,6 +11,8 @@ namespace tools {
 
 TH2F* SmoothGauss(TH2F* hin, double sigma);
 
+std::vector<Double_t> UQI_MSE(TH2F* sourceImage, TH2F* recoImage);
+
 
 } // namespace tools
 } // namespace SiFi

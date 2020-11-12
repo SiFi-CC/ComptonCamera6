@@ -4,6 +4,10 @@
 #include <TTree.h>
 #include <TVector.h>
 #include "TF1.h"
+#include <TGraph.h>
+#include <TCanvas.h>
+#include <TMultiGraph.h>
+#include <TLegend.h>
 
 #include "CmdLineConfig.hh"
 
@@ -27,7 +31,7 @@ G4Reconstruction::G4Reconstruction(CameraGeometry sim, TH2F* detector)
       SiFi::tools::convertHistogramToMatrix(detector));
 
   fMatrixH = sim.fMatrixHCam;
- if(1){
+  if(1){ // Normalization of Hmatrix
     S.ResizeTo(fParams.source.nBins(), 1);
     for (int j = 0; j < fParams.source.nBins(); j++){
       S(j, 0) = 0.0;
@@ -155,7 +159,7 @@ int G4Reconstruction::SingleIteration() {
   return 1;
 }
 
-void G4Reconstruction::Write(TString filename) const {
+void G4Reconstruction::Write(TString filename, TH2F* simHist) const {
   log->info("CMReconstruction::Write({})", filename.Data());
   TFile file(filename, "RECREATE");
   file.cd();
@@ -172,6 +176,7 @@ void G4Reconstruction::Write(TString filename) const {
   int nIterations = fRecoObject.size() - 1;
 
   log->debug("Save {} iterations", nIterations);
+  std::vector <double> mse_list, uqi_list, iter_list;
   for (int i = 0; i < nIterations; i++) {
     log->debug("saving iteration {}", i);
 
@@ -180,21 +185,43 @@ void G4Reconstruction::Write(TString filename) const {
         SiFi::tools::unvectorizeMatrix(fRecoObject[i], fParams.source.binY,
                                        fParams.source.binX),
         fParams.source.xRange, fParams.source.yRange);
-    if((i+1)%100  == 0){
-    // if(i == 500){
+    if((i+1)%50  == 0){ // Add smoothed histo each 50 iterations
+      std::vector<Double_t> params = SiFi::tools::UQI_MSE(simHist,&recoIteration);
+      recoIteration.SetTitle(Form("#splitline{MSE = %f}{UQI = %f}", params[0],params[1]));
+      log->info("mse = {}", params[0]);
+      log->info("uqi = {}", params[1]);
+      mse_list.push_back(params[0]);
+      uqi_list.push_back(params[1]);
+      iter_list.push_back(i+1);
       TH2F* smoothed = SiFi::tools::SmoothGauss(&recoIteration, 1.5);
+      smoothed->SetName(TString::Format("smoothed_%d",i+1));
       smoothed->Write();
     }
     recoIteration.Write();
   }
-  // log->info("Sigma {}",fSigma);
-  TVector sig(1);
-  sig[0] = fSigma;
-  sig.Write("sigma");
+  TCanvas* c1 = new TCanvas("mas_uqi","mse_uqi",1);
+  TGraph* gr = new TGraph(mse_list.size(),&iter_list[0], &mse_list[0]);
+  TGraph* gr2 = new TGraph(mse_list.size(),&iter_list[0], &uqi_list[0]);
+  TMultiGraph *mg = new TMultiGraph();
+  
+  gr->SetMarkerColor(4);
+  gr->SetMarkerSize(1.5);
+  gr->SetMarkerStyle(21);
+  gr2->SetMarkerColor(3);
+  gr2->SetMarkerSize(1.5);
+  gr2->SetMarkerStyle(5);
+  mg -> Add(gr);
+  mg -> Add(gr2);
+  mg -> Draw("ACP");
+  TLegend *legend = new TLegend();
+  legend->AddEntry(gr,"MSE","p");
+  legend->AddEntry(gr2,"UQI","p");
+  legend->Draw();
+  c1->Write();
 
-  TVector iter(1);
-  iter[0] = fIter;
-  iter.Write("maxIter");
+  file.WriteObject(&mse_list,"mse");
+  file.WriteObject(&uqi_list,"uqi");
+  file.WriteObject(&iter_list,"iter");
 
   TH2F histoS = SiFi::tools::convertMatrixToHistogram(
       "S", "Senesitivity map",
