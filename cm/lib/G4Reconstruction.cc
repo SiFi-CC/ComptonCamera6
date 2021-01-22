@@ -37,8 +37,6 @@ G4Reconstruction::G4Reconstruction(CameraGeometry sim, TH2F* detector)
       S(j, 0) = 0.0;
       for (int i = 0; i < fParams.detector.nBins(); i++)
       {
-        // fMatrixH(i,j) = fMatrixH(i,j)/10000.0;
-        // fMatrixH(i,j) = fMatrixH(i,j)/(1.5*1e6);
         S(j,0) += fMatrixH(i,j);
       }
       for (int i = 0; i < fParams.detector.nBins(); i++)
@@ -47,7 +45,6 @@ G4Reconstruction::G4Reconstruction(CameraGeometry sim, TH2F* detector)
       }
     }
   }
-  // fRecoObject[0] = S;
   fMatrixHTranspose.Transpose(fMatrixH);
 }
 
@@ -106,11 +103,6 @@ int G4Reconstruction::SingleIteration() {
   // with current iteration.
   TMatrixT<Double_t> weightedImage(fParams.detector.nBins(), 1);
   for (int i = 0; i < fParams.detector.nBins(); i++) {
-    // if (fRecoObject.size() < 50){
-    //   weightedImage(i, 0) = 1 / hfProduct(i, 0);
-    // } else {
-    //   weightedImage(i, 0) = fImage(i, 0) / hfProduct(i, 0);
-    // }
     weightedImage(i, 0) = fImage(i, 0) / hfProduct(i, 0);
   }
   log->debug("SingleIteration Image / (H * f_k) ({}, {})",
@@ -121,22 +113,6 @@ int G4Reconstruction::SingleIteration() {
     nextIteration(i, 0) = nextIteration(i, 0) * fRecoObject.back()(i, 0);
     // nextIteration(i, 0) = nextIteration(i, 0) * fRecoObject.back()(i, 0)/S(i,0);
   }
-  // if(1){
-  //   for (int i = 0; i < fParams.source.nBins(); i++) {
-  //     if (fRecoObject.size() < 11)
-  //     {
-  //       nextIteration(i, 0) = nextIteration(i, 0) * fRecoObject.back()(i, 0);
-  //     } else {
-  //       nextIteration(i, 0) = nextIteration(i, 0) * fRecoObject.back()(i, 0)/S(i,0);
-  //     }
-  //   }
-  // } else {
-
-  //   for (int i = 0; i < fParams.source.nBins(); i++) {
-  //     // nextIteration(i, 0) = nextIteration(i, 0) * fRecoObject.back()(i, 0)/S(i,0);
-  //     nextIteration(i, 0) = nextIteration(i, 0) * fRecoObject.back()(i, 0);
-  //   }
-  // }
 
   fRecoObject.push_back(nextIteration);
 
@@ -270,15 +246,6 @@ Double_t G4Reconstruction::CheckConvergence(TH2F reco){
 
   sigmaY = fSignal->GetParameter(2);
 
-
-
-  // TFile file("out2.root", "UPDATE");
-  // file.cd();
-
-  // hx->Write("hx");
-  // hy->Write("hy");
-
-  // file.Close();
 
   return 0.5*(sigmaX+sigmaY);
 }
