@@ -1,8 +1,4 @@
-#include "CLog.hh"
-#include "CCSimulation.hh"
-#include <CmdLineConfig.hh>
-#include <TStopwatch.h>
-#include <iostream>
+include <iostream>
 
 using namespace std;
 
@@ -44,8 +40,11 @@ int main(int argc, char** argv) {
   CCSimulation* sim;
   TStopwatch t;
   t.Start();
+//   sim = new CCSimulation(
+//       Form("CCSimulation_gen%i_corr_%.0f_%.0f_%.0f_no.%i_scat._%.0f*%.0f", gen, x, y, z, nev, db, dc),
+//       kFALSE);
   sim = new CCSimulation(
-      Form("CCSimulation_gen%i_corr_%.0f_%.0f_%.0f_no.%i", gen, x, y, z, nev),
+      Form("CCSimulation_gen%i_corr_%.0f_%.0f_%.0f_no.%i_scat._%.0f*%.0f_abs._%.0f*%.0f", gen, x, y, z, nev, db, dc,de,df),
       kFALSE);
   // sim->SetGenVersion(gen.Atoi());
   sim->BuildSetup(da, db, dc, dd, de, df);
