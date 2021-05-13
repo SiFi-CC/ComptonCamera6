@@ -1,0 +1,41 @@
+
+################### Point 1
+
+/gps/source/intensity 1
+/gps/particle gamma
+/gps/pos/type Point
+/gps/pos/centre 0 10 10 cm
+/gps/ang/type iso
+# Direction of the gps is along -z axis
+# Minimum angle around the -z axis - so open for 180 - x 
+#/gps/ang/mintheta 90 deg halfspace
+/gps/ang/mintheta 175 deg
+/gps/ene/type Mono
+/gps/energy 4.4 MeV
+
+################### Point 2
+
+/gps/source/add 1
+/gps/particle gamma
+/gps/pos/type Point
+/gps/pos/centre 1 0 -1 cm
+/gps/ang/type iso
+# Direction of the gps is along -z axis
+/gps/ang/mintheta 175 deg
+/gps/ene/type Mono
+/gps/energy 4.4 MeV
+
+
+################### Point 2
+
+/gps/source/add 1
+/gps/particle gamma
+/gps/pos/type Point
+/gps/pos/centre 2 2 -1 cm
+/gps/ang/type iso
+# Direction of the gps is along -z axis
+/gps/ang/mintheta 175 deg
+/gps/ene/type Mono
+/gps/energy 4.4 MeV
+
+#/run/beamOn 100
