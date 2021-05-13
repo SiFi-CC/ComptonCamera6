@@ -18,6 +18,9 @@
 #include "TVector3.h"
 #include "Track.hh"
 #include "TStyle.h"
+#include <TMatrixT.h>
+#include "Coordinates.hh"
+#include <vector>
 ///Class for image reconstruction from events simulated in class CCSimulations
 ///and using MLEM method based on ComptonCone class objects. More details about this class
 /// is available on wiki [LINK] (http://bragg.if.uj.edu.pl/gccbwiki/index.php/File:MK_20180513_Image_Reconstruction_Analysis_For_CC_Toy_Model.pptx)
@@ -30,10 +33,11 @@ public:
   ~CCMLEM();
 
   Bool_t Iterate(Int_t nstop, Int_t iter);
-  Bool_t Reconstruct(void);
+  Bool_t Reconstruct(Bool_t flag);
   Bool_t GetSigmaError(void);
   Int_t AddIsectionPoint(TString dir, Double_t x, Double_t y, Double_t z);
   //Bool_t Sensitivity(void);
+  TH2 *SmoothGauss(TH2 *hin, double sigma);
   Double_t SmearGaus(double val, double sigma);
   Double_t SmearBox(double x, double resolution);
   Double_t GetSigmaE(double energy);
@@ -46,7 +50,17 @@ public:
   Bool_t SaveToFile(TObject* ob);
   void Print(void);
   void Clear(void);
-
+  /** Calculate H matrix and save it in file */
+  void SmatrixToFile(const TString& filename);
+/*  
+private:
+  /** calulate probability matrix 
+  void FillHMatrix();
+  /** run single iteration of simulation 
+  void SingleIteration();
+  /** calculate vector s to normalize probabilities 
+  Bool_t CalculateS();  
+*/
 private:
   TString fInputName;       ///< Path to the file with simulation data
   Double_t fXofRecoPlane;       ///< x-component of image plane coordinate
@@ -82,24 +96,42 @@ private:
   Double_t fPixelSizeZ;     ///< Size of pixel in z-axis direction
   Double_t fPixelSizeY;     ///< Size of pixel in y-axis direction
   Double_t fPixelSizeX;     ///< Size of pixel in x-axis direction
-  Double_t fSigma[150];     ///< Relative sigma value to compare different iterations
-  
+  Double_t fSigma[250];     ///< Relative sigma value to compare different iterations
+  Double_t sigma[250];
   Double_t fDenominator[10000000];
   TH2F* fSensitivity;
   TH1D* fHisto;     ///< Histogram containing energy resolution obtained by Geant4
   TFile* fOutputFile;       ///< ROOT file containing reconstruction results 
-  TH2F* fImage[150];        ///< Reconstructed image histogram
-  TH2F* fSenHisto[150];
+/*  
+  /** object that stores coordinates/dimensions of source object 
+  H2Coords fObjectCoords;
+  /** object that stores coordinates/dimensions of detector image 
+  H2Coords fImageCoords;
+  
+  TMatrixT<Double_t> fMatrixH;
+
+  /** Transposition of  H matrix 
+  TMatrixT<Double_t> fMatrixHPrime;
+  
+  TMatrixT<Double_t> fImageMat;
+  */
+  //TH2F* fImage[250];        ///< Reconstructed image histogram
+  TH2F* fImage[250];
+  TH2F* h[250];
+  TH2F* fSmatrix;
+  TTree* fTree;
+  TTree* fTree1;
+  TH2F* fSenHisto[250];
   //TH1F* fAngDiff; 
-  TH1D* fProX[150];
-  TH1D* fProZ[150];
-  TH1D* fProY[150];
+  TH1D* fProX[250];
+  TH1D* fProZ[250];
+  TH1D* fProY[250];
   TClonesArray* fArray;     ///< Array of information for intersection of Compton cone with image plane
   TClonesArray* fSM;        ///< Array of information for intersection of all Compton cones with image plane
   
   InputReader* fReader;     ///< InputReader to read different given input simulation files
   //TGraph* fGraph;
-
+  
   ClassDef(CCMLEM, 0)
 };
 
