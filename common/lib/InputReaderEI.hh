@@ -28,45 +28,43 @@ public:
   
   double GetEnergyLoss(void);
   double GetEnergyScattered(void);
-  //double GetTotalEnergy(void);
+  double GetEP(void);
+  double GetReES(void);
+  double GetReEP(void);
+  double GetES(void);
   
-  
+  int GetMultiplicityNum(void);
+  int GetClassID(void);
 
   
 
 private:
+    
   int fEventNumber;     ///< Event number
-  TVector3* fPositionScatReco;      ///< Position in scatterer module
-  TVector3* fPositionAbsReco;       ///< Position in absorber module
+  int fS;
+  int fClassID;
   
-  PhysicVar* fEnergyReco0;      ///< Deposited energy in scatterer module
-  PhysicVar* fEnergyReco1;      ///< Deposited energy in absorber module
+  TVector3* fPositionElectron;      ///< Position in scatterer module
+  TVector3* fPositionPhoton;       ///< Position in absorber module
   
-  PhysicVec* fPosScatClus;
-  PhysicVec* fPosAbsClus;
+ 
   
-  Double_t fEnergyRe0;
-  Double_t fEnergyRe1;
-  
-//   TVector3* fPosScatReco;
-//   TVector3* fPosAbsReco;
-//   
-//   Double_t fRecoEnergy_e;
-//   Double_t fRecoEnergy_p;
-//   
-//   TVector3* fPosScatReal;
-//   TVector3* fPosAbsReal;
-//   
-//   Double_t fRealEnergy_e;
-//   Double_t fRealEnergy_p;
-  
+  TVector3* fPos_Scat;
+  TVector3* fPos_Abs;
+   
+  Double_t fEnergy_Scat;
+  Double_t fEnergy_Abs;
+
+  Double_t fEnergy_Primary;
+  Double_t fReEnS;
+  Double_t fEnergyS;
+  Double_t fReEnP;
   
   bool AccessTree(TString name/*, TString name1, TString name2*/);
   TTree* fTree;
-//   TTree* fTree1;
-//   TTree* fTree2;
+  
 
-//  ClassDef(InputReaderEI, 0)
+  ClassDef(InputReaderEI, 0)
 };
 
 #endif
