@@ -76,11 +76,28 @@ TVector3* InputReader::GetPositionPrimary(void) { return NULL; }
 /// in the scatterer (Compton scattering).
 TVector3* InputReader::GetPositionScattering(void) { return NULL; }
 //------------------------------------------------------------------
+vector<TVector3>* InputReader::GetElectronPosition(void) { return NULL; }
+//------------------------------------------------------------------
+int InputReader::GetRealPosESize(void) { return -100; }    
+//------------------------------------------------------------------
+
+vector<int>* InputReader::GetRealInteractionE(void) { 
+    
+    return NULL; }
+//------------------------------------------------------------------
 TVector3* InputReader::GetPositionScatteringReco(void) { return NULL; }
 //------------------------------------------------------------------
 /// Returns pointer to the vector representing place of interaction
 /// in the absorber (absorption).
 TVector3* InputReader::GetPositionAbsorption(void) { return NULL; }
+//------------------------------------------------------------------
+vector<TVector3>* InputReader::GetPhotonPosition(void) { return NULL; }
+//------------------------------------------------------------------
+int InputReader::GetRealPosPSize(void) { return -100; }      
+//------------------------------------------------------------------
+vector<int>* InputReader::GetRealInteractionP(void) { 
+    
+    return NULL; }
 //------------------------------------------------------------------
 TVector3* InputReader::GetPositionAbsorptionReco(void) { return NULL; }
 //------------------------------------------------------------------
@@ -99,8 +116,18 @@ int InputReader::GetRecoClusterPosSize(void) { return -100; }
 int InputReader::GetIdentified(void) {return -1000;}
 
 //------------------------------------------------------------------
+int InputReader::GetMultiplicityNum(void) {return -1000;}
+//------------------------------------------------------------------
+int InputReader::GetClassID(void) {return -1000;}
+//------------------------------------------------------------------
 double InputReader::GetEP(void) { return -100; }
-//------------------------
+//------------------------------------------------------------------
+double InputReader::GetReES(void) { return -100; }
+//------------------------------------------------------------------
+double InputReader::GetES(void) { return -100; }
+//------------------------------------------------------------------
+double InputReader::GetReEP(void) { return -100; }
+//------------------------------------------------------------------
 /// Returns energy of the gamma emitted from the source [MeV].
 double InputReader::GetEnergyPrimary(void) { return -100; }
 //------------------------------------------------------------------
