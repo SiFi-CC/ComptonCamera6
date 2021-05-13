@@ -18,8 +18,10 @@ InputReaderGeant::InputReaderGeant(TString path) : InputReader(path) {
     throw "##### Exception in InputReaderGeant constructor!";
   }
 
-  fPositionScat = new TVector3();
-  fPositionAbs = new TVector3();
+//  fPositionScat = new TVector3();
+//  fPositionAbs = new TVector3();
+  
+  
   fDirectionScat = new TVector3();
   
   fPositionScatReco = new TVector3();
@@ -74,10 +76,19 @@ bool InputReaderGeant::AccessTree(TString name, TString name1) {
   
   fRealPosition_source = new TVector3();
   fRealDirection_source = new TVector3();
-  fRealPosition_e = new TVector3();
+  //fRealPosition_e = new TVector3();
   fRealComptonPosition = new TVector3();
-  fRealPosition_p = new TVector3();
+  //fRealPosition_p = new TVector3();
   fRealDirection_scatter = new TVector3();
+  
+  /////// new version of file//////////////////
+  
+   fRealPosition_e = new vector<TVector3>;
+   fRealInteractions_e = new vector<int>;
+   fRealPosition_p = new vector<TVector3>;
+   fRealInteractions_p = new vector<int>;
+  
+///////////////////////////////////////////////  
   
   fScattererPosition = new TVector3();
   fAbsorberPosition = new TVector3();
@@ -100,8 +111,10 @@ bool InputReaderGeant::AccessTree(TString name, TString name1) {
   fTree1->SetBranchAddress("RealPosition_source", &fRealPosition_source);
   fTree1->SetBranchAddress("RealDirection_source", &fRealDirection_source);
   fTree1->SetBranchAddress("RealPosition_e", &fRealPosition_e);
+  fTree1->SetBranchAddress("RealInteractions_e", &fRealInteractions_e);
   fTree1->SetBranchAddress("RealComptonPosition", &fRealComptonPosition);
   fTree1->SetBranchAddress("RealPosition_p", &fRealPosition_p);
+  fTree1->SetBranchAddress("RealInteractions_p", &fRealInteractions_p);
   fTree1->SetBranchAddress("RealDirection_scatter", &fRealDirection_scatter);
   fTree1->SetBranchAddress("Identified", &fIdentified);
   fTree1->SetBranchAddress("PurCrossed", &fPurCrossed);
@@ -151,7 +164,7 @@ bool InputReaderGeant::LoadEvent(int i) {
 
   fTree1->GetEntry(i);
 
-   //if (0 == fRealPosition_e->X() || 0 == fRealPosition_p->X()) return false;
+  //if (0 == fRealPosition_e->X() || 0 == fRealPosition_p->X()) return false;
 
   return true;
 }
@@ -166,12 +179,27 @@ TVector3* InputReaderGeant::GetPositionPrimary(void) {
   // return NULL;
 }
 //------------------------------------------------------------------
+/*
 TVector3* InputReaderGeant::GetPositionScattering(void) {
   fPositionScat->SetX(fRealPosition_e->X());
   fPositionScat->SetY(fRealPosition_e->Y());
   fPositionScat->SetZ(fRealPosition_e->Z());
   return fPositionScat;
-}
+}*/
+//----------new version of file--------------------------------------------------------
+
+vector<TVector3>* InputReaderGeant::GetElectronPosition(void) { 
+    
+    return fRealPosition_e; }
+
+//------------------------------------------------------------------
+
+int InputReaderGeant::GetRealPosESize(void) { return fRealPosition_e->size(); }    
+//------------------------------------------------------------------
+
+vector<int>* InputReaderGeant::GetRealInteractionE(void) { 
+    
+    return fRealInteractions_e; }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetPositionScatteringReco(void) {
   fPositionScatReco->SetX(fRecoPosition_e->position.X());
@@ -180,12 +208,24 @@ TVector3* InputReaderGeant::GetPositionScatteringReco(void) {
   return fPositionScatReco;
 }
 //------------------------------------------------------------------
+/*
 TVector3* InputReaderGeant::GetPositionAbsorption(void) {
   fPositionAbs->SetX(fRealPosition_p->X());
   fPositionAbs->SetY(fRealPosition_p->Y());
   fPositionAbs->SetZ(fRealPosition_p->Z());
   return fPositionAbs;
-}
+}*/
+//--------------new version of file----------------------------------------------------
+
+vector<TVector3>* InputReaderGeant::GetPhotonPosition(void) { 
+    
+    return fRealPosition_p; }
+//------------------------------------------------------------------
+int InputReaderGeant::GetRealPosPSize(void) { return fRealPosition_p->size(); }      
+//------------------------------------------------------------------
+vector<int>* InputReaderGeant::GetRealInteractionP(void) { 
+    
+    return fRealInteractions_p; }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetPositionAbsorptionReco(void) {
   fPositionAbsReco->SetX(fRecoPosition_p->position.X());
