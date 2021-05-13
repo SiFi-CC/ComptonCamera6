@@ -26,7 +26,13 @@ public:
   bool virtual LoadEvent(int i);
   TVector3 virtual* GetPositionPrimary(void);
   TVector3 virtual* GetPositionScattering(void);
+  vector<TVector3> virtual* GetElectronPosition(void);
+  int virtual GetRealPosPSize(void);
+  vector<int> virtual* GetRealInteractionP(void);
+  int virtual GetRealPosESize(void);
+  vector<int> virtual* GetRealInteractionE(void);
   TVector3 virtual* GetPositionScatteringReco(void);
+  vector<TVector3> virtual* GetPhotonPosition(void);
   TVector3 virtual* GetPositionAbsorption(void);
   TVector3 virtual* GetPositionAbsorptionReco(void);
   TVector3 virtual* GetGammaDirPrimary(void);
@@ -36,8 +42,13 @@ public:
   TVector3 virtual* GetAbsorberPosition(void);
   
   int virtual GetIdentified(void);
+  int virtual GetMultiplicityNum(void);
+  int virtual GetClassID(void);
   int virtual GetRecoClusterPosSize(void);
   double virtual GetEP(void);
+  double virtual GetReES(void);
+  double virtual GetES(void);
+  double virtual GetReEP(void);
   double virtual GetEnergyPrimary(void);
   double virtual GetEnergyPrimaryReco(void);
   double virtual GetEnergyLoss(void);
