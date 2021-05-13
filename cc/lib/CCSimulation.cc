@@ -41,7 +41,7 @@ CCSimulation::CCSimulation(TString name, Bool_t verbose) {
   // fOutputName = CmdLineOption::GetStringValue("Output");
   fVerbose = verbose;
   fFile =
-      new TFile(outputName +"/"+ name + ".root", "RECREATE");
+      new TFile(outputName + name + ".root", "RECREATE");
   fTree = new TTree("data", "data");
   fTree->Branch("point0", &fPoint0); // source position
   fTree->Branch("point1", &fPoint1); // interaction point on the scaterrer
@@ -314,7 +314,7 @@ void CCSimulation::Clear(void) {
 void CCSimulation::SaveGeometryTxt(void) {
   TString outputName = CmdLineOption::GetStringValue("OutputPath");
   ofstream output(
-      Form("%s/CCSimulation_geometry_gen%i_corr_%.0f_%.0f_%.0f_no.%i.txt",
+      Form("%sCCSimulation_geometry_gen%i_corr_%.0f_%.0f_%.0f_no.%i.txt",
            outputName.Data(),fGenVersion, fXofSource, fYofSource, fZofSource, fNev),
       std::ios::out | std::ios::trunc);
   output << "Generator version: " << fGenVersion << endl;
@@ -440,7 +440,7 @@ void CCSimulation::BuildTGeometry(void) {
   TString outputName = CmdLineOption::GetStringValue("OutputPath");
   geom->CloseGeometry();
   geom->SetVisLevel(4);
-  geom->Export( Form( "%s/CCSimulation_TGeometry_gen%i_corr_%.0f_%.0f_%.0f_no.%i.root", outputName.Data(), fGenVersion, fXofSource, fYofSource, fZofSource, fNev));
+  geom->Export( Form( "%sCCSimulation_TGeometry_gen%i_corr_%.0f_%.0f_%.0f_no.%i.root", outputName.Data(), fGenVersion, fXofSource, fYofSource, fZofSource, fNev));
 }
 //------------------------------------------------------------------
 /// Prints details of the CCSimulation class object.
