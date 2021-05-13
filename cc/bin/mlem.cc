@@ -6,25 +6,42 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
     
-  if (argc != 2) {
-    cout << "To run type: ./mlem path_to_config" << endl;
-    return 0;
-  }
-  CmdLineConfig::instance()->ReadCmdLine(argc, argv);
-  TString path(argv[1]);
+    CmdLineOption _path("output_path", "-op", "output path", "./results/");
+    
+    CmdLineConfig::instance()->ReadCmdLine(argc, argv);
+    
+    TString path = CmdLineOption::GetStringValue("output_path");
+    
+  /*  
+    if (argc != 2) {
+        cout << "To run type: ./mlem path_to_config" << endl;
+        return 0;
+    }*/
+//   CmdLineOption opt_output("Output", "-o",
+//                            "Output file (string), default: Hmatrix.root",
+//                            "Hmatrix.root");
 
-  CCMLEM* rec;
+//  CmdLineConfig::instance()->ReadCmdLine(argc, argv);
+//  TString outputfile(opt_output.GetStringValue()); '
 
-  try {
-    rec = new CCMLEM(path);
-  } catch (const char* message) {
-    cout << message << endl;
-    return 0;
-  }
+    //TString path(argv[1]);
+  
+    CCMLEM* rec;
 
-  rec->Reconstruct();
+    try {
+        
+        rec = new CCMLEM(path);
+        
+    } catch (const char* message) {
+        
+        cout << message << endl;
+        return 0;
+    }
 
-  delete rec;
+    rec->Reconstruct(1);
+ // rec->HmatrixToFile(outputfile);
 
-  return 1;
+    delete rec;
+
+    return 1;
 }
