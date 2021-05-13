@@ -24,14 +24,27 @@ public:
   bool LoadEvent(int i);
   void Clear(void);
   TVector3* GetPositionPrimary(void);
-  TVector3* GetPositionScattering(void);
+  //TVector3* GetPositionScattering(void);
   TVector3* GetPositionScatteringReco(void);
-  TVector3* GetPositionAbsorption(void);
+  //TVector3* GetPositionAbsorption(void);
   TVector3* GetPositionAbsorptionReco(void);
   TVector3* GetGammaDirPrimary(void);
   TVector3* GetGammaDirScattered(void);
   TVector3* GetGammaDirScatteredReco(void);
   int GetRecoClusterPosSize(void);
+  
+  /////  new version of file///////////////
+  
+  vector<TVector3>* GetElectronPosition(void);
+  vector<TVector3>* GetPhotonPosition(void);
+  
+  int GetRealPosESize(void);
+  int GetRealPosPSize(void);
+  
+  vector<int>* GetRealInteractionE(void);
+  vector<int>* GetRealInteractionP(void);
+  
+////////////////////////////////////////////////
   
   double GetEP(void);
   double GetEnergyPrimary(void);
@@ -61,9 +74,9 @@ private:
   Double_t fRealEnergy_p;       ///< Photon energy + uncertainty [MeV]
   TVector3* fRealPosition_source;
   TVector3* fRealDirection_source;
-  TVector3* fRealPosition_e;        ///< Electron creation position + uncertainty
+  //TVector3* fRealPosition_e;        ///< Electron creation position + uncertainty
   TVector3* fRealComptonPosition;
-  TVector3* fRealPosition_p;      ///< Photon energy deposition position + uncertainty
+  //TVector3* fRealPosition_p;      ///< Photon energy deposition position + uncertainty
   TVector3* fRealDirection_scatter;     ///< Direction of the scattered photon +
                                     ///< uncertainty
   PhysicVar* fRecoEnergy_e;     ///< Electron energy + uncertainty [MeV]
@@ -86,7 +99,15 @@ private:
   TVector3* fPositionAbsReco;
   TVector3* fDirectionScatReco;
   
+  ///// new version of file///////////////
   
+  vector<TVector3>* fRealPosition_e;
+  vector<TVector3>* fRealPosition_p;
+  
+  vector<int>* fRealInteractions_e;
+  vector<int>* fRealInteractions_p;
+  
+//////////////////////////////////// 
   
   TVector3* fPositionSource;
   TVector3* fDirectionSource;
