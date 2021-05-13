@@ -1,6 +1,6 @@
 #include "InputReaderEI.hh"
 #include <vector>
-//ClassImp(InputReaderEI);
+ClassImp(InputReaderEI);
 
 //------------------------------------------------------------------
 /// Default constructor.
@@ -14,11 +14,11 @@ InputReaderEI::InputReaderEI() : InputReader() {
 ///\param path (TString) - path to the input file.
 InputReaderEI::InputReaderEI(TString path) : InputReader(path) {
 
-  if (!AccessTree("Pos&EnergyRecoClus"/*, "Reco", "Real"*/)) {
+  if (!AccessTree("TreeSB")) {
     throw "##### Exception in InputReaderEI constructor!";
   }
-  fPositionScatReco = new TVector3();
-  fPositionAbsReco = new TVector3();
+  fPositionElectron = new TVector3();
+  fPositionPhoton = new TVector3();
 }
 //------------------------------------------------------------------
 /// Default destructor.
@@ -31,64 +31,41 @@ InputReaderEI::~InputReaderEI() {
 bool InputReaderEI::AccessTree(TString name/*, TString name1, TString name2*/) {
 
   fTree = (TTree*)fFile->Get(name);
-//   fTree1 = (TTree*)fFile->Get(name1);
-//   fTree2 = (TTree*)fFile->Get(name2);
+
   
   if (fTree == NULL) {
     cout << "##### Error in InputReaderEI::AccessTree()!" << endl;
     cout << "Could not access the tree!" << endl;
     return false;
   }
-//   if (fTree1 == NULL) {
-//     cout << "##### Error in InputReaderEI::AccessTree()!" << endl;
-//     cout << "Could not access the tree!" << endl;
-//     return false;
-//   }
-//   if (fTree2 == NULL) {
-//     cout << "##### Error in InputReaderEI::AccessTree()!" << endl;
-//     cout << "Could not access the tree!" << endl;
-//     return false;
-//   }
   
-  fEnergyReco0 = new PhysicVar();
-  fEnergyReco1 = new PhysicVar();
-  fPosScatClus = new PhysicVec();
-  fPosAbsClus = new PhysicVec();
-  
-//   fPosScatReco = new TVector3();
-//   fPosAbsReco = new TVector3();
-//   
-//   fPosScatReal = new TVector3();
-//   fPosAbsReal = new TVector3();
+  fPos_Scat = new TVector3();
+  fPos_Abs = new TVector3();
+
   fTree->SetBranchAddress("EventNumber", &fEventNumber);
-  fTree->SetBranchAddress("PosScat", &fPosScatClus);
-  fTree->SetBranchAddress("EnergyReco0", &fEnergyReco0);
-  fTree->SetBranchAddress("EnergyRe0", &fEnergyRe0);
-  fTree->SetBranchAddress("PosAbs", &fPosAbsClus);
-  fTree->SetBranchAddress("EnergyReco1", &fEnergyReco1);
-  fTree->SetBranchAddress("EnergyRe1", &fEnergyRe1);
+  fTree->SetBranchAddress("Energy_Primary", &fEnergy_Primary);
+  fTree->SetBranchAddress("ReEnergy_Sum", &fReEnS);
+  fTree->SetBranchAddress("ReEnergy_Primary", &fReEnP);
+//    fTree->SetBranchAddress("PosX_Scat", &fPosX_Scat);
+//    fTree->SetBranchAddress("PosY_Scat", &fPosY_Scat);
+//    fTree->SetBranchAddress("PosZ_Scat", &fPosZ_Scat);
+  fTree->SetBranchAddress("Pos_Scat", &fPos_Scat);
+  fTree->SetBranchAddress("Energy_Scat", &fEnergy_Scat);
+//    fTree->SetBranchAddress("PosX_Abs", &fPosX_Abs);
+//    fTree->SetBranchAddress("PosY_Abs", &fPosY_Abs);
+//    fTree->SetBranchAddress("PosZ_Abs", &fPosZ_Abs);
+  fTree->SetBranchAddress("Pos_Abs", &fPos_Abs);
+  fTree->SetBranchAddress("Energy_Abs", &fEnergy_Abs);
+  fTree->SetBranchAddress("Energy_Sum", &fEnergyS);
+  //fTree->SetBranchAddress("Multiplicity", &fS);
+  fTree->SetBranchAddress("classID", &fClassID);
   
-//   fTree1 = new TTree("Reco", "Reco");
-//   fTree1->Branch("PosScatReco", &fPosScatReco);
-//   fTree1->Branch("PosAbsReco", &fPosAbsReco);
-//   fTree1->Branch("RecoEnergy_e", &fRecoEnergy_e);
-//   fTree1->Branch("RecoEnergy_p", &fRecoEnergy_p);
-//      
-//      
-//   fTree2 = new TTree("Real", "Real");
-//   fTree2->Branch("PosScatReal", &fPosScatReal);
-//   fTree2->Branch("PosAbsReal", &fPosAbsReal);
-//   fTree2->Branch("RealEnergy_e", &fRealEnergy_e);
-//   fTree2->Branch("RealEnergy_p", &fRealEnergy_p);
+
   
   cout << "\n\nIn InputReaderEI::AccessTree()." << endl;
   cout << fTree->GetName() << " tree accessed.\n" << endl;
 
-//   cout << "\n\nIn InputReaderEI::AccessTree()." << endl;
-//   cout << fTree1->GetName() << " tree accessed.\n" << endl;
-//   
-//   cout << "\n\nIn InputReaderEI::AccessTree()." << endl;
-//   cout << fTree2->GetName() << " tree accessed.\n" << endl;
+
  
   
   return true;
@@ -107,73 +84,62 @@ bool InputReaderEI::LoadEvent(int i) {
   }
   fTree->GetEntry(i);
   
-//   int imax1 = fTree1->GetEntries();
-//   if (i > imax1) {
-//     cout << "##### Error in InputReaderEI::LoadEvent() in reconstruction tree!" << endl;
-//     cout << "Requested event number larger than number of events in the tree!"
-//          << endl;
-//     return false;
-//   }
-//   fTree1->GetEntry(i);
-//   
-//   int imax2 = fTree2->GetEntries();
-//   if (i > imax2) {
-//     cout << "##### Error in InputReaderEI::LoadEvent() in reconstruction tree!" << endl;
-//     cout << "Requested event number larger than number of events in the tree!"
-//          << endl;
-//     return false;
-//   }
-//   fTree2->GetEntry(i);
 
   return true;
 }
 //------------------------------------------------------------------
 TVector3* InputReaderEI::GetPositionScattering(void)
 {
-  fPositionScatReco->SetX(fPosScatClus->position.X());
-  fPositionScatReco->SetY(fPosScatClus->position.Y());
-  fPositionScatReco->SetZ(fPosScatClus->position.Z());
-  return fPositionScatReco;
+  fPositionElectron->SetX(fPos_Scat->X());
+  fPositionElectron->SetY(fPos_Scat->Y());
+  fPositionElectron->SetZ(fPos_Scat->Z());
+  return fPositionElectron;
 }
 //------------------------------------------------------------------
 TVector3* InputReaderEI::GetPositionAbsorption(void) {
-  fPositionAbsReco->SetX(fPosAbsClus->position.X());
-  fPositionAbsReco->SetY(fPosAbsClus->position.Y());
-  fPositionAbsReco->SetZ(fPosAbsClus->position.Z());
-  return fPositionAbsReco;
+  fPositionPhoton->SetX(fPos_Abs->X());
+  fPositionPhoton->SetY(fPos_Abs->Y());
+  fPositionPhoton->SetZ(fPos_Abs->Z());
+  return fPositionPhoton;
 }
 //------------------------------------------------------------------
-double InputReaderEI::GetEnergyLoss(void) { return fEnergyReco0->value; }
+double InputReaderEI::GetEP(void) { return fEnergy_Primary; }
 //------------------------------------------------------------------
-double InputReaderEI::GetEnergyScattered(void) { return fEnergyReco1->value; }
+double InputReaderEI::GetReES(void) { return fReEnS; }
+//-----------------------------------------------------------------
+double InputReaderEI::GetES(void) { return fEnergyS; }
+//------------------------------------------------------------------
+double InputReaderEI::GetReEP(void) { return fReEnP; }
+//------------------------------------------------------------------
+double InputReaderEI::GetEnergyLoss(void) { return fEnergy_Scat; }
+//------------------------------------------------------------------
+double InputReaderEI::GetEnergyScattered(void) { return fEnergy_Abs; }
+//------------------------------------------------------------------
+int InputReaderEI::GetMultiplicityNum(void) { return fS; }
+//------------------------------------------------------------------
+int InputReaderEI::GetClassID(void) { return fClassID; }
 //------------------------------------------------------------------
 void InputReaderEI::Clear(void) {
   
-  //fTotalEnergy2 = -1000;
+ 
   fEventNumber = -1;
-  fPositionScatReco = NULL;
-  fPositionAbsReco = NULL;
   
-  fPosScatClus = NULL;
-  fPosAbsClus = NULL;
-  fEnergyReco0 = NULL;
-  fEnergyReco1 = NULL;
-  fEnergyRe0 = -1000;
-  fEnergyRe1 = -1000;
+  fS = -1;
+  fClassID = -1;
+  fPos_Scat = NULL;
+  fPos_Abs = NULL;
+  fEnergy_Primary = -1000;
+  fReEnS = -1000;
+  fReEnP = -1000;
+  fEnergyS = -1000;
+  fEnergy_Scat = -1000;
+  fEnergy_Abs = -1000;
   
-//   fPosScatReco = NULL;
-//   fPosAbsReco = NULL;
-//   fRecoEnergy_e = -1000;
-//   fRecoEnergy_p = -1000;
-//   
-//   fPosScatReal = NULL;
-//   fPosAbsReal = NULL;
-//   fRealEnergy_e = -1000;
-//   fRealEnergy_p = -1000;
-//   
+  fPositionElectron = NULL;
+  fPositionPhoton = NULL;
+
   fTree = NULL;
-//   fTree1 = NULL;
-//   fTree2 = NULL;
+
   
   fFile = NULL;
 
