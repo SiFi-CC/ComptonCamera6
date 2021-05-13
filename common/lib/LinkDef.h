@@ -11,11 +11,12 @@
 #pragma link C++ class InputReaderSimple;
 #pragma link C++ class InputReaderGeant;
 #pragma link C++ class InputReaderEI;
+#pragma link C++ class BinnedGeometry;
 
-#pragma link C++ class Source;
-#pragma link C++ class LineSource;
-#pragma link C++ class PointSource;
-#pragma link C++ class MultiPointSource;
+#pragma link C++ class Source+;
+#pragma link C++ class PointSource+;
+#pragma link C++ class PlanarSource+;
+#pragma link C++ class MultiPointSource+;
 
 #pragma link C++ struct PhysicVar+;
 #pragma link C++ struct PhysicVec+;
@@ -26,3 +27,4 @@
 #pragma link C++ class std::vector<PhysicVec*>+;
 
 #endif
+
