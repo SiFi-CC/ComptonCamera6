@@ -38,10 +38,11 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    rec->Reconstruct(1);
+    rec->Reconstruct();
  // rec->HmatrixToFile(outputfile);
 
     delete rec;
 
     return 1;
 }
+
