@@ -21,10 +21,10 @@
 #include <TMatrixT.h>
 #include "Coordinates.hh"
 #include <vector>
-///Class for image reconstruction from events simulated in class CCSimulations
+///To be acquainted with Class for image reconstruction from events simulated in class CCSimulations
 ///and using MLEM method based on ComptonCone class objects. More details about this class
 /// is available on wiki [LINK] (http://bragg.if.uj.edu.pl/gccbwiki/index.php/File:MK_20180513_Image_Reconstruction_Analysis_For_CC_Toy_Model.pptx)
-
+/// Moreover, it can be used for reconstruction of Geant4 and machine learning outputs
 class CCMLEM : public TObject {
 
 public:
@@ -33,7 +33,7 @@ public:
   ~CCMLEM();
 
   Bool_t Iterate(Int_t nstop, Int_t iter);
-  Bool_t Reconstruct(Bool_t flag);
+  Bool_t Reconstruct();
   Bool_t GetSigmaError(void);
   Int_t AddIsectionPoint(TString dir, Double_t x, Double_t y, Double_t z);
   //Bool_t Sensitivity(void);
@@ -52,15 +52,8 @@ public:
   void Clear(void);
   /** Calculate H matrix and save it in file */
   void SmatrixToFile(const TString& filename);
-/*  
-private:
-  /** calulate probability matrix 
-  void FillHMatrix();
-  /** run single iteration of simulation 
-  void SingleIteration();
-  /** calculate vector s to normalize probabilities 
-  Bool_t CalculateS();  
-*/
+  Bool_t DrawREGraph(void);
+
 private:
   TString fInputName;       ///< Path to the file with simulation data
   Double_t fXofRecoPlane;       ///< x-component of image plane coordinate
@@ -99,25 +92,14 @@ private:
   Double_t fSigma[250];     ///< Relative sigma value to compare different iterations
   Double_t sigma[250];
   Double_t fDenominator[10000000];
+  std::vector< std::pair<Int_t, Double_t>> fRErr;
   TH2F* fSensitivity;
   TH1D* fHisto;     ///< Histogram containing energy resolution obtained by Geant4
   TFile* fOutputFile;       ///< ROOT file containing reconstruction results 
-/*  
-  /** object that stores coordinates/dimensions of source object 
-  H2Coords fObjectCoords;
-  /** object that stores coordinates/dimensions of detector image 
-  H2Coords fImageCoords;
-  
-  TMatrixT<Double_t> fMatrixH;
 
-  /** Transposition of  H matrix 
-  TMatrixT<Double_t> fMatrixHPrime;
+  TH2F* fImage[250];        ///< Reconstructed image histogram
   
-  TMatrixT<Double_t> fImageMat;
-  */
-  //TH2F* fImage[250];        ///< Reconstructed image histogram
-  TH2F* fImage[250];
-  TH2F* h[250];
+  TH2F* fSH[250];
   TH2F* fSmatrix;
   TTree* fTree;
   TTree* fTree1;
