@@ -48,7 +48,7 @@ public:
   double virtual GetEP(void);
   double virtual GetReES(void);
   double virtual GetES(void);
-  double virtual GetReEP(void);
+//  double virtual GetReEP(void);
   double virtual GetEnergyPrimary(void);
   double virtual GetEnergyPrimaryReco(void);
   double virtual GetEnergyLoss(void);
