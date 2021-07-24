@@ -45,7 +45,7 @@ bool InputReaderEI::AccessTree(TString name/*, TString name1, TString name2*/) {
   fTree->SetBranchAddress("EventNumber", &fEventNumber);
   fTree->SetBranchAddress("Energy_Primary", &fEnergy_Primary);
   fTree->SetBranchAddress("ReEnergy_Sum", &fReEnS);
-  fTree->SetBranchAddress("ReEnergy_Primary", &fReEnP);
+//  fTree->SetBranchAddress("ReEnergy_Primary", &fReEnP);
 //    fTree->SetBranchAddress("PosX_Scat", &fPosX_Scat);
 //    fTree->SetBranchAddress("PosY_Scat", &fPosY_Scat);
 //    fTree->SetBranchAddress("PosZ_Scat", &fPosZ_Scat);
@@ -109,7 +109,7 @@ double InputReaderEI::GetReES(void) { return fReEnS; }
 //-----------------------------------------------------------------
 double InputReaderEI::GetES(void) { return fEnergyS; }
 //------------------------------------------------------------------
-double InputReaderEI::GetReEP(void) { return fReEnP; }
+//double InputReaderEI::GetReEP(void) { return fReEnP; }
 //------------------------------------------------------------------
 double InputReaderEI::GetEnergyLoss(void) { return fEnergy_Scat; }
 //------------------------------------------------------------------
@@ -130,7 +130,7 @@ void InputReaderEI::Clear(void) {
   fPos_Abs = NULL;
   fEnergy_Primary = -1000;
   fReEnS = -1000;
-  fReEnP = -1000;
+//  fReEnP = -1000;
   fEnergyS = -1000;
   fEnergy_Scat = -1000;
   fEnergy_Abs = -1000;
