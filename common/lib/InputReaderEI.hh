@@ -8,7 +8,7 @@
 using namespace std;
 
 /// This is class derived from InputReader class. It opens requested
-/// ROOT file containing tree with reconstruction results by Geant4 
+/// ROOT file containing tree with reconstruction results by for example, Geant4
 /// and via set of getter function passes information to reconstruction 
 /// classes, i.e. CCMLEM.
 
@@ -30,7 +30,7 @@ public:
   double GetEnergyScattered(void);
   double GetEP(void);
   double GetReES(void);
-  double GetReEP(void);
+//  double GetReEP(void);
   double GetES(void);
   
   int GetMultiplicityNum(void);
@@ -58,7 +58,7 @@ private:
   Double_t fEnergy_Primary;
   Double_t fReEnS;
   Double_t fEnergyS;
-  Double_t fReEnP;
+//  Double_t fReEnP;
   
   bool AccessTree(TString name/*, TString name1, TString name2*/);
   TTree* fTree;
