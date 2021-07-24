@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     cout << message << endl;
     return 0;
   }
-  reco->Reconstruct(0);
+  reco->Reconstruct();
   reco->SmatrixToFile(outputfile);
   
   delete reco;
