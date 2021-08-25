@@ -189,7 +189,7 @@ Bool_t CCMLEM::Reconstruct(void) {
     TVector3 coneAxis;
     Double_t coneTheta;
     Double_t energy1, energy2, energy0, energy4, energy5, energy6, energysum, energyreco1, energyreco2;
-    Double_t energy3 = 4.44;
+    //Double_t energy3 = 4.44;
   
     Double_t Absthick_z, Absthick_y, Absthick_x;
     TVector3 *point_e, *point_p, *point_dir, *point_abs_sc, *pointreco_e, *pointreco_p;
@@ -263,7 +263,8 @@ Bool_t CCMLEM::Reconstruct(void) {
         energy0 = fReader->GetEP();
         energy4 = fReader->GetEnergyPrimary();
         energysum = fReader->GetES();
-/// The recovered energy sum ///      
+        
+/// The recovered energy sum for Machine Learning//////////////////////      
         energy5 = fReader->GetReES();
 ///////////////////////////////////////////////////////////////////////
         
@@ -272,10 +273,10 @@ Bool_t CCMLEM::Reconstruct(void) {
         ID = fReader->GetClassID();
       
         point_e = fReader->GetPositionScattering();
-        //point_e->Print();
+        
         point_p = fReader->GetPositionAbsorption();
       
-/////////////////////////new version of Geant4 file (Real info.) //////////////////////   
+///////////////////////// new version of Geant4 file (Real info.) //////////////////////   
       
         point_RE = fReader->GetElectronPosition();
       
@@ -288,7 +289,7 @@ Bool_t CCMLEM::Reconstruct(void) {
         es = fReader->GetRealPosESize();
         ps = fReader->GetRealPosPSize();
         
-//////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
       //point_p->Print();
       //point_dir = fReader->GetGammaDirScattered();
       //point_dir->Print();
@@ -312,7 +313,7 @@ Bool_t CCMLEM::Reconstruct(void) {
         Scatposition = fReader->GetScattererPosition();
         Absposition = fReader->GetAbsorberPosition();
       
-/////////////////////////////////// Real Compton events (Geant4) /////////////////////////// 
+/////////////////////////////////// Real Compton events (Geant4) Monte-Carlo truth /////////////////////////// 
 /*      
         for(int m = 0; m < ReInt_p->size(); m++) {
             
@@ -358,15 +359,15 @@ Bool_t CCMLEM::Reconstruct(void) {
 /////////////////////////////////////////////////////////////////////////////////////      
       
         count++;
-       
+//// Recovered energy sum plot ////////////
         EW->Fill(energy5);
        
         //REW->Fill(energysum);
-        //REW->Fill(energy5);
         //Energy->Fill(sum);
         //EnergyPri->Fill(energy0);
         //h2->Fill(energy2,energy1);
-
+        
+//////////// Only for Simple simulations, this flag is off in config.txt ///////////////////////////////////////
         if (fSmear) {
             point_e->SetXYZ(SmearBox(point_e->X(), fResolutionX),
                          SmearGaus(point_e->Y(), fResolutionY),
@@ -377,16 +378,19 @@ Bool_t CCMLEM::Reconstruct(void) {
             energy1 = SmearGaus(energy1, GetSigmaE(energy1));
             energy2 = SmearGaus(energy2, GetSigmaE(energy2));
         }
-/// Geant4 Events_Reco///////////////////////////////////////   
+        
+/// For Geant4 Events_Reco (cut-based reconstruction), uncomment below and comment the other two ///////////////////////////////////////   
 //      ComptonCone* cone = new ComptonCone(pointreco_e, pointreco_p, energyreco1+energyreco2, energyreco2);
 
-///////////// For Real data Geant4 //////////////////////////////////
+///////////// For Real data Geant4 and Simple simulations , uncomment below and comment the other two //////////////////////////////////
 
 //      ComptonCone* cone = new ComptonCone(RePos_e, RePos_p, energy1 + energy2, energy2); 
     
-////////////////////////// Machine Learning output as an input//////////////////////////////  
+////////////////////////// Machine Learning output as an input, uncomment below and comment the other two /////////////////////////////  
     
         ComptonCone* cone = new ComptonCone(point_e, point_p, /*energy1 + energy2*/energy5, /*energy2*/energy5 - energy1); 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+        
         interactionPoint = cone->GetApex();
         coneAxis = cone->GetAxis();
         coneTheta = cone->GetAngle();
@@ -881,7 +885,8 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
   //TH1D* ProZ[150];
   //TH1D* ProY[150];
   //TH1D* ProX[150];
-  
+    
+/// BELOW FITTING FUNCTIONS CAN BE USED ALSO FOR SIMPLE SIMULATION, DEPENDING ON SOURCE TYPE, ON/OFF SMEARING EFFECT,.... //////// 
 ///For the unknown source distribution (simple simulation), user should define an appropriate fitting
 ///function to compare reasonablely sigma value of the new 10th iteration with previous one.
 /*  
@@ -954,6 +959,7 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
 //   func->SetParameter(1, 0.01);
 //   func->SetParameter(2, 0.1);
   // func->SetParameter(3,8.1);
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     if (fImage[lastiter] == NULL) {
         cout << "Error in CCMELM::Iterate(). Last iteration NULL" << endl;
@@ -1068,7 +1074,7 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
 /// in ROI (20 pixels) are chosen, the maximum intensity(pixel content) is found in each iteration.
 /// Then the absolute difference between two sucessive iterations are calculated
 /// if the relative error is less than 1 percent, then the iteration is stopped.
-/// The iteration zero is assumed 100 percent.    
+/// The first iteration is assumed 100 percent.    
     double diffmax = 0;
     double val = 0;
     
@@ -1339,7 +1345,8 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
       }
   }
 */            
-           
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
   SaveToFile(hthisiter);
   //SaveToFile(Sensitivity);
   //SaveToFile(fSenHisto[lastiter + 1]);
@@ -1392,7 +1399,7 @@ Bool_t CCMLEM::DrawREGraph(void){
     return kTRUE; 
 }
 //------------------------------------
-/// Draw reconstructed profiles after a fixed iterations
+/// Draw reconstructed profiles after a fixed iterations ///
 Bool_t CCMLEM::DrawCanvas(void){
   
   int iter;
