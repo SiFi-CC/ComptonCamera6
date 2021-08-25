@@ -379,17 +379,21 @@ Bool_t CCMLEM::Reconstruct(void) {
             energy2 = SmearGaus(energy2, GetSigmaE(energy2));
         }
         
-/// For Geant4 Events_Reco (cut-based reconstruction), uncomment below and comment the other two ///////////////////////////////////////   
+/// For Geant4 Events_Reco (cut-based reconstruction), uncomment below and comment the other three ///////////////////////////////////////   
 //      ComptonCone* cone = new ComptonCone(pointreco_e, pointreco_p, energyreco1+energyreco2, energyreco2);
 
-///////////// For Real data Geant4 and Simple simulations , uncomment below and comment the other two //////////////////////////////////
+///////////// For Real data Geant4, uncomment below and comment the other three /////////////////////////////////////////////////////////
 
 //      ComptonCone* cone = new ComptonCone(RePos_e, RePos_p, energy1 + energy2, energy2); 
+
+///////////// For Simple simulation, uncomment below and comment the other three ///////////////////////////////////////////////////////
+
+//        ComptonCone* cone = new ComptonCone(point_e, point_p, energy1 + energy2, energy2); 
     
-////////////////////////// Machine Learning output as an input, uncomment below and comment the other two /////////////////////////////  
+////////////////////////// Machine Learning output as an input, uncomment below and comment the other three /////////////////////////////  
     
         ComptonCone* cone = new ComptonCone(point_e, point_p, /*energy1 + energy2*/energy5, /*energy2*/energy5 - energy1); 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
         
         interactionPoint = cone->GetApex();
         coneAxis = cone->GetAxis();
