@@ -4,6 +4,8 @@
 #include <iostream>
 using namespace std;
 
+// To run LM-MLEM : mlem -op ./path_to_config 
+
 int main(int argc, char* argv[]) {
     
     CmdLineOption _path("output_path", "-op", "output path", "./results/");
@@ -45,4 +47,3 @@ int main(int argc, char* argv[]) {
 
     return 1;
 }
-
