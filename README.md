@@ -24,6 +24,11 @@ To get sources run from this branch:
 git clone -b mlem_source_reco --single-branch https://github.com/SiFi-CC/ComptonCamera6/
 ```
 
+Prepare submodules (spdlog) by running:
+
+cd ComptonCamera6
+./prepare_tree.sh
+
 Building and installation
 -------------------------
 ```
