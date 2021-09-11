@@ -25,9 +25,11 @@ git clone -b mlem_source_reco --single-branch https://github.com/SiFi-CC/Compton
 ```
 
 Prepare submodules (spdlog) by running:
-
+```
 cd ComptonCamera6
+
 ./prepare_tree.sh
+```
 
 Building and installation
 -------------------------
