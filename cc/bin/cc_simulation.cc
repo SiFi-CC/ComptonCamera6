@@ -1,5 +1,8 @@
-include <iostream>
-
+#include <iostream>
+#include <CmdLineConfig.hh>
+#include "CCSimulation.hh"
+#include "TStopwatch.h"
+#include "CLog.hh"
 using namespace std;
 
 int main(int argc, char** argv) {
@@ -11,8 +14,7 @@ int main(int argc, char** argv) {
   CmdLineOption _pos_x("pos_x", "-x", "x position of source", 0.0);
   CmdLineOption _number_events("no. of events", "-n", "number of events", 0);
   
-  CmdLineOption _det_setup("Setup", "-d",
-      "Detector plane, 6 values required, default: 200:80:80:400:100:100", 0, 0);
+  CmdLineOption _det_setup("Setup", "-d", "Detector plane, 6 values required, default: 200:80:80:400:100:100", 0, 0);
   
   CmdLineConfig::instance()->ReadCmdLine(argc, argv);
   
@@ -32,8 +34,7 @@ int main(int argc, char** argv) {
     de = _det_setup.GetDoubleArrayValue(5);
     df = _det_setup.GetDoubleArrayValue(6);
   } else if (_det_setup.GetArraySize() != 0) {
-    spdlog::error("Detection setup - 6 parameters required, {} given",
-                  _det_setup.GetArraySize());
+    spdlog::error("Detection setup - 6 parameters required, {} given",_det_setup.GetArraySize());
     abort();
   }
   //DetPlane detector(da, db, dc, dd, de, df, "detector");
