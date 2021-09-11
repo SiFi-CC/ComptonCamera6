@@ -68,12 +68,12 @@ include_directories(BEFORE tools/lib)
 
 link_directories(${ROOT_LIBRARY_DIRS})
 
-include(c++-standards)
-include(code-coverage)
-include(sanitizers)
+#include(c++-standards)
+#include(code-coverage)
+#include(sanitizers)
 
-cxx_11()
-add_code_coverage()
+#cxx_11()
+#add_code_coverage()
 
 add_subdirectory(common)
 add_subdirectory(tools)
