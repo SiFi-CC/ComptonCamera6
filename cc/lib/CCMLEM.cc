@@ -360,7 +360,7 @@ Bool_t CCMLEM::Reconstruct(void) {
       
         count++;
 //// Recovered energy sum plot ////////////
-        EW->Fill(energy5);
+        //EW->Fill(energy5);
        
         //REW->Fill(energysum);
         //Energy->Fill(sum);
@@ -388,11 +388,11 @@ Bool_t CCMLEM::Reconstruct(void) {
 
 ///////////// For Simple simulation, uncomment below and comment the other three ///////////////////////////////////////////////////////
 
-//        ComptonCone* cone = new ComptonCone(point_e, point_p, energy1 + energy2, energy2); 
+        ComptonCone* cone = new ComptonCone(point_e, point_p, energy1 + energy2, energy2); 
     
 ////////////////////////// Machine Learning output as an input, uncomment below and comment the other three /////////////////////////////  
     
-        ComptonCone* cone = new ComptonCone(point_e, point_p, /*energy1 + energy2*/energy5, /*energy2*/energy5 - energy1); 
+//        ComptonCone* cone = new ComptonCone(point_e, point_p, /*energy1 + energy2*/energy5, /*energy2*/energy5 - energy1); 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
         
         interactionPoint = cone->GetApex();
@@ -613,7 +613,7 @@ Bool_t CCMLEM::Reconstruct(void) {
     cout<< "number of events : " << count <<endl;
     
 
-    SaveToFile(EW);
+    //SaveToFile(EW);
     //SaveToFile(REW);
   
     SaveToFile(fImage[0]);
@@ -743,7 +743,9 @@ Bool_t CCMLEM::Reconstruct(void) {
         if (iter >= 2 && fSigma [250] <= 0.01) {
             cout<<"-----------------------------------------"<<endl;
             cout<< "Relative Error : " << fSigma[250] << endl; 
-            DrawREGraph();
+            
+            //DrawREGraph();
+            
             return 0;
         }
  
@@ -929,28 +931,32 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
   func->SetParameter(2, 12);
   func->SetParameter(3, 1);
   func->SetParNames("Constant","Mean_value_L","Mean_value_R","Sigma_z");
-*/   
-/*
+*/ 
+
+// The FitProjection is a gaussian function defined below in CCMLEM code //
+// fitting parameters are set in the config.txt file //
+
    TF1* func_z = new TF1("FitProjection", FitProjection, -10.5, 10.5, 3);
    func_z->SetParameters(fP0,fP1,fP2);
    func_z->SetParNames("Constant","Mean_value","Sigma_z");
-*/  
-/*   TF1* func_z = new TF1("func_z", "gaus(0) + pol1(3)", -10.5, 10.5);
+   
+/*  
+   TF1* func_z = new TF1("func_z", "gaus(0) + pol1(3)", -10.5, 10.5);
    func_z->SetParameter(0, 100);
    func_z->SetParameter(1, 1);
    func_z->SetParameter(2, 2);
    func_z->SetParameter(3, 15);
    func_z->SetParameter(4, 1);
-   //func_z->SetParameter(5, 1);
-   func_z->SetParNames("Constant","Mean_value","Sigma_z", "p_{0}", "p_{1}"/*, "p_{2}"); 
-*/   
+   func_z->SetParameter(5, 1);
+   func_z->SetParNames("Constant","Mean_value","Sigma_z", "p_{0}", "p_{1}", "p_{2}"); 
+*/
    //func_z->SetParameters(fP0,fP1,fP2);
    //func_z->SetParNames("Constant","Mean_value","Sigma_z");
-  /* 
-   TF1* func_y = new TF1("FitProjection", FitProjection, 79.5, 160.5, 3);
+   
+   TF1* func_y = new TF1("FitProjection", FitProjection, -30.5, 30.5, 3);
    func_y->SetParameters(fP0,fP1,fP2);
    func_y->SetParNames("Constant","Mean_value","Sigma_y");
-*/
+
 /*   
    TF1* func = new TF1("func","[0]*TMath::Exp(-0.5*((x-[1])/[2])*((x-[1])/[2]))", -14.5, 14.5);
    //func->SetParameters(fP0,fP1,fP2);
@@ -1078,7 +1084,8 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
 /// in ROI (20 pixels) are chosen, the maximum intensity(pixel content) is found in each iteration.
 /// Then the absolute difference between two sucessive iterations are calculated
 /// if the relative error is less than 1 percent, then the iteration is stopped.
-/// The first iteration is assumed 100 percent.    
+/// The first iteration is assumed 100 percent.  
+/*
     double diffmax = 0;
     double val = 0;
     
@@ -1092,9 +1099,9 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
     //for (int t = 2; t <= lastiter + 1; t++) {
     if (lastiter >= 1) {
         
-        for (int i = 299; i < 304; i++) {
+        for (int i = 49; i < 54; i++) {
         
-            for (int j = 300; j < 304; j++) {
+            for (int j = 50; j < 54; j++) {
             
                 double c1 = fImage[iter]->GetBinContent(i,j);
                 
@@ -1193,19 +1200,14 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
             
             return 0;
             
-        }/* else {
-            
-            cout << "-------------------------------------------------" <<endl;
-            cout<< diffmax << "," << val << endl;
-            cout << "-------------------bigger than stopping value------------------------------" <<endl;
-            continue;
-        }*/
-        
+        }
         
     }
-
+*/
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //// These below comments was used for simple simulation.
+///Comparing the sigma_z of new 10th iteration with previous one
+///to check if it continues improving sigma more or not. The relative error should be less than 1% .
 
   //cout << count << endl;
   //TH1D* ProX[150];
@@ -1213,7 +1215,7 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
   //TH1D* ProY[150];
   
   
-/*
+
   for (int i = 10; i <= lastiter + 1; i = i + 10) {
     
     //fProX[i] = fImage[i]->ProjectionZ();
@@ -1221,7 +1223,7 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
     //ProX[i] = fSenHisto[i]->ProjectionZ();
     
     fProY[i] = fImage[i]->ProjectionY();
-    fProY[i]->Fit(func_y,"r");
+    //fProY[i]->Fit(func_y,"r");
     //ProY[i] = fSenHisto[i]->ProjectionY();
     
     
@@ -1234,15 +1236,15 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
     sigma[i] = func_z->GetParameter(2);
     // cout<< "i : \t" << i << "\t" << "sigma : \t " << sigma[i]<< endl;
   }
-///Comparing the sigma_z of new 10th iteration with previous one
-///to check if it continues improving sigma more or not. 
+
+  
   for (int j = 20; j <= lastiter + 1; j = j + 10) {
-       //cout << fSigma[100] << endl;
-      if (fabs(sigma[j]) !=0) fSigma[150] = (fabs(sigma[j] - sigma[j - 10]))/fabs(sigma[j]);
-       //cout << fSigma[100] << endl;
-      if (fSigma[150] < 0.01 || fabs(sigma[j]) > fabs(sigma[j - 10])) {
+       
+      if (fabs(sigma[j]) !=0) fSigma[250] = (fabs(sigma[j] - sigma[j - 10]))/fabs(sigma[j]);
+       
+      if (fSigma[250] < 0.01 || fabs(sigma[j]) > fabs(sigma[j - 10])) {
           
-          cout << "SigmaIter" << j << " - " << "SigmaIter" << j - 10 << " = " << " Relative Error : " << fSigma[150] << endl;
+          cout << "SigmaIter" << j << " - " << "SigmaIter" << j - 10 << " = " << " Relative Error : " << fSigma[250] << endl;
           TH1D* ProZ[0];
           ProZ[0] = fImage[0]->ProjectionX();
           
@@ -1253,12 +1255,12 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
            fProY[j]->Fit(func_y,"r");
            fProZ[j] = fSH[j]->ProjectionX();
            fProZ[j]->Fit(func_z, "r");*/
-/*          if (fSigma[150] < 0.01) {
+          if (fSigma[250] < 0.01) {
               
               TCanvas* can = new TCanvas("can", "MLEM2D", 1000, 1000);
-          //TCanvas* canz = new TCanvas("MLEM1DZ","MLEM1DZ",1000,1000);
-          //TCanvas* cany = new TCanvas("MLEM1DY","MLEM1DY",1000,1000);
-          //TCanvas* canx = new TCanvas("MLEM1DX","MLEM1DX",1000,1000);
+              //TCanvas* canz = new TCanvas("MLEM1DZ","MLEM1DZ",1000,1000);
+              //TCanvas* cany = new TCanvas("MLEM1DY","MLEM1DY",1000,1000);
+              //TCanvas* canx = new TCanvas("MLEM1DX","MLEM1DX",1000,1000);
               can->Divide(2, 3);
               can->cd(1);
               fImage[0]->Draw("colz");
@@ -1312,9 +1314,9 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
           ProX[j]->Draw();
           */
           
-/*        SaveToFile(can);
+          SaveToFile(can);
           //SaveToFile(canz);
-         // SaveToFile(cany);
+          //SaveToFile(cany);
           //SaveToFile(canx);
           } else {
               
@@ -1348,7 +1350,7 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
           return 0;
       }
   }
-*/            
+            
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
   SaveToFile(hthisiter);
