@@ -26,20 +26,49 @@ public:
   bool virtual LoadEvent(int i);
   TVector3 virtual* GetPositionPrimary(void);
   TVector3 virtual* GetPositionScattering(void);
+  vector<TVector3> virtual* GetElectronPosition(void);
+  int virtual GetRealPosPSize(void);
+  vector<int> virtual* GetRealInteractionP(void);
+  int virtual GetRealPosESize(void);
+  vector<int> virtual* GetRealInteractionE(void);
+  TVector3 virtual* GetPositionScatteringReco(void);
+  vector<TVector3> virtual* GetPhotonPosition(void);
   TVector3 virtual* GetPositionAbsorption(void);
+  TVector3 virtual* GetPositionAbsorptionReco(void);
   TVector3 virtual* GetGammaDirPrimary(void);
   TVector3 virtual* GetGammaDirScattered(void);
+  TVector3 virtual* GetGammaDirScatteredReco(void);
+  TVector3 virtual* GetScattererPosition(void);
+  TVector3 virtual* GetAbsorberPosition(void);
+  
+  int virtual GetIdentified(void);
+  int virtual GetMultiplicityNum(void);
+  int virtual GetClassID(void);
+  int virtual GetRecoClusterPosSize(void);
+  double virtual GetEP(void);
+  double virtual GetReES(void);
+  double virtual GetES(void);
+//  double virtual GetReEP(void);
   double virtual GetEnergyPrimary(void);
+  double virtual GetEnergyPrimaryReco(void);
   double virtual GetEnergyLoss(void);
+  double virtual GetEnergyLossReco(void);
   double virtual GetEnergyScattered(void);
+  double virtual GetEnergyScatteredReco(void);
+  double virtual GetScatThickx(void);
+  double virtual GetScatThicky(void);
+  double virtual GetScatThickz(void);
+  double virtual GetAbsThickx(void);
+  double virtual GetAbsThicky(void);
+  double virtual GetAbsThickz(void);
 
 protected:
   TFile* fFile; ///< Input file
   TTree* fTree; ///< Tree containing simulation results
-
   bool virtual AccessTree(TString name);
   bool SetInputFile(TString path);
-
+  //vector<PhysicVec*>* GetRecoClusterPosSize(void);
+  
   ClassDef(InputReader, 0)
 };
 

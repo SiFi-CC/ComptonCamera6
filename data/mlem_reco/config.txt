@@ -1,0 +1,20 @@
+# Name of the input file  
+./results/LYSO_Ce_Epotek_OC_Type3_22_07_2019.root
+# Size of image volume
+61 61 0
+# No. of bins
+61 61 0
+# Smear
+0
+# Position resolution
+1 4 1 
+# Fitting parameters
+2300 0.1 1
+# No. of MLEM iterations
+50
+# Fresh output
+0
+# No. of first and last event
+0 310633
+# Verbose flag
+0

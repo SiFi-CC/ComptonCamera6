@@ -1,5 +1,5 @@
 #include "InputReaderGeant.hh"
-
+#include <vector>
 ClassImp(InputReaderGeant);
 
 //------------------------------------------------------------------
@@ -14,13 +14,26 @@ InputReaderGeant::InputReaderGeant() : InputReader() {
 ///\param path (TString) - path to the input file.
 InputReaderGeant::InputReaderGeant(TString path) : InputReader(path) {
 
-  if (!AccessTree("G4SimulationData_Reconstruction")) {
+  if (!AccessTree("Setup", "Events")) {
     throw "##### Exception in InputReaderGeant constructor!";
   }
 
-  fPositionScat = new TVector3();
-  fPositionAbs = new TVector3();
+//  fPositionScat = new TVector3();
+//  fPositionAbs = new TVector3();
+  
+  
   fDirectionScat = new TVector3();
+  
+  fPositionScatReco = new TVector3();
+  fPositionAbsReco = new TVector3();
+  fDirectionScatReco = new TVector3();
+  
+  
+  fPositionSource = new TVector3();
+  fDirectionSource = new TVector3();
+
+  fScatPlanePos = new TVector3();
+  fAbsPlanePos = new TVector3();
 }
 //------------------------------------------------------------------
 /// Default destructor.
@@ -28,16 +41,31 @@ InputReaderGeant::~InputReaderGeant() {
   if (fFile->IsOpen()) fFile->Close();
 }
 //------------------------------------------------------------------
-bool InputReaderGeant::AccessTree(TString name) {
+/// Accesses data of trees'branches in ROOT file.
+///\param name (TString) - name of tree.
+///\param name1 (TString) - name1 of tree.
+///\param name2 (TString) - name2 of tree.
+bool InputReaderGeant::AccessTree(TString name, TString name1) {
 
   fTree = (TTree*)fFile->Get(name);
-
+  fTree1 = (TTree*)fFile->Get(name1);
+  //fTree2 = (TTree*)fFile->Get(name2);
   if (fTree == NULL) {
     cout << "##### Error in InputReaderGeant::AccessTree()!" << endl;
     cout << "Could not access the tree!" << endl;
     return false;
   }
-
+  if (fTree1 == NULL) {
+    cout << "##### Error in InputReaderGeant::AccessTree()!" << endl;
+    cout << "Could not access the tree!" << endl;
+    return false;
+  }
+//   if (fTree2 == NULL) {
+//     cout << "##### Error in InputReaderGeant::AccessTree()!" << endl;
+//     cout << "Could not access the tree!" << endl;
+//     return false;
+//   }
+  
   fRecoEnergy_e = new PhysicVar();
   fRecoEnergy_p = new PhysicVar();
   fRecoPosition_e = new PhysicVec();
@@ -45,98 +73,293 @@ bool InputReaderGeant::AccessTree(TString name) {
   fRecoDirection_scatter = new PhysicVec();
   fRecoClusterPositions = 0;
   fRecoClusterEnergies = 0;
-
-  fTree->SetBranchAddress("EventNumber", &fEventNumber);
-  fTree->SetBranchAddress("Identified", &fIdentified);
-  fTree->SetBranchAddress("RecoEnergy_e", &fRecoEnergy_e);
-  fTree->SetBranchAddress("RecoEnergy_p", &fRecoEnergy_p);
-  fTree->SetBranchAddress("RecoPosition_e", &fRecoPosition_e);
-  fTree->SetBranchAddress("RecoPosition_p", &fRecoPosition_p);
-  fTree->SetBranchAddress("RecoDirection_scatter", &fRecoDirection_scatter);
-  fTree->SetBranchAddress("RecoClusterPositions", &fRecoClusterPositions);
-  fTree->SetBranchAddress("RecoClusterEnergies", &fRecoClusterEnergies);
+  
+  fRealPosition_source = new TVector3();
+  fRealDirection_source = new TVector3();
+  //fRealPosition_e = new TVector3();
+  fRealComptonPosition = new TVector3();
+  //fRealPosition_p = new TVector3();
+  fRealDirection_scatter = new TVector3();
+  
+  /////// new version of file//////////////////
+  
+   fRealPosition_e = new vector<TVector3>;
+   fRealInteractions_e = new vector<int>;
+   fRealPosition_p = new vector<TVector3>;
+   fRealInteractions_p = new vector<int>;
+  
+///////////////////////////////////////////////  
+  
+  fScattererPosition = new TVector3();
+  fAbsorberPosition = new TVector3();
+  
+  fTree->SetBranchAddress("ScattererThickness_x", &fScattererThickness_x);
+  fTree->SetBranchAddress("ScattererThickness_y", &fScattererThickness_y);
+  fTree->SetBranchAddress("ScattererThickness_z", &fScattererThickness_z);
+  fTree->SetBranchAddress("AbsorberThickness_x", &fAbsorberThickness_x);
+  fTree->SetBranchAddress("AbsorberThickness_y", &fAbsorberThickness_y);
+  fTree->SetBranchAddress("AbsorberThickness_z", &fAbsorberThickness_z);
+  fTree->SetBranchAddress("ScattererPosition", &fScattererPosition);
+  fTree->SetBranchAddress("AbsorberPosition", &fAbsorberPosition);
+  fTree->SetBranchAddress("NumberOfSimulatedEvents",
+                           &fNumberOfSimulatedEvents);
+  
+  fTree1->SetBranchAddress("EventNumber", &fEventNumber);
+  fTree1->SetBranchAddress("Energy_Primary", &fEnergy_Primary);
+  fTree1->SetBranchAddress("RealEnergy_e", &fRealEnergy_e);
+  fTree1->SetBranchAddress("RealEnergy_p", &fRealEnergy_p);
+  fTree1->SetBranchAddress("RealPosition_source", &fRealPosition_source);
+  fTree1->SetBranchAddress("RealDirection_source", &fRealDirection_source);
+  fTree1->SetBranchAddress("RealPosition_e", &fRealPosition_e);
+  fTree1->SetBranchAddress("RealInteractions_e", &fRealInteractions_e);
+  fTree1->SetBranchAddress("RealComptonPosition", &fRealComptonPosition);
+  fTree1->SetBranchAddress("RealPosition_p", &fRealPosition_p);
+  fTree1->SetBranchAddress("RealInteractions_p", &fRealInteractions_p);
+  fTree1->SetBranchAddress("RealDirection_scatter", &fRealDirection_scatter);
+  fTree1->SetBranchAddress("Identified", &fIdentified);
+  fTree1->SetBranchAddress("PurCrossed", &fPurCrossed);
+  fTree1->SetBranchAddress("RecoEnergy_e", &fRecoEnergy_e);
+  fTree1->SetBranchAddress("RecoEnergy_p", &fRecoEnergy_p);
+  fTree1->SetBranchAddress("RecoPosition_e", &fRecoPosition_e);
+  fTree1->SetBranchAddress("RecoPosition_p", &fRecoPosition_p);
+  fTree1->SetBranchAddress("RecoDirection_scatter", &fRecoDirection_scatter);
+  fTree1->SetBranchAddress("RecoClusterPositions", &fRecoClusterPositions);
+  fTree1->SetBranchAddress("RecoClusterEnergies", &fRecoClusterEnergies);
 
   cout << "\n\nIn InputReaderGeant::AccessTree()." << endl;
   cout << fTree->GetName() << " tree accessed.\n" << endl;
 
+  cout << "\n\nIn InputReaderGeant::AccessTree()." << endl;
+  cout << fTree1->GetName() << " tree accessed.\n" << endl;
+  
+//   cout << "\n\nIn InputReaderGeant::AccessTree()." << endl;
+//   cout << fTree2->GetName() << " tree accessed.\n" << endl;
+  
   return true;
 }
 //------------------------------------------------------------------
+/// loads events from trees to analyze them in CCMLEM class.
+///\param i (int) - number of events
 bool InputReaderGeant::LoadEvent(int i) {
 
-  int imax = fTree->GetEntries();
+  int imax1 = fTree->GetEntries();
+  fTree->GetEntry(i);
+  
+//   int imax2 = fTree2->GetEntries();
+//   if (i > imax2) {
+//     cout << "##### Error in InputReaderGeant::LoadEvent() in reconstruction tree!" << endl;
+//     cout << "Requested event number larger than number of events in the tree!"
+//          << endl;
+//     return false;
+//   }
+//   fTree2->GetEntry(i);
+  
+  int imax = fTree1->GetEntries();
   if (i > imax) {
-    cout << "##### Error in InputReaderGeant::LoadEvent()!" << endl;
+    cout << "##### Error in InputReaderGeant::LoadEvent() in Event tree!" << endl;
     cout << "Requested event number larger than number of events in the tree!"
          << endl;
     return false;
   }
 
-  fTree->GetEntry(i);
+  fTree1->GetEntry(i);
 
-  return fIdentified;
+  //if (0 == fRealPosition_e->X() || 0 == fRealPosition_p->X()) return false;
+
+  return true;
 }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetPositionPrimary(void) {
   cout << "##### Warning in InputReaderGeant::GetPositionPrimary()!" << endl;
   cout << "\t Position of gamma source is unknown!" << endl;
-  return NULL;
+  fPositionSource->SetX(fRealPosition_source->X());
+  fPositionSource->SetY(fRealPosition_source->Y());
+  fPositionSource->SetZ(fRealPosition_source->Z());
+  return fPositionSource;
+  // return NULL;
 }
 //------------------------------------------------------------------
+/*
 TVector3* InputReaderGeant::GetPositionScattering(void) {
-  fPositionScat->SetX(fRecoPosition_e->position.X());
-  fPositionScat->SetY(fRecoPosition_e->position.Y());
-  fPositionScat->SetZ(fRecoPosition_e->position.Z());
+  fPositionScat->SetX(fRealPosition_e->X());
+  fPositionScat->SetY(fRealPosition_e->Y());
+  fPositionScat->SetZ(fRealPosition_e->Z());
   return fPositionScat;
+}*/
+//----------new version of file--------------------------------------------------------
+
+vector<TVector3>* InputReaderGeant::GetElectronPosition(void) { 
+    
+    return fRealPosition_e; }
+
+//------------------------------------------------------------------
+
+int InputReaderGeant::GetRealPosESize(void) { return fRealPosition_e->size(); }    
+//------------------------------------------------------------------
+
+vector<int>* InputReaderGeant::GetRealInteractionE(void) { 
+    
+    return fRealInteractions_e; }
+//------------------------------------------------------------------
+TVector3* InputReaderGeant::GetPositionScatteringReco(void) {
+  fPositionScatReco->SetX(fRecoPosition_e->position.X());
+  fPositionScatReco->SetY(fRecoPosition_e->position.Y());
+  fPositionScatReco->SetZ(fRecoPosition_e->position.Z());
+  return fPositionScatReco;
 }
 //------------------------------------------------------------------
+/*
 TVector3* InputReaderGeant::GetPositionAbsorption(void) {
-  fPositionAbs->SetX(fRecoPosition_p->position.X());
-  fPositionAbs->SetY(fRecoPosition_p->position.Y());
-  fPositionAbs->SetZ(fRecoPosition_p->position.Z());
+  fPositionAbs->SetX(fRealPosition_p->X());
+  fPositionAbs->SetY(fRealPosition_p->Y());
+  fPositionAbs->SetZ(fRealPosition_p->Z());
   return fPositionAbs;
+}*/
+//--------------new version of file----------------------------------------------------
+
+vector<TVector3>* InputReaderGeant::GetPhotonPosition(void) { 
+    
+    return fRealPosition_p; }
+//------------------------------------------------------------------
+int InputReaderGeant::GetRealPosPSize(void) { return fRealPosition_p->size(); }      
+//------------------------------------------------------------------
+vector<int>* InputReaderGeant::GetRealInteractionP(void) { 
+    
+    return fRealInteractions_p; }
+//------------------------------------------------------------------
+TVector3* InputReaderGeant::GetPositionAbsorptionReco(void) {
+  fPositionAbsReco->SetX(fRecoPosition_p->position.X());
+  fPositionAbsReco->SetY(fRecoPosition_p->position.Y());
+  fPositionAbsReco->SetZ(fRecoPosition_p->position.Z());
+  return fPositionAbsReco;
 }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetGammaDirPrimary(void) {
-  cout << "##### Warning in InputReaderGeant::GetGammaDirPrimary()!" << endl;
-  cout << "\t Direction of primary gamma is unknown!" << endl;
-  return NULL;
+  // cout << "##### Warning in InputReaderGeant::GetGammaDirPrimary()!" << endl;
+  // cout << "\t Direction of primary gamma is unknown!" << endl;
+  fDirectionSource->SetX(fRealDirection_source->X());
+  fDirectionSource->SetY(fRealDirection_source->Y());
+  fDirectionSource->SetZ(fRealDirection_source->Z());
+  return fDirectionSource;
+  // return NULL;
 }
 //------------------------------------------------------------------
 TVector3* InputReaderGeant::GetGammaDirScattered(void) {
-  TVector3* temp = new TVector3();
-  fDirectionScat->SetX(fRecoDirection_scatter->position.X());
-  fDirectionScat->SetY(fRecoDirection_scatter->position.Y());
-  fDirectionScat->SetZ(fRecoDirection_scatter->position.Z());
+  // TVector3* temp = new TVector3();
+  fDirectionScat->SetX(fRealDirection_scatter->X());
+  fDirectionScat->SetY(fRealDirection_scatter->Y());
+  fDirectionScat->SetZ(fRealDirection_scatter->Z());
   return fDirectionScat;
 }
 //------------------------------------------------------------------
+TVector3* InputReaderGeant::GetGammaDirScatteredReco(void) {
+  
+  fDirectionScatReco->SetX(fRecoDirection_scatter->position.X());
+  fDirectionScatReco->SetY(fRecoDirection_scatter->position.Y());
+  fDirectionScatReco->SetZ(fRecoDirection_scatter->position.Z());
+  return fDirectionScatReco;
+}
+//------------------------------------------------------------------
+int InputReaderGeant::GetRecoClusterPosSize(void) { return fRecoClusterPositions->size(); }
+//------------------------------------------------------------------
+TVector3* InputReaderGeant::GetScattererPosition(void) {
+  fScatPlanePos->SetX(fScattererPosition->X());
+  fScatPlanePos->SetY(fScattererPosition->Y());
+  fScatPlanePos->SetZ(fScattererPosition->Z());
+  return fScatPlanePos;
+}
+//------------------------------------------------------------------
+TVector3* InputReaderGeant::GetAbsorberPosition(void) {
+  fAbsPlanePos->SetX(fAbsorberPosition->X());
+  fAbsPlanePos->SetY(fAbsorberPosition->Y());
+  fAbsPlanePos->SetZ(fAbsorberPosition->Z());
+  return fAbsPlanePos;
+}
+//------------------------------------------------------------------
+int InputReaderGeant::GetIdentified(void) {
+  
+  return fIdentified;
+}
+//------------------------------------------------------------------
 double InputReaderGeant::GetEnergyPrimary(void) {
+  double sum = fRealEnergy_e + fRealEnergy_p;
+  return sum;
+}
+//------------------------------------------------------------------
+double InputReaderGeant::GetEnergyPrimaryReco(void) {
   double sum = fRecoEnergy_e->value + fRecoEnergy_p->value;
   return sum;
 }
 //------------------------------------------------------------------
-double InputReaderGeant::GetEnergyLoss(void) { return fRecoEnergy_e->value; }
+double InputReaderGeant::GetEnergyLoss(void) { return fRealEnergy_e; }
 //------------------------------------------------------------------
-double InputReaderGeant::GetEnergyScattered(void) {
-  return fRecoEnergy_p->value;
-}
+double InputReaderGeant::GetEnergyLossReco(void) { return fRecoEnergy_e->value; }
+//------------------------------------------------------------------
+double InputReaderGeant::GetEnergyScattered(void) { return fRealEnergy_p; }
+//------------------------------------------------------------------
+double InputReaderGeant::GetEnergyScatteredReco(void) { return fRecoEnergy_p->value; }
+//------------------------------------------------------------------
+double InputReaderGeant::GetScatThickx(void) { return fScattererThickness_x; }
+//------------------------------------------------------------------
+double InputReaderGeant::GetEP(void) { return fEnergy_Primary; }
+//------------------------
+double InputReaderGeant::GetScatThicky(void) { return fScattererThickness_y; }
+//------------------------------------------------------------------
+double InputReaderGeant::GetScatThickz(void) { return fScattererThickness_z; }
+//------------------------------------------------------------------
+double InputReaderGeant::GetAbsThickx(void) { return fAbsorberThickness_x; }
+//------------------------------------------------------------------
+double InputReaderGeant::GetAbsThicky(void) { return fAbsorberThickness_y; }
+//------------------------------------------------------------------
+double InputReaderGeant::GetAbsThickz(void) { return fAbsorberThickness_z; }
 //------------------------------------------------------------------
 void InputReaderGeant::Clear(void) {
   fEventNumber = -1;
-  fIdentified = false;
+  fIdentified = -1000;
+  fPurCrossed = false;
+  fEnergy_Primary = -1000;
+  fRealEnergy_e = -1000;
+  fRealEnergy_p = -1000;
+  fRealPosition_e = NULL;
+  fRealComptonPosition = NULL;
+  fRealPosition_p = NULL;
+  fPositionScat = NULL;
+  fPositionAbs = NULL;
+  fDirectionScat = NULL;
+  fDirectionSource = NULL;
+  fPositionSource = NULL;
+  fTree = NULL;
+  fTree1 = NULL;
+  //fTree2 = NULL;
+  fFile = NULL;
+  fRealDirection_scatter = NULL;
+  fRealDirection_source = NULL;
+  fRealPosition_source = NULL;
+  
   fRecoEnergy_e = NULL;
   fRecoEnergy_p = NULL;
   fRecoPosition_e = NULL;
   fRecoPosition_p = NULL;
-  fPositionScat = NULL;
-  fPositionAbs = NULL;
-  fDirectionScat = NULL;
-  fTree = NULL;
-  fFile = NULL;
-  fRecoDirection_scatter = NULL;
+  fPositionScatReco = NULL;
+  fPositionAbsReco = NULL;
+  fDirectionScatReco = NULL;
+  
   if (!fRecoClusterPositions->empty()) fRecoClusterPositions->clear();
   if (!fRecoClusterEnergies->empty()) fRecoClusterEnergies->clear();
+  
+  fNumberOfSimulatedEvents = -1;
+  fScattererThickness_x = -1000;
+  fScattererThickness_y = -1000;
+  fScattererThickness_z = -1000;
+  fAbsorberThickness_x = -1000;
+  fAbsorberThickness_y = -1000;
+  fAbsorberThickness_z = -1000;
+
+  fScattererPosition = NULL;
+  fAbsorberPosition = NULL;
+  fScatPlanePos = NULL;
+  fAbsPlanePos = NULL;
+
   return;
 }
 //------------------------------------------------------------------

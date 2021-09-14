@@ -42,7 +42,8 @@ void rootlogon(TString additional_libs = "",
   if (!useCC6DIR) cout << "CC6DIR is not set !" << endl;
 
   // space seperated list and order of common libraries to be loaded
-  common_libs = "cc6_common ";
+  common_libs = "CmdLineArgs ";
+  common_libs += "cc6_common ";
   common_libs += "cc6_tools ";
   common_libs += "cc6_cm ";
   common_libs += "cc6_cc ";

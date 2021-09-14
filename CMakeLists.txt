@@ -62,10 +62,16 @@ install(FILES
 INSTALL(DIRECTORY data/masks
     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/ComptonCamera6/)
 
+    
+INSTALL(DIRECTORY data/mlem_reco
+    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/ComptonCamera6/)    
+    
+
 include_directories(BEFORE common/lib)
 include_directories(BEFORE tools/lib)
 
 link_directories(${ROOT_LIBRARY_DIRS})
+
 
 include(c++-standards)
 include(code-coverage)
@@ -78,6 +84,7 @@ add_subdirectory(common)
 add_subdirectory(tools)
 add_subdirectory(cm)
 add_subdirectory(cc)
+
 
 #enable_testing()
 #add_subdirectory(tests)

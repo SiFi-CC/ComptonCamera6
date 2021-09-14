@@ -17,19 +17,22 @@
 /// 1. Isotropic point-like source located at (0,0,0)
 /// 2. Beam-like uniform distribution along Z axis
 /// 3. Two isotropic point-like sources located along Z axis and separated by
-/// distance fZgap. fZgap by default is set to 20 mm. It can be changed via
-/// SetGapZ(Double_t gapZ) function.
+/// distance fZgap.
+/// fZgap by default is set to 20 mm. It can be changed via SetGapZ(Double_t
+/// gapZ) function.
 /// 4. Two isotropic point-like sources located along Y axis and separated by
-/// distance fYgap. fYgap by default is set to 20mm. It can be changed via
-/// SetGapY(Double_t gapY) function.
+/// distance fYgap.
+/// fYgap by default is set to 20mm. It can be changed via SetGapY(Double_t
+/// gapY) function.
 /// 5. Circular source of given radius fRadius. By defauls fRadius is 15 mm and
-/// it can be changed via SetRadius(Double_t radius) function. Center of the
-/// source is at (0,0,0).
+/// it can be changed
+/// via SetRadius(Double_t radius) function. Center of the source is at (0,0,0).
 ///
 /// RESULTS:
 ///
 /// Simulated data are saved in the TTree and subsequently in the ROOT file. The
-/// tree has the following branches:
+/// tree has the
+/// following branches:
 ///- fPoint0  (TVector3) - position of the gamma source
 ///- fPoint1  (TVector3) - intersection point in the scatterer
 ///- fPoint2  (TVector3) - intersection point in the absorber
@@ -58,13 +61,14 @@ public:
   void BuildSetup(Double_t scatDist, Double_t scatZ, Double_t scatY,
                   Double_t absDist, Double_t absZ, Double_t absY);
   Bool_t GenerateRay(void);
+
   Bool_t ProcessEvent(void);
   void Loop(Int_t nev);
   void Clear(void);
   void SaveGeometryTxt(void);
   void BuildTGeometry(void);
   void Print(void);
-
+  void SetCoordinate(Double_t x, Double_t y, Double_t z);
   /// Sets radius of the gamma source if generator #5 is used.
   ///\param radius (Double_t) - source radius.
   void SetRadius(Double_t radius) { fRadius = radius; };
@@ -85,36 +89,42 @@ public:
   const char* GetName() const { return fName.Data(); };
 
 private:
-  TString fName;     ///< Name of the object
-  Bool_t fVerbose;   ///< Verbose level
-  Int_t fGenVersion; ///< Version of generator (numbers from 1 to 5)
-  Int_t fNev; ///< Counter of events currently in the acceptance of the absorber
-  TTree* fTree;         ///< Tree containing results of the simulations
-  TFile* fFile;         ///< Results ROOT file
-  PhysicsBase fPhysics; ///< Physics class for the simulations
-  DetPlane fScatterer;  ///< Scatterer plane
-  DetPlane fAbsorber;   ///< Absorber plane
-  Track fTrack1;        ///< Track representing gamma emitted from the source
-  Track* fTrack2;       ///< Track representing scattered gamma
-  TVector3 fPoint0;     ///< Source of emitted gamma ray
-  TVector3 fPoint1;     ///< Interaction point in the scatterer
-  TVector3 fPoint2;     ///< Interaction point in the absorber
-  TVector3 fVersor1;    ///< Direction of gamma ray comming from the source
-  TVector3 fVersor2;    ///< Direction of scattered gamma ray
-  Double_t fEnergy0;    ///< Initial gamma energy
-  Double_t fEnergy1;    ///< Energy loss due to Compton scattering
-  Double_t fEnergy2;    ///< Energy after Compton scattering
-  Double_t fYgap;       ///< For generator #4 - distance between two point-like
-                        ///< sources along Y axis
-  Double_t fZgap;       ///< For generator #3 - distance between two point-like
-                        ///< sources along Z axis
-  Double_t fRadius;     ///< For generator #5 - radius of the gamma source
+  TString fName;        ///< Name of the object
+  //TString fOutputName;
+  Bool_t fVerbose;      ///< Verbose level
+  Int_t fGenVersion;        ///< Version of generator (numbers from 1 to 5)
+  Int_t fNev;       ///< Counter of events currently in the acceptance of the absorber
+  TTree* fTree;     ///< Tree containing results of the simulations
+  TFile* fFile;     ///< Results ROOT file
+  PhysicsBase fPhysics;     ///< Physics class for the simulations
+  DetPlane fScatterer;      ///< Scatterer plane
+  DetPlane fAbsorber;       ///< Absorber plane
+  Track fTrack1;            ///< Track representing gamma emitted from the source
+  Track* fTrack2;           ///< Track representing scattered gamma
+  TVector3 fPoint0;         ///< Source of emitted gamma ray
+  TVector3 fPoint1;         ///< Interaction point in the scatterer
+  TVector3 fPoint2;         ///< Interaction point in the absorber
+  TVector3 fVersor1;        ///< Direction of gamma ray comming from the source
+  TVector3 fVersor2;        ///< Direction of scattered gamma ray
+  Double_t fEnergy0;        ///< Initial gamma energy
+  Double_t fEnergy1;        ///< Energy loss due to Compton scattering
+  Double_t fEnergy2;        ///< Energy after Compton scattering
+  Double_t fXofSource;      ///< x-component of source coordinate      
+  Double_t fYofSource;      ///< y-component of source coordinate 
+  Double_t fZofSource;      ///< z-component of source coordinate 
+  Double_t
+      fYgap; ///< For generator #4 - distance between two point-like sources
+             /// along Y axis
+  Double_t
+      fZgap; ///< For generator #3 - distance between two point-like sources
+             /// along Z axis
+  Double_t fRadius; ///< For generator #5 - radius of the gamma source
 
-  TH2F* hSource; ///< 2D histogram of distribution of the gamma source
-  TH2F* hScat;   ///< 2D histogram of distribution of evens on scatterer plane
-  TH2F* hAbs;    ///< 2D histogram of distribution of events on absorber plane
-  TH1F* hEnergy; ///< Histogram of scattered gammas energy
-
+  TH2F* hSource;        ///< 2D histogram of distribution of the gamma source
+  TH2F* hScat;      ///< 2D histogram of distribution of evens on scatterer plane
+  TH2F* hAbs;       ///< 2D histogram of distribution of events on absorber plane
+  TH1F* hEnergyAbs;     ///< Histogram of scattered gammas energy
+  TH1F* hEnergyLoss;        ///< Histogram of energy loss
   ClassDef(CCSimulation, 1)
 };
 
