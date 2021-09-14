@@ -49,6 +49,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 include(${ROOT_USE_FILE})
 include_directories(${ROOT_INCLUDE_DIRS})
+include_directories(${CMDLINEARGS_INCLUDE_DIR})
+link_directories(${CMDLINEARGS_LIBRARY_DIR})
 
 configure_file(macros/profile.sh.in profile.sh @ONLY)
 
@@ -69,7 +71,7 @@ include(c++-standards)
 include(code-coverage)
 include(sanitizers)
 
-cxx_11()
+cxx_17()
 add_code_coverage()
 
 add_subdirectory(common)
@@ -77,8 +79,8 @@ add_subdirectory(tools)
 add_subdirectory(cm)
 add_subdirectory(cc)
 
-enable_testing()
-add_subdirectory(tests)
+#enable_testing()
+#add_subdirectory(tests)
 
 #---Locating Doxygen and generating documentation
 

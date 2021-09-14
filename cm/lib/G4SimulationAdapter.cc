@@ -2,6 +2,7 @@
 #include <TFile.h>
 #include <TParameter.h>
 #include <TSystem.h>
+#include <TKey.h>
 
 G4SimulationAdapter::G4SimulationAdapter(TString filename) {
   fFiles.push_back(new TFile(filename, "READ"));
