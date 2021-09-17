@@ -152,7 +152,7 @@ void CMReconstruction::RunReconstruction(Int_t nIterations) {
 
   if (CmdLineOption::GetStringValue("Hmatrix")) {
     TString hfilename(CmdLineOption::GetStringValue("Hmatrix"));
-    log->info("Hmatrix file: {}", hfilename);
+    log->info("Hmatrix file: {}", hfilename.Data());
     TFile hfile(hfilename);
     hfile.cd();
 

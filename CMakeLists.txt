@@ -27,7 +27,7 @@ list(APPEND CMAKE_MODULE_PATH
 find_package(ROOT REQUIRED COMPONENTS RIO Geom MathMore)
 set(ROOTSYS $ENV{ROOTSYS})
 
-find_package(CmdLineArgs 2.0.0 REQUIRED)
+find_package(CmdLineArgs 2.1.0 REQUIRED)
 
 add_subdirectory(spdlog)
 include_directories(spdlog/include)
@@ -69,7 +69,7 @@ include(c++-standards)
 include(code-coverage)
 include(sanitizers)
 
-cxx_11()
+cxx_17()
 add_code_coverage()
 
 add_subdirectory(common)
