@@ -5,6 +5,7 @@
 #include "InputReaderGeant.hh"
 #include "InputReaderSimple.hh"
 #include "InputReaderEI.hh"
+#include "InputReaderNN.hh"
 #include "TFile.h"
 #include "TGraph.h"
 #include "TH1F.h"
@@ -34,17 +35,17 @@ public:
 
   Bool_t Iterate(Int_t nstop, Int_t iter);
   Bool_t Reconstruct();
+  Bool_t DetermineConvergence(Int_t iter);
   Bool_t GetSigmaError(void);
   Int_t AddIsectionPoint(TString dir, Double_t x, Double_t y, Double_t z);
   //Bool_t Sensitivity(void);
   TH2 *SmoothGauss(TH2 *hin, double sigma);
-  Double_t SmearGaus(double val, double sigma);
-  Double_t SmearBox(double x, double resolution);
-  Double_t GetSigmaE(double energy);
   static Double_t FitProjection(Double_t *x,Double_t *par);
   static Double_t FitProjection1(Double_t *x,Double_t *par);
   Bool_t ReadConfig(TString path);
   Bool_t SetInputReader(void);
+  void DrawAtConvergence(int iter);
+  void DrawREGraph(int iter);
   Bool_t DrawCanvas(void);
   Bool_t DrawHisto(void);
   Bool_t SaveToFile(TObject* ob);
@@ -52,49 +53,60 @@ public:
   void Clear(void);
   /** Calculate H matrix and save it in file */
   void SmatrixToFile(const TString& filename);
-  Bool_t DrawREGraph(void);
 
 private:
   TString fInputName;       ///< Path to the file with simulation data
-  Double_t fXofRecoPlane;       ///< x-component of image plane coordinate
-  Double_t fYofRecoPlane;       ///< y-component of image plane coordinate
-  Double_t fZofRecoPlane;       ///< z-component of image plane coordinate
-  Double_t fScatthick_x;
-  Double_t fScatthick_y;
-  Double_t fScatthick_z;
-  
+//  Double_t fScatthick_x;
+//  Double_t fScatthick_y;
+//  Double_t fScatthick_z;
+//  Double_t fAbsthick_x;
+//  Double_t fAbsthick_y;
+//  Double_t fAbsthick_z;
+//  TVector3* fScatposition; 
+//  TVector3* fAbsposition;
+
+///SIMPLE SIMULATION INPUT
+  Bool_t fSmear;        ///< Smear flag for smearing energy and position only used for simple Simulation results
+  Double_t fResolutionX;        ///< Position resolution in direction x-axis only used for simple Simulation results
+  Double_t fResolutionY;        ///< Position resolution in direction y-axis only used for simple Simulation results
+  Double_t fResolutionZ;        ///< Position resolution in direction z-axis only used for simple Simulation results
+  Double_t fP0;     ///< Fitting parameter used for the energy smearing in simple simulation 
+  Double_t fP1;     ///< Fitting parameter used for the energy smearing in simple simulation
+  Double_t fP2;     ///< Fitting parameter used for the energy smearing in simple simulation
+
+///GEANT4 SIMULATION INPUT
+  Bool_t fLoadReal; ///< Flag if Real or Reco data is loaded from the input
+  Bool_t fCorrectIdentified; ///< Indicates if only correct identified events from the Reco are loaded
+
+//INTERNAL VARIABLES
+  Int_t fIter;      ///< Number of iterations for MLEM
+  Bool_t fFreshOutput;      ///< FreshOutput flag to recreate or update output file
+  Int_t fStart;     ///< first event number
+  Int_t fStop;      ///< last event number
+  Bool_t fVerbose;      ///< Verbose level for print-outs on screen
+  Int_t fNIpoints;      ///< Numbers of intersection points for each Compton cone
+  Int_t fPoints;        ///< Numbers of intersection points for all Compton cones
+  //Image parametes 
   Double_t fDimZ;       ///< Size of image plane in direction z-axis
   Double_t fDimY;       ///< Size of image plane in direction y-axis
   Double_t fDimX;       ///< Size of image plane in direction x-axis
   Int_t fNbinsZ;        ///< Numbers of bins of image plane in direction of z-axis
   Int_t fNbinsY;        ///< Numbers of bins of image plane in direction of y-axis
   Int_t fNbinsX;        ///< Numbers of bins of image plane in direction of x-axis
-  Bool_t fSmear;        ///< Smear flag for applying to camera performance 
-  Double_t fResolutionX;        ///< Position resolution in direction x-axis
-  Double_t fResolutionY;        ///< Position resolution in direction y-axis
-  Double_t fResolutionZ;        ///< Position resolution in direction z-axis
-  Double_t fP0;     ///< Fitting parameter
-  Double_t fP1;     ///< Fitting parameter
-  Double_t fP2;     ///< Fitting parameter
-  Int_t fIter;      ///< Number of iterations for MLEM
-  Bool_t fFreshOutput;      ///< FreshOutput flag to recreate or update output file
-  Int_t fStart;     ///< first event number
-  Int_t fStop;      ///< last event number
-  Bool_t fVerbose;      ///< Verbose level for print-outs on screen
-  Int_t fEvent[1000000];
-  Int_t fSubFirst[1000000];
-  Int_t fSubSecond[1000000];
-  Int_t fNIpoints;      ///< Numbers of intersection points for each Compton cone
-  Int_t fPoints;        ///< Numbers of intersection points for all Compton cones
   Double_t fPixelSizeZ;     ///< Size of pixel in z-axis direction
   Double_t fPixelSizeY;     ///< Size of pixel in y-axis direction
   Double_t fPixelSizeX;     ///< Size of pixel in x-axis direction
-  Double_t fSigma[250];     ///< Relative sigma value to compare different iterations
-  Double_t sigma[250];
+
+  //Convergence
+  Bool_t fSimpleConvergence; ///< Flag or function or pixel convergence
+  Double_t fROIX;       ///< x-component of ROI for convergence criterium 
+  Double_t fROIY;       ///< y-component of ROI for convergence criterium
+  Double_t fROIZ;       ///< z-component of ROI for convergence criterium
+  Double_t fConvergenceCriterium;     ///< value that leads to stop of iterations 
+  Double_t fSigma[250];     ///< Relative sigma values between adjustent iterations
+
   Double_t fDenominator[10000000];
-  std::vector< std::pair<Int_t, Double_t>> fRErr;
   TH2F* fSensitivity;
-  TH1D* fHisto;     ///< Histogram containing energy resolution obtained by Geant4
   TFile* fOutputFile;       ///< ROOT file containing reconstruction results 
 
   TH2F* fImage[250];        ///< Reconstructed image histogram
@@ -102,17 +114,10 @@ private:
   TH2F* fSH[250];
   TH2F* fSmatrix;
   TTree* fTree;
-  TTree* fTree1;
-  TH2F* fSenHisto[250];
-  //TH1F* fAngDiff; 
-  TH1D* fProX[250];
-  TH1D* fProZ[250];
-  TH1D* fProY[250];
   TClonesArray* fArray;     ///< Array of information for intersection of Compton cone with image plane
   TClonesArray* fSM;        ///< Array of information for intersection of all Compton cones with image plane
   
   InputReader* fReader;     ///< InputReader to read different given input simulation files
-  //TGraph* fGraph;
   
   ClassDef(CCMLEM, 0)
 };

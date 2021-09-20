@@ -12,60 +12,41 @@ using namespace std;
 /// ROOT file containing tree with simulation results and via set of
 /// getter function passes information to reconstruction classes, i.e.
 /// CCREconstruction and CCMLEM.
-/// Here, we have two types information: 1. the real information from the simulation 
-/// 2. the information of the reconstructed events 
+/// Two Types of information can be loaded: 
+/// 1. the real information from the simulation 
+/// 2. the information of the reconstructed events (only identified ones are passed)
+/// Which one is loaded is toggled with SetLoadMonteCarlo() 
 class InputReaderGeant : public InputReader {
 
 public:
+  /// Default constructor.
   InputReaderGeant();
+  /// Standard constructor.
+  ///\param path (TString) - path to the input file.
   InputReaderGeant(TString path);
+  /// Default destructor.
   ~InputReaderGeant();
 
+  /// loads events from trees to analyze them 
+  ///\param i (int) - number of events
   bool LoadEvent(int i);
+  int GetNumberOfEventsInFile(void);
   void Clear(void);
   TVector3* GetPositionPrimary(void);
-  //TVector3* GetPositionScattering(void);
-  TVector3* GetPositionScatteringReco(void);
-  //TVector3* GetPositionAbsorption(void);
-  TVector3* GetPositionAbsorptionReco(void);
+  TVector3* GetPositionScattering(void);
+  TVector3* GetPositionAbsorption(void);
   TVector3* GetGammaDirPrimary(void);
   TVector3* GetGammaDirScattered(void);
-  TVector3* GetGammaDirScatteredReco(void);
-  int GetRecoClusterPosSize(void);
   
-  /////  new version of file///////////////
   
-  vector<TVector3>* GetElectronPosition(void);
-  vector<TVector3>* GetPhotonPosition(void);
-  
-  int GetRealPosESize(void);
-  int GetRealPosPSize(void);
-  
-  vector<int>* GetRealInteractionE(void);
-  vector<int>* GetRealInteractionP(void);
-  
-////////////////////////////////////////////////
-  
-  double GetEP(void);
   double GetEnergyPrimary(void);
-  double GetEnergyPrimaryReco(void);
   double GetEnergyLoss(void);
-  double GetEnergyLossReco(void);
   double GetEnergyScattered(void);
-  double GetEnergyScatteredReco(void);
-  int GetIdentified(void);
-  
-  TVector3* GetScattererPosition(void);
-  TVector3* GetAbsorberPosition(void);
 
-  double GetScatThickx(void);
-  double GetScatThicky(void);
-  double GetScatThickz(void);
-  double GetAbsThickx(void);
-  double GetAbsThicky(void);
-  double GetAbsThickz(void);
-
+  void SetLoadMonteCarlo(void);
+  void SetLoadOnlyCorrect(void);
 private:
+  //TREEVARIABLES
   int fEventNumber;     ///< Event number
   int fIdentified;      ///< Number of events were labeled 
   bool fPurCrossed;
@@ -89,17 +70,6 @@ private:
       fRecoClusterPositions; ///< Positions cluster with uncertainties
   vector<PhysicVar>*
       fRecoClusterEnergies; ///< Energies cluster with uncertainties
-
-
-  TVector3* fPositionScat;  ///< Position of interaction in scatterer
-  TVector3* fPositionAbs;   ///< Position of interaction in absorber
-  TVector3* fDirectionScat; ///< Direction of scattered gamma
-  
-  TVector3* fPositionScatReco;
-  TVector3* fPositionAbsReco;
-  TVector3* fDirectionScatReco;
-  
-  ///// new version of file///////////////
   
   vector<TVector3>* fRealPosition_e;
   vector<TVector3>* fRealPosition_p;
@@ -107,31 +77,47 @@ private:
   vector<int>* fRealInteractions_e;
   vector<int>* fRealInteractions_p;
   
+  Long64_t fNumberOfSimulatedEvents;
 //////////////////////////////////// 
   
+  //CLASSVARIABLES
+  
+  bool fLoadReal;
+  bool fCorrectOnly;
+
   TVector3* fPositionSource;
   TVector3* fDirectionSource;
 
   TVector3* fScattererPosition;
   TVector3* fAbsorberPosition;
 
-  TVector3* fScatPlanePos;
-  TVector3* fAbsPlanePos;
+  TVector3* fScattererDim;
+  TVector3* fAbsorberDim;
 
-  Double_t fScattererThickness_x;
-  Double_t fScattererThickness_y;
-  Double_t fScattererThickness_z;
-  Double_t fAbsorberThickness_x;
-  Double_t fAbsorberThickness_y;
-  Double_t fAbsorberThickness_z;
-  Double_t fNumberOfSimulatedEvents;
-
-  bool AccessTree(TString name, TString name1);
+  TVector3* fPositionScat;  ///< Position of interaction in scatterer
+  TVector3* fPositionAbs;   ///< Position of interaction in absorber
+  TVector3* fDirectionScat; ///< Direction of scattered gamma
+  double fPrimaryEnergy;
+  double fEnergyLoss;
+  double fEnergyScattered;
+/// Accesses data of trees'branches in ROOT file.
+///\param name (TString) - name of tree.
+///\param namesetup (TString) - name of tree holding setp information.
+  bool AccessTree(TString name, TString namesetup);
   TTree* fTree;
-  TTree* fTree1;
-  //TTree* fTree2;
+  TTree* fTreeSetup;
 
   ClassDef(InputReaderGeant, 0)
 };
+
+inline int InputReaderGeant::GetNumberOfEventsInFile(void){return fTree->GetEntries();}
+inline void InputReaderGeant::SetLoadMonteCarlo(void){fLoadReal=true;}
+inline void InputReaderGeant::SetLoadOnlyCorrect(void){fCorrectOnly=true;}
+inline TVector3* InputReaderGeant::GetPositionScattering(void) {return fPositionScat;}
+inline TVector3* InputReaderGeant::GetPositionAbsorption(void) {  return fPositionAbs;}
+inline TVector3* InputReaderGeant::GetGammaDirScattered(void) {return fDirectionScat;}
+inline double InputReaderGeant::GetEnergyPrimary(void) {return fPrimaryEnergy;}
+inline double InputReaderGeant::GetEnergyLoss(void) { return fEnergyLoss; }
+inline double InputReaderGeant::GetEnergyScattered(void) { return fEnergyScattered; }
 
 #endif
