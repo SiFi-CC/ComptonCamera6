@@ -82,7 +82,7 @@ protected:
   Double_t fMinAngle = 0;
 
   /** Max angle between -X axis and direction of generated particle. */
-  Double_t fMaxAngle = TMath::Pi()/4;
+  Double_t fMaxAngle = TMath::Pi() / 4;
 
   /** Setting up control histograms */
   void CreateHistograms();

@@ -28,7 +28,8 @@ public:
       spdlog::warn("invalid bin coordinate");
       return std::make_pair(-1, -1);
     }
-    return std::make_pair(bin / fNBinsXY.first, fNBinsXY.second - bin % fNBinsXY.first);//VU
+    return std::make_pair(bin / fNBinsXY.first,
+                          fNBinsXY.second - bin % fNBinsXY.first); // VU
   }
 
   std::string String() const {

@@ -2,8 +2,7 @@
 
 // #include "PhysicsBase.hh"
 
-TEST(tests_PhysicsBase, kn_theta)
-{
-    int a = 200;
-    ASSERT_EQ(a, 200);
+TEST(tests_PhysicsBase, kn_theta) {
+  int a = 200;
+  ASSERT_EQ(a, 200);
 }

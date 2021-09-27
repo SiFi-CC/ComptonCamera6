@@ -64,8 +64,8 @@ void CMReconstruction::FillHMatrix() {
 
   int nIterations = 10000;
   for (int objBin = 0; objBin < fObjectCoords.NBins(); objBin++) {
-    double done = (double)objBin/fObjectCoords.NBins();
-    log->info("{} %",done*100);
+    double done = (double)objBin / fObjectCoords.NBins();
+    log->info("{} %", done * 100);
     int objBinX, objBinY;
     std::tie(objBinX, objBinY) = fObjectCoords.BinXY(objBin);
     log->debug("Hmatrix ({}, {}) voxel", objBinX, objBinY);
@@ -219,7 +219,7 @@ void CMReconstruction::RunReconstruction(Int_t nIterations) {
       log->info("Fmask HFile DimZ = {}", mZ1);
       log->info("Fmask InputDataFile DimZ = {}", mZ2);
       exit(EXIT_FAILURE);
-    }else if (da1 != da2) {
+    } else if (da1 != da2) {
       log->error("Inconsistent parameters of H matrix and input data");
       log->info("Detector HFile A = {}", da1);
       log->info("Detector InputDataFile A = {}", da2);

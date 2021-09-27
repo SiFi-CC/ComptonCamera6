@@ -37,7 +37,7 @@ bool InputReader::SetInputFile(TString path) {
 
   return true;
 }
-  //------------------------------------------------------------------
+//------------------------------------------------------------------
 bool InputReader::AccessTree(TString name) {
 
   fTree = (TTree*)fFile->Get(name);
@@ -46,7 +46,7 @@ bool InputReader::AccessTree(TString name) {
     cout << "Could not access tree: " << name << endl;
     return false;
   }
-  
+
   return true;
 }
 bool InputReader::LoadEvent(int i) {
@@ -85,10 +85,11 @@ TVector3* InputReader::GetGammaDirScattered(void) { return NULL; }
 
 //------------------------------------------------------------------
 /// Returns event class type from Machine learning.
-int InputReader::GetMultiplicityNum(void) {return -1000;}
+int InputReader::GetMultiplicityNum(void) { return -1000; }
 //------------------------------------------------------------------
-/// Returns signal/background contribution for each event class from Machine learning.
-int InputReader::GetClassID(void) {return -1000;}
+/// Returns signal/background contribution for each event class from Machine
+/// learning.
+int InputReader::GetClassID(void) { return -1000; }
 //------------------------------------------------------------------
 /// Returns primary energy of the gamma [MeV].
 double InputReader::GetEP(void) { return -100; }
@@ -107,11 +108,10 @@ double InputReader::GetEnergyLoss(void) { return -100; }
 //------------------------------------------------------------------
 /// Returns energy of the scattered gamma [MeV].
 double InputReader::GetEnergyScattered(void) { return -100; }
-  //------------------------------------------------------------------
+//------------------------------------------------------------------
 void InputReader::Clear(void) {
   fFile = NULL;
   fTree = NULL;
-  
 }
 //------------------------------------------------------------------
 /// Prints details of the InputReader class object.

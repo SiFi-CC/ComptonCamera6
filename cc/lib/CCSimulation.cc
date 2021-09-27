@@ -40,8 +40,7 @@ CCSimulation::CCSimulation(TString name, Bool_t verbose) {
   TString outputName = CmdLineOption::GetStringValue("OutputPath");
   // fOutputName = CmdLineOption::GetStringValue("Output");
   fVerbose = verbose;
-  fFile =
-      new TFile(outputName + name + ".root", "RECREATE");
+  fFile = new TFile(outputName + name + ".root", "RECREATE");
   fTree = new TTree("data", "data");
   fTree->Branch("point0", &fPoint0); // source position
   fTree->Branch("point1", &fPoint1); // interaction point on the scaterrer
@@ -59,7 +58,7 @@ CCSimulation::CCSimulation(TString name, Bool_t verbose) {
   Double_t size = 200.;
   Int_t nbins = 100;
   hSource =
-  new TH2F("hSource", "hSource", nbins, -size, size, nbins, -size, size);
+      new TH2F("hSource", "hSource", nbins, -size, size, nbins, -size, size);
   hSource->GetXaxis()->SetTitle("z [mm]");
   hSource->GetYaxis()->SetTitle("y [mm]");
   hScat = new TH2F("hScat", "hScat", nbins, -size, size, nbins, -size, size);
@@ -70,7 +69,8 @@ CCSimulation::CCSimulation(TString name, Bool_t verbose) {
   hAbs->GetYaxis()->SetTitle("y [mm]");
   hEnergyLoss = new TH1F("hEnergyLoss", "energy loss", nbins, 0., 5.);
   hEnergyLoss->GetXaxis()->SetTitle("energy [MeV]");
-  hEnergyAbs = new TH1F("hEnergyScattered", "energy of scattered gamma", nbins, 0., 5.);
+  hEnergyAbs =
+      new TH1F("hEnergyScattered", "energy of scattered gamma", nbins, 0., 5.);
   hEnergyAbs->GetXaxis()->SetTitle("energy [MeV]");
 }
 //------------------------------------------------------------------
@@ -143,7 +143,8 @@ Bool_t CCSimulation::GenerateRay(void) {
       break;
     case 2: // uniform distribution along z axis (beam)
       maxz = fScatterer.GetDimZ() / 4.;
-      fPoint0.SetXYZ(fXofSource, fYofSource, fZofSource + gRandom->Uniform(-maxz, maxz));
+      fPoint0.SetXYZ(fXofSource, fYofSource,
+                     fZofSource + gRandom->Uniform(-maxz, maxz));
       theta = acos(gRandom->Uniform(-1, 1));             // rad
       phi = gRandom->Uniform(-TMath::Pi(), TMath::Pi()); // rad
       break;
@@ -315,7 +316,8 @@ void CCSimulation::SaveGeometryTxt(void) {
   TString outputName = CmdLineOption::GetStringValue("OutputPath");
   ofstream output(
       Form("%sCCSimulation_geometry_gen%i_corr_%.0f_%.0f_%.0f_no.%i.txt",
-           outputName.Data(),fGenVersion, fXofSource, fYofSource, fZofSource, fNev),
+           outputName.Data(), fGenVersion, fXofSource, fYofSource, fZofSource,
+           fNev),
       std::ios::out | std::ios::trunc);
   output << "Generator version: " << fGenVersion << endl;
   if (fGenVersion == 1)
@@ -440,7 +442,10 @@ void CCSimulation::BuildTGeometry(void) {
   TString outputName = CmdLineOption::GetStringValue("OutputPath");
   geom->CloseGeometry();
   geom->SetVisLevel(4);
-  geom->Export( Form( "%sCCSimulation_TGeometry_gen%i_corr_%.0f_%.0f_%.0f_no.%i.root", outputName.Data(), fGenVersion, fXofSource, fYofSource, fZofSource, fNev));
+  geom->Export(
+      Form("%sCCSimulation_TGeometry_gen%i_corr_%.0f_%.0f_%.0f_no.%i.root",
+           outputName.Data(), fGenVersion, fXofSource, fYofSource, fZofSource,
+           fNev));
 }
 //------------------------------------------------------------------
 /// Prints details of the CCSimulation class object.

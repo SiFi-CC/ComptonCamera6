@@ -28,14 +28,14 @@ public:
   Int_t GetBin(void) const;
 
 private:
-  TVector3* fPoint;     ///< Coordinates of the interaction point
-  Int_t fGlobalBin;     ///< Global bin number
+  TVector3* fPoint; ///< Coordinates of the interaction point
+  Int_t fGlobalBin; ///< Global bin number
 
   Int_t Compare(const TObject* run2)
-      const;        ///< Compares sortable objects (global bin numbers)
+      const; ///< Compares sortable objects (global bin numbers)
   Bool_t IsSortable() const {
     return kTRUE;
-  };        ///< Returns kTRUE for all sortable objects
+  }; ///< Returns kTRUE for all sortable objects
 
   ClassDef(IsectionPoint, 0)
 };

@@ -5,10 +5,10 @@
 
 #include "CmdLineConfig.hh"
 
+#include "CMSimulation.hh"
 #include "Sources/MultiPointSource.hh"
 #include "Sources/PlanarSource.hh"
 #include "Sources/PointSource.hh"
-#include "CMSimulation.hh"
 
 int main(int argc, char** argv) {
 

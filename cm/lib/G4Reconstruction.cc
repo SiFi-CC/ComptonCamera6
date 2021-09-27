@@ -143,7 +143,8 @@ void G4Reconstruction::Write(TString filename) const {
 
   SiFi::tools::convertMatrixToHistogram(
       "image", "image on detector",
-      SiFi::tools::unvectorizeMatrix(fImage, fParams.detector.binX, fParams.detector.binY))
+      SiFi::tools::unvectorizeMatrix(fImage, fParams.detector.binX,
+                                     fParams.detector.binY))
       .Write();
 
   int nIterations = fRecoObject.size() - 1;

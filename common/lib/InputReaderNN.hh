@@ -7,8 +7,9 @@ using namespace std;
 
 /// Class for accessing data from the selection done by the NN.
 /// This is class derived from InputReader class.
-/// A ROOTfile is opened a tree containing the selected events and a tree containing information about the SiFi-CC setup are loaded. 
-class InputReaderNN: public InputReader {
+/// A ROOTfile is opened a tree containing the selected events and a tree
+/// containing information about the SiFi-CC setup are loaded.
+class InputReaderNN : public InputReader {
 
 public:
   InputReaderNN();
@@ -18,20 +19,20 @@ public:
   bool LoadEvent(int i);
   int GetNumberOfEventsInFile(void);
   void Clear(void);
-  
+
   TVector3* GetPositionScattering(void);
   TVector3* GetPositionAbsorption(void);
   TVector3* GetGammaDirScattered(void);
-  
+
   double GetEnergyPrimary(void);
   double GetEnergyLoss(void);
   double GetEnergyScattered(void);
-  
+
   void SetLoadOnlyCorrect(void);
 
 private:
   bool fCorrectOnly;
-  
+
   float fX1;
   float fY1;
   float fZ1;
@@ -66,7 +67,7 @@ private:
   int fClassID;
   int fEventType;
   int fEnergyBinID;
-  
+
   TVector3* fPositionScat;  ///< Position of interaction in scatterer
   TVector3* fPositionAbs;   ///< Position of interaction in absorber
   TVector3* fDirectionScat; ///< Direction of scattered gamma
@@ -81,14 +82,23 @@ private:
 
   ClassDef(InputReaderNN, 0)
 };
-inline int InputReaderNN::GetNumberOfEventsInFile(void){return fTree->GetEntries();}
-inline void InputReaderNN::SetLoadOnlyCorrect(void){fCorrectOnly=true;}
-inline TVector3* InputReaderNN::GetPositionScattering(void) {return fPositionScat;}
-inline TVector3* InputReaderNN::GetPositionAbsorption(void) {  return fPositionAbs;}
-inline TVector3* InputReaderNN::GetGammaDirScattered(void) {return fDirectionScat;}
-inline double InputReaderNN::GetEnergyPrimary(void) {return fPrimaryEnergy;}
+inline int InputReaderNN::GetNumberOfEventsInFile(void) {
+  return fTree->GetEntries();
+}
+inline void InputReaderNN::SetLoadOnlyCorrect(void) { fCorrectOnly = true; }
+inline TVector3* InputReaderNN::GetPositionScattering(void) {
+  return fPositionScat;
+}
+inline TVector3* InputReaderNN::GetPositionAbsorption(void) {
+  return fPositionAbs;
+}
+inline TVector3* InputReaderNN::GetGammaDirScattered(void) {
+  return fDirectionScat;
+}
+inline double InputReaderNN::GetEnergyPrimary(void) { return fPrimaryEnergy; }
 inline double InputReaderNN::GetEnergyLoss(void) { return fEnergyLoss; }
-inline double InputReaderNN::GetEnergyScattered(void) { return fEnergyScattered; }
-
+inline double InputReaderNN::GetEnergyScattered(void) {
+  return fEnergyScattered;
+}
 
 #endif

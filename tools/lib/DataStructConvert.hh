@@ -53,9 +53,9 @@ TMatrixT<T> unvectorizeMatrix(const TMatrixT<T>& matVec, Int_t nRows,
   }
   if (matVec.GetNrows() != nRows * nCols) {
     spdlog::error("unvectorizeMatrix: number of columns needs to be equal to "
-                  "nRows*nCols\n nnumber of columns: {}, nRows: {}, nCols: {}", 
+                  "nRows*nCols\n nnumber of columns: {}, nRows: {}, nCols: {}",
                   matVec.GetNrows(), nRows, nCols);
-    
+
     throw "wrong matrix dimensions";
   }
 

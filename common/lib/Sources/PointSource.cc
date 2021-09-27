@@ -21,7 +21,8 @@ PointSource::PointSource(const TString fname) {
 }
 
 Track PointSource::GenerateEvent() {
-  Double_t costheta = cos(fMinAngle)-(cos(fMinAngle)-cos(fMaxAngle)) * gRandom->Uniform(0, 1);
+  Double_t costheta = cos(fMinAngle) - (cos(fMinAngle) - cos(fMaxAngle)) *
+                                           gRandom->Uniform(0, 1);
   Double_t theta = acos(costheta);
   TVector3 versor;
   versor.SetMagThetaPhi(1., theta, gRandom->Uniform(0, TMath::TwoPi()));

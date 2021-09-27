@@ -11,7 +11,7 @@ public:
   SMElement();
   SMElement(Int_t eventno, Int_t bin, Double_t dist);
   ~SMElement();
-  
+
   /// Sets event number and global bin number and length of track.
   void SetEvBinDist(Int_t eventno, Int_t bin, Double_t dist);
   /// Sets event number.
@@ -20,7 +20,7 @@ public:
   void SetBin(Int_t b);
   /// Sets length of track.
   void SetDist(Double_t d);
-  
+
   void Print(void);
   /// Returns event number.
   Int_t GetEvent(void) const;
@@ -30,9 +30,9 @@ public:
   Double_t GetDist(void);
 
 private:
-  Int_t feventno;       ///< event number
-  Int_t fGlobalBin;     ///< Global bin number
-  Double_t fdist;       ///< length of track
+  Int_t feventno;   ///< event number
+  Int_t fGlobalBin; ///< Global bin number
+  Double_t fdist;   ///< length of track
 
   ClassDef(SMElement, 0)
 };
