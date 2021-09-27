@@ -1,17 +1,48 @@
-file(GLOB cc6_common_SRCS "*.cc" "**/*.cc")
-file(GLOB cc6_common_HDRS "*.hh" "**/*.hh")
 
-ROOT_GENERATE_DICTIONARY(G__cc6_common ${cc6_common_HDRS} LINKDEF LinkDef.h)
+CC6_GENERATE_LIBRARY(
+    TARGET cc6_common
+    SOURCES
+        Sources/MultiPointSource.cc
+        Sources/PlanarSource.cc
+        Sources/PointSource.cc
 
-add_library(cc6_common SHARED ${cc6_common_SRCS} G__cc6_common.cxx)
-target_link_libraries(cc6_common cc6_tools
-    ${ROOT_LIBRARIES})
+        BinnedGeometry.cc
+        DetPlane.cc
+        DR_GenerallStructs.cc
+        G4Input.cc
+        InputReader.cc
+        InputReaderGeant.cc
+        InputReaderSimple.cc
+        IsectionPoint.cc
+        Source.cc
+        Track.cc
 
-set_target_properties(cc6_common PROPERTIES
-    SOVERSION ${PROJECT_VERSION}
-    PUBLIC_HEADER "${cc6_common_HDRS}"
+    HEADERS
+        Sources/MultiPointSource.hh
+        Sources/PlanarSource.hh
+        Sources/PointSource.hh
+
+        BinnedGeometry.hh
+        DetPlane.hh
+        DR_GenerallStructs.hh
+        G4Input.hh
+        InputReader.hh
+        InputReaderGeant.hh
+        InputReaderSimple.hh
+        IsectionPoint.hh
+        Source.hh
+        Track.hh
+
+    LIBRARIES
+        cc6_tools
+        ROOT::Core
+        ROOT::Physics
+        ROOT::Geom
+        ROOT::Tree
+        ROOT::Gpad
+
+    PRIVATE_LIBRARIES
+
+    INCLUDE_DIRS
+        Sources
 )
-
-install(TARGETS cc6_common
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

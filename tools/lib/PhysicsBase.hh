@@ -1,15 +1,16 @@
 #ifndef __PhysicsBase_H_
 #define __PhysicsBase_H_ 1
-#include "DetPlane.hh"
 #include "TF1.h"
 #include "TObject.h"
-#include "Track.hh"
 
 /// Class containing methods, which are necessary in order to
 /// simulate Compton scattering of gamma quanta in Compon Camera.
 /// Details of this class are described in presentation by KR
 /// available on wiki:
 ///[LINK](http://bragg.if.uj.edu.pl/gccbwiki/index.php/File:KR_20170222_CCandCarbonLine.pdf)
+
+class DetPlane;
+class Track;
 
 class PhysicsBase : public TObject {
 

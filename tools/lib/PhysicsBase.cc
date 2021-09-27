@@ -1,4 +1,7 @@
 #include "PhysicsBase.hh"
+#include "DetPlane.hh"
+#include "Track.hh"
+
 #include "TF1.h"
 #include "TMath.h"
 #include "TRandom.h"

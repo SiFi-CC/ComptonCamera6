@@ -2,10 +2,14 @@
 
 Prerequisites
 ------------------------------------------------
-* Required ROOT version: 6.13/01
+* Required ROOT version: 6.24/00
 * Required MathMore (optional ROOT module that requires GSL)
 * Doxygen version 1.8.15
-* Compiler supporting c++14
+* Compiler supporting c++17
+
+* CmdLineArgs >= 2.2.0
+* google tests dev package for test running
+
 * Run script `prepare_tree.sh`
 
 Sources

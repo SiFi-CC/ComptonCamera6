@@ -1,6 +1,8 @@
 #ifndef __CCSimulation_H_
 #define __CCSimulation_H_ 1
 #include "PhysicsBase.hh"
+#include "DetPlane.hh"
+
 #include "TFile.h"
 #include "TGeoManager.h"
 #include "TH1F.h"
