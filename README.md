@@ -12,6 +12,10 @@ Prerequisites
 
 * Run script `prepare_tree.sh`
 
+Note
+-------
+Before ComptonCamera6 installation, first install CmdLineArgs from master branch 
+
 Sources
 -------
 
@@ -20,9 +24,16 @@ Sources repository:
 https://github.com/SiFi-CC/ComptonCamera6/
 ```
 
-To get sources run:
+To get sources run from this branch:
 ```
-git clone https://github.com/SiFi-CC/ComptonCamera6/
+git clone -b mlem_source_reco --single-branch https://github.com/SiFi-CC/ComptonCamera6/
+```
+
+Prepare submodules (spdlog) by running:
+```
+cd ComptonCamera6
+
+./prepare_tree.sh
 ```
 
 Prepare submodules (spdlog) by running:

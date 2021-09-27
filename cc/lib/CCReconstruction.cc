@@ -96,7 +96,7 @@ void CCReconstruction::RebuildSetupTxt(void) {
   cout << "\n----- Rebuilding setup from the txt file \n" << endl;
 
   ifstream input(
-      Form("../sources/results/CCSimulation_geometry_gen%i.txt", fGenVersion),
+      Form("../work/results/CCSimulation_geometry_gen%i.txt", fGenVersion),
       std::ios::in);
   if (!(input.is_open())) {
     cout << "##### Could not open CCSimulation_geometry.txt file! " << endl;
@@ -319,7 +319,7 @@ void CCReconstruction::Clear(void) {
 /// Saves 1D histogram in the ROOT file. Name of the file is based on the name
 /// of the CCReconstruction object.
 Bool_t CCReconstruction::SaveHistogram(TH1F* h) {
-  TString name = "../sources/results/" + fName + ".root";
+  TString name = "../work/results/" + fName + ".root";
   TFile* file = new TFile(name, "UPDATE");
   h->Write();
   file->Close();
@@ -332,7 +332,7 @@ Bool_t CCReconstruction::SaveHistogram(TH1F* h) {
 /// Saves 2D histogram in the ROOT file. Name of the file is based on the name
 /// of the CCReconstruction object.
 Bool_t CCReconstruction::SaveHistogram(TH2F* h) {
-  TString name = "../sources/results/" + fName + ".root";
+  TString name = "../work/results/" + fName + ".root";
   TFile* file = new TFile(name, "UPDATE");
   h->Write();
   file->Close();

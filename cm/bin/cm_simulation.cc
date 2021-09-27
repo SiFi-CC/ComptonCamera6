@@ -52,6 +52,7 @@ int main(int argc, char** argv) {
   TH2F* h = TString(maskfile->GetName()).Contains("2d")
                 ? (TH2F*)maskfile->Get("hMURA2d")
                 : (TH2F*)maskfile->Get("hMURA1d");
+
   if (!h) {
     spdlog::error("Can't find required mask histograms");
     abort();

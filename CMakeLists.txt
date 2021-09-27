@@ -39,16 +39,6 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 #---Define useful ROOT functions and macros (e.g. ROOT_GENERATE_DICTIONARY)
 
-configure_file(macros/profile.sh.in profile.sh @ONLY)
-
-install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/profile.sh
-    macros/rootlogon.C
-    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/ComptonCamera6/)
-
-INSTALL(DIRECTORY data/masks
-    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/ComptonCamera6/)
-
 include(c++-standards)
 include(code-coverage)
 include(sanitizers)
@@ -64,6 +54,20 @@ add_subdirectory(common)
 add_subdirectory(tools)
 add_subdirectory(cm)
 add_subdirectory(cc)
+
+configure_file(macros/profile.sh.in profile.sh @ONLY)
+
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/profile.sh
+    macros/rootlogon.C
+    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/ComptonCamera6/)
+
+INSTALL(DIRECTORY data/masks
+    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/ComptonCamera6/)
+
+INSTALL(DIRECTORY data/mlem_reco
+    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/ComptonCamera6/)
+
 
 option(ENABLE_TESTING "Build tests" ON)
 

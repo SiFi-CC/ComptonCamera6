@@ -4,18 +4,25 @@
 #include <fstream>
 #include <iostream>
 
+#include <CmdLineConfig.hh>
+
 using namespace std;
 
 ClassImp(CCSimulation);
 
+CmdLineOption _source_type("Source", "-s", "source type", -1000);
+CmdLineOption _output_path("OutputPath", "-opath", "output path", "./results/");
+// CmdLineOption _output_name("Output", "-o", "output name", "");
 //------------------------------------------------------------------
 /// Default constructor.
 CCSimulation::CCSimulation() {
   SetName("simulation");
+  // fOutputName = CmdLineOption::GetStringValue("Output");
   fVerbose = kTRUE;
   fFile = 0;
   fTree = 0;
   fNev = 0;
+  fGenVersion = CmdLineOption::GetIntValue("Source");
 }
 //------------------------------------------------------------------
 /// Standard constructor.
@@ -30,8 +37,11 @@ CCSimulation::CCSimulation() {
 CCSimulation::CCSimulation(TString name, Bool_t verbose) {
 
   SetName(name);
+  TString outputName = CmdLineOption::GetStringValue("OutputPath");
+  // fOutputName = CmdLineOption::GetStringValue("Output");
   fVerbose = verbose;
-  fFile = new TFile("../sources/results/" + name + ".root", "RECREATE");
+  fFile =
+      new TFile(outputName + name + ".root", "RECREATE");
   fTree = new TTree("data", "data");
   fTree->Branch("point0", &fPoint0); // source position
   fTree->Branch("point1", &fPoint1); // interaction point on the scaterrer
@@ -44,12 +54,12 @@ CCSimulation::CCSimulation(TString name, Bool_t verbose) {
   fTree->Branch("energy1", &fEnergy1); // energy loss
   fTree->Branch("energy2", &fEnergy2); // energy after scattering
   fNev = 0;
-  fGenVersion = -1000;
+  fGenVersion = CmdLineOption::GetIntValue("Source");
 
   Double_t size = 200.;
   Int_t nbins = 100;
   hSource =
-      new TH2F("hSource", "hSource", nbins, -size, size, nbins, -size, size);
+  new TH2F("hSource", "hSource", nbins, -size, size, nbins, -size, size);
   hSource->GetXaxis()->SetTitle("z [mm]");
   hSource->GetYaxis()->SetTitle("y [mm]");
   hScat = new TH2F("hScat", "hScat", nbins, -size, size, nbins, -size, size);
@@ -58,8 +68,10 @@ CCSimulation::CCSimulation(TString name, Bool_t verbose) {
   hAbs = new TH2F("hAbs", "hAbs", nbins, -size, size, nbins, -size, size);
   hAbs->GetXaxis()->SetTitle("z [mm]");
   hAbs->GetYaxis()->SetTitle("y [mm]");
-  hEnergy = new TH1F("hEnergy", "energy of scattered gamma", nbins, 0., 5.);
-  hEnergy->GetXaxis()->SetTitle("energy [MeV]");
+  hEnergyLoss = new TH1F("hEnergyLoss", "energy loss", nbins, 0., 5.);
+  hEnergyLoss->GetXaxis()->SetTitle("energy [MeV]");
+  hEnergyAbs = new TH1F("hEnergyScattered", "energy of scattered gamma", nbins, 0., 5.);
+  hEnergyAbs->GetXaxis()->SetTitle("energy [MeV]");
 }
 //------------------------------------------------------------------
 /// Default destructor. Here the tree and 2D histograms are saved
@@ -72,7 +84,8 @@ CCSimulation::~CCSimulation() {
     hSource->Write();
     hScat->Write();
     hAbs->Write();
-    hEnergy->Write();
+    hEnergyAbs->Write();
+    hEnergyLoss->Write();
     fFile->Close();
   }
   SaveGeometryTxt();
@@ -117,36 +130,36 @@ Bool_t CCSimulation::GenerateRay(void) {
   fZgap = -20.;
   fRadius = 15.;
   Double_t theta_circ, phi_circ;
-  Double_t x, y, z, rad;
+  Double_t rad;
   TVector3 circ;
 
   switch (fGenVersion) {
     case 1: // isotropic point-like source
-      fPoint0.SetXYZ(0, 0, 0);
+      fPoint0.SetXYZ(fXofSource, fYofSource, fZofSource);
       theta = acos(gRandom->Uniform(-1, 1));             // rad
       phi = gRandom->Uniform(-TMath::Pi(), TMath::Pi()); // rad
       // Double_t theta = TMath::Pi()/2.;	//rad
       // Double_t phi = TMath::Pi();		//rad
       break;
     case 2: // uniform distribution along z axis (beam)
-      maxz = fScatterer.GetDimZ() / 2.;
-      fPoint0.SetXYZ(0, 0, gRandom->Uniform(-maxz, maxz));
+      maxz = fScatterer.GetDimZ() / 4.;
+      fPoint0.SetXYZ(fXofSource, fYofSource, fZofSource + gRandom->Uniform(-maxz, maxz));
       theta = acos(gRandom->Uniform(-1, 1));             // rad
       phi = gRandom->Uniform(-TMath::Pi(), TMath::Pi()); // rad
       break;
     case 3: // two isotropic point-like sources along z
       if (gRandom->Uniform(0, 1) < 0.5)
-        fPoint0.SetXYZ(0, 0, 0);
+        fPoint0.SetXYZ(fXofSource, fYofSource, fZofSource);
       else
-        fPoint0.SetXYZ(0, 0, fZgap);
+        fPoint0.SetXYZ(fXofSource, fYofSource, fZofSource + fZgap);
       theta = acos(gRandom->Uniform(-1, 1));             // rad
       phi = gRandom->Uniform(-TMath::Pi(), TMath::Pi()); // rad
       break;
     case 4: // two isotropic point-like sources along y
       if (gRandom->Uniform(0, 1) < 0.5)
-        fPoint0.SetXYZ(0, 0, 0);
+        fPoint0.SetXYZ(fXofSource, fYofSource, fZofSource);
       else
-        fPoint0.SetXYZ(0, fYgap, 0);
+        fPoint0.SetXYZ(fXofSource, fYofSource + fYgap, fZofSource);
       theta = acos(gRandom->Uniform(-1, 1));             // rad
       phi = gRandom->Uniform(-TMath::Pi(), TMath::Pi()); // rad
       break;
@@ -160,12 +173,23 @@ Bool_t CCSimulation::GenerateRay(void) {
       break;
     default:
       cout << "##### Please choose correct version of the generaror!" << endl;
+      abort();
       break;
   }
 
   fVersor1.SetMagThetaPhi(1, theta, phi);
 
   return kTRUE;
+}
+//------------------------------------------------------------------
+/// Sets the coordinate of the source.
+///\param x (Double_t) - x-component of source coordinate
+///\param y (Double_t) - y-component of source coordinate
+///\param z (Double_t) - z-component of source coordinate
+void CCSimulation::SetCoordinate(Double_t x, Double_t y, Double_t z) {
+  fXofSource = x;
+  fYofSource = y;
+  fZofSource = z;
 }
 //------------------------------------------------------------------
 /// Function which processes single gamma ray. Subsequents steps:
@@ -183,23 +207,36 @@ Bool_t CCSimulation::ProcessEvent(void) {
   Clear();
   GenerateRay();
 
+  // cout << endl << endl << endl;
+  // cout << fXofSource << "\t" << fYofSource << "\t" << fZofSource << endl;
+  // cout << endl << endl << endl;
+
   fEnergy0 = 4.44;
   fTrack1.SetPoint(fPoint0);
   fTrack1.SetVersor(fVersor1);
   fTrack1.SetEnergy(fEnergy0);
-
   auto scatData = fScatterer.FindCrossPoint(fTrack1);
-  fPoint0 = scatData.first;
+  fPoint1 = scatData.first;
   if (scatData.second == kFALSE) {
     if (fVerbose) cout << "\tNo cross points with the scatterer\n" << endl;
     return kFALSE;
   }
+  /*Bool_t scatFlag = fTrack1.FindCrossPoint(&fScatterer,fPoint1);
+  if(scatFlag == kFALSE){
+    if(fVerbose) cout << "\tNo cross points with the scatterer\n" << endl;
+    return kFALSE;
+  }*/
 
   fTrack2 = fPhysics.ComptonScatter(&fTrack1, &fScatterer);
   fVersor2 = fTrack2->GetVersor();
   fEnergy2 = fTrack2->GetEnergy();
+  // if(fEnergy2<=3.84){
   fEnergy1 = fEnergy0 - fEnergy2;
-
+  //}
+  // else{
+  // cout<<"Energy loss is less than 0.6MeV "<<endl;
+  //  return kFALSE;
+  //}
   //----- energy check
   Double_t en = fEnergy1 + fEnergy2;
   if (fabs(fEnergy0 - en) > 1.E-8) {
@@ -208,11 +245,12 @@ Bool_t CCSimulation::ProcessEvent(void) {
          << endl;
     return kFALSE;
   }
+
   //----- end of the energy check
 
   //----- position check
   TVector3 point = fTrack2->GetPoint();
-  if (point != fPoint1) {
+  if (point != scatData.first) {
     cout << "\t##### Error in CCSimulation::ProcessEvent!" << endl;
     cout << "\t##### Cross point with the scaterrer is different than starting "
             "point of the new track"
@@ -220,19 +258,24 @@ Bool_t CCSimulation::ProcessEvent(void) {
     return kFALSE;
   }
   //----- end of the position check
-
   auto absData = fAbsorber.FindCrossPoint(*fTrack2);
   fPoint2 = absData.first;
   if (absData.second == kFALSE) {
     if (fVerbose) cout << "\tNo cross point with the absorber\n" << endl;
     return kFALSE;
   }
+  /*Bool_t absFlag = fTrack2->FindCrossPoint(&fAbsorber,fPoint2);
+  if(absFlag == kFALSE){
+     if(fVerbose) cout << "\tNo cross point with the absorber\n" << endl;
+     return kFALSE;
+  }*/
 
   fTree->Fill();
   hSource->Fill(fPoint0.Z(), fPoint0.Y());
-  hScat->Fill(fPoint1.Z(), fPoint1.Y());
+  hScat->Fill(scatData.first.Z(), scatData.first.Y());
   hAbs->Fill(fPoint2.Z(), fPoint2.Y());
-  hEnergy->Fill(fEnergy2);
+  hEnergyLoss->Fill(fEnergy1);
+  hEnergyAbs->Fill(fEnergy2);
   fNev++;
 
   return kTRUE;
@@ -243,6 +286,7 @@ Bool_t CCSimulation::ProcessEvent(void) {
 /// absorber to be simulated.
 void CCSimulation::Loop(Int_t nev) {
   Int_t i = 0;
+  // cout << "in loop..." << endl;
   while (fNev < nev) {
     ProcessEvent();
     i++;
@@ -268,8 +312,10 @@ void CCSimulation::Clear(void) {
 /// text file. Name of the file: CCSimulation_geometry_genX.txt (X is the
 /// generator number).
 void CCSimulation::SaveGeometryTxt(void) {
+  TString outputName = CmdLineOption::GetStringValue("OutputPath");
   ofstream output(
-      Form("../sources/results/CCSimulation_geometry_gen%i.txt", fGenVersion),
+      Form("%sCCSimulation_geometry_gen%i_corr_%.0f_%.0f_%.0f_no.%i.txt",
+           outputName.Data(),fGenVersion, fXofSource, fYofSource, fZofSource, fNev),
       std::ios::out | std::ios::trunc);
   output << "Generator version: " << fGenVersion << endl;
   if (fGenVersion == 1)
@@ -391,10 +437,10 @@ void CCSimulation::BuildTGeometry(void) {
     cout << "##### Please choose correcr version of the generaror!" << endl;
 
   //----- close geometry and save
+  TString outputName = CmdLineOption::GetStringValue("OutputPath");
   geom->CloseGeometry();
   geom->SetVisLevel(4);
-  geom->Export(Form("../sources/results/CCSimulation_TGeometry_gen%i.root",
-                    fGenVersion));
+  geom->Export( Form( "%sCCSimulation_TGeometry_gen%i_corr_%.0f_%.0f_%.0f_no.%i.root", outputName.Data(), fGenVersion, fXofSource, fYofSource, fZofSource, fNev));
 }
 //------------------------------------------------------------------
 /// Prints details of the CCSimulation class object.

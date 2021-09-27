@@ -11,7 +11,9 @@ CC6_GENERATE_LIBRARY(
         DR_GenerallStructs.cc
         G4Input.cc
         InputReader.cc
+        InputReaderEI.cc
         InputReaderGeant.cc
+        InputReaderNN.cc
         InputReaderSimple.cc
         IsectionPoint.cc
         Source.cc
@@ -27,7 +29,9 @@ CC6_GENERATE_LIBRARY(
         DR_GenerallStructs.hh
         G4Input.hh
         InputReader.hh
+        InputReaderEI.hh
         InputReaderGeant.hh
+        InputReaderNN.hh
         InputReaderSimple.hh
         IsectionPoint.hh
         Source.hh

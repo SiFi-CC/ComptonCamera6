@@ -10,6 +10,8 @@
 #pragma link C++ class InputReader;
 #pragma link C++ class InputReaderSimple;
 #pragma link C++ class InputReaderGeant;
+#pragma link C++ class InputReaderEI;
+#pragma link C++ class InputReaderNN;
 #pragma link C++ class BinnedGeometry;
 
 #pragma link C++ class Source+;
@@ -26,3 +28,4 @@
 #pragma link C++ class std::vector<PhysicVec*>+;
 
 #endif
+

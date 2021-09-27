@@ -1,5 +1,5 @@
 #include "InputReader.hh"
-
+#include <vector>
 ClassImp(InputReader);
 
 //------------------------------------------------------------------
@@ -37,9 +37,7 @@ bool InputReader::SetInputFile(TString path) {
 
   return true;
 }
-//------------------------------------------------------------------
-/// Opens tree containing simulations results. Sets branches addresses
-///\param name (TString) - name of the tree
+  //------------------------------------------------------------------
 bool InputReader::AccessTree(TString name) {
 
   fTree = (TTree*)fFile->Get(name);
@@ -48,12 +46,9 @@ bool InputReader::AccessTree(TString name) {
     cout << "Could not access tree: " << name << endl;
     return false;
   }
-
+  
   return true;
 }
-//------------------------------------------------------------------
-/// Loads requested event from the opened tree with simulations results.
-///\param i (int) - number of the requested event.
 bool InputReader::LoadEvent(int i) {
 
   int imax = fTree->GetEntries();
@@ -69,7 +64,7 @@ bool InputReader::LoadEvent(int i) {
   return true;
 }
 //------------------------------------------------------------------
-/// Returns pointer to the vector representing souurce of the gamma.
+/// Returns pointer to the vector representing source of the gamma.
 TVector3* InputReader::GetPositionPrimary(void) { return NULL; }
 //------------------------------------------------------------------
 /// Returns pointer to the vector representing place of interaction
@@ -87,6 +82,22 @@ TVector3* InputReader::GetGammaDirPrimary(void) { return NULL; }
 /// Returns pointer to the vector representing direction of the
 /// scattered gamma.
 TVector3* InputReader::GetGammaDirScattered(void) { return NULL; }
+
+//------------------------------------------------------------------
+/// Returns event class type from Machine learning.
+int InputReader::GetMultiplicityNum(void) {return -1000;}
+//------------------------------------------------------------------
+/// Returns signal/background contribution for each event class from Machine learning.
+int InputReader::GetClassID(void) {return -1000;}
+//------------------------------------------------------------------
+/// Returns primary energy of the gamma [MeV].
+double InputReader::GetEP(void) { return -100; }
+//------------------------------------------------------------------
+/// Returns recovered energy sum of the gamma [MeV].
+double InputReader::GetReES(void) { return -100; }
+//------------------------------------------------------------------
+/// Returns energy sum of the gamma [MeV].
+double InputReader::GetES(void) { return -100; }
 //------------------------------------------------------------------
 /// Returns energy of the gamma emitted from the source [MeV].
 double InputReader::GetEnergyPrimary(void) { return -100; }
@@ -96,11 +107,11 @@ double InputReader::GetEnergyLoss(void) { return -100; }
 //------------------------------------------------------------------
 /// Returns energy of the scattered gamma [MeV].
 double InputReader::GetEnergyScattered(void) { return -100; }
-//------------------------------------------------------------------
-/// Sets default values of the protected class members.
+  //------------------------------------------------------------------
 void InputReader::Clear(void) {
   fFile = NULL;
   fTree = NULL;
+  
 }
 //------------------------------------------------------------------
 /// Prints details of the InputReader class object.
