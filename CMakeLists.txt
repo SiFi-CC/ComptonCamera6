@@ -26,6 +26,7 @@ find_package(ROOT REQUIRED COMPONENTS Gpad Geom Hist MathMore Physics Tree)
 find_package(CmdLineArgs 2.2.0 REQUIRED)
 
 add_subdirectory(spdlog)
+set_property(TARGET spdlog PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 include(GNUInstallDirs)
 

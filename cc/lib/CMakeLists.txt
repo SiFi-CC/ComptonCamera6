@@ -15,10 +15,10 @@ CC6_GENERATE_LIBRARY(
 
     LIBRARIES
         ROOT::Core
+        cc6_common
 
     PRIVATE_LIBRARIES
         cc6_tools
-        cc6_common
         spdlog::spdlog
         SiFi::CmdLineArgs
 )
