@@ -24,8 +24,8 @@ target_link_libraries(
     gtests
     PRIVATE
         ${GTEST_TRG}
-        #cc6_tools
-        #cc6_common
+        cc6_tools
+        cc6_common
         #cc6_cc
         #cc6_cm
 )

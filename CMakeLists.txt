@@ -26,6 +26,7 @@ find_package(ROOT REQUIRED COMPONENTS Gpad Geom Hist MathMore Physics Tree)
 find_package(CmdLineArgs 2.2.0 REQUIRED)
 
 add_subdirectory(spdlog)
+set_property(TARGET spdlog PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 include(GNUInstallDirs)
 
@@ -45,6 +46,7 @@ include(sanitizers)
 
 cxx_17()
 add_code_coverage()
+add_code_coverage_all_targets(EXCLUDE "*/G__*_cc.cxx" "/usr/*")
 
 include_directories(
     ${CMAKE_BINARY_DIR}
