@@ -16,6 +16,9 @@ CC6_GENERATE_LIBRARY(
         ROOT::Core
 
     PRIVATE_LIBRARIES
+        ROOT::Matrix
+        ROOT::Physics
+        ROOT::Hist
 
     INCLUDE_DIRS
         ../../common/lib

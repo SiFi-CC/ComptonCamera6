@@ -6,6 +6,8 @@
 #include "TMath.h"
 #include "TRandom.h"
 #include "TVector3.h"
+
+#include <cmath>
 #include <iostream>
 
 using namespace std;
@@ -75,16 +77,6 @@ Double_t PhysicsBase::FindTheta(Double_t energy) {
   return theta;
 }
 //------------------------------------------------------------------
-/// Returns energy [MeV] of gamma quantum after Compton scattering.
-///\param theta (Double_t) theta scattering angle (must be given in radians)
-///\param initE (Double_t) initial energy of gamma quantum [MeV]
-Double_t PhysicsBase::NewEnergy(Double_t theta, Double_t initE) {
-  Double_t costheta = cos(theta); // theta must be in rad
-  Double_t alpha = initE / kMe;
-  Double_t finE = initE / (1 + alpha * (1 - costheta)); // MeV
-  return finE;
-}
-//------------------------------------------------------------------
 /// Method for Compton scattering process.
 ///\param initTrack (*Track) - track representing incident gamma quantum
 ///\param plane (*DetPlane) - plane of the detector
@@ -115,7 +107,7 @@ Track* PhysicsBase::ComptonScatter(Track* initTrack, DetPlane* plane) {
   if (fabs(fPhi) < epsilon)
     cout << "##### Warning! Phi angle after scattering still equals 0!" << endl;
 
-  finE = NewEnergy(fTheta, initE);
+  finE = CC6::ComptonScatteringGammaE(fTheta, initE);
 
   // finVersor.SetXYZ(-1,0,0);
   //----- scattering
@@ -163,3 +155,26 @@ void PhysicsBase::Print(void) {
        << endl;
 }
 //------------------------------------------------------------------
+
+namespace CC6 {
+
+/// Returns energy [MeV] of gamma quantum after Compton scattering.
+///\param theta (Double_t) theta scattering angle (must be given in radians)
+///\param initE (Double_t) initial energy of gamma quantum [MeV]
+Double_t ComptonScatteringGammaE(Double_t theta, Double_t initE) {
+  Double_t costheta = cos(theta); // theta must be in rad
+  Double_t alpha = initE / kMe;
+  Double_t finE = initE / (1 + alpha * (1 - costheta)); // MeV
+  return finE;
+}
+//------------------------------------------------------------------
+
+inline namespace literals {
+
+long double operator"" _rad(long double deg) { return deg * M_PI / 180; }
+
+long double operator"" _rad(unsigned long long deg) { return deg * M_PI / 180; }
+
+} // namespace literals
+
+} // namespace CC6

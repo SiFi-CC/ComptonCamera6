@@ -1,5 +1,6 @@
 #ifndef __PhysicsBase_H_
 #define __PhysicsBase_H_ 1
+
 #include "TF1.h"
 #include "TObject.h"
 
@@ -19,7 +20,6 @@ public:
   PhysicsBase(TString name);
   ~PhysicsBase();
 
-  Double_t NewEnergy(Double_t theta, Double_t initE);
   Double_t FindPhi(void);
   Double_t FindTheta(Double_t energy);
   Track* ComptonScatter(Track* initTrack, DetPlane* plane);
@@ -42,5 +42,15 @@ private:
 
   ClassDef(PhysicsBase, 0)
 };
+
+namespace CC6 {
+Double_t ComptonScatteringGammaE(Double_t theta, Double_t initE);
+
+inline namespace literals {
+long double operator"" _rad(long double deg);
+long double operator"" _rad(unsigned long long);
+} // namespace literals
+
+} // namespace CC6
 
 #endif
