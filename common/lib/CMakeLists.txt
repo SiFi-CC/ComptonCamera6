@@ -1,4 +1,3 @@
-
 CC6_GENERATE_LIBRARY(
     TARGET cc6_common
     SOURCES
@@ -44,9 +43,4 @@ CC6_GENERATE_LIBRARY(
         ROOT::Geom
         ROOT::Tree
         ROOT::Gpad
-
-    PRIVATE_LIBRARIES
-
-    INCLUDE_DIRS
-        Sources
 )

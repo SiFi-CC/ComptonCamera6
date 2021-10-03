@@ -92,7 +92,7 @@ Bool_t DetPlane::CheckPoint(TVector3 point) {
   return kTRUE;
 }
 
-std::pair<TVector3, Bool_t> DetPlane::FindCrossPoint(const Track& track) {
+std::optional<TVector3> DetPlane::FindCrossPoint(const Track& track) {
   TVector3 position;
   Double_t l = track.GetVersor().X();
   Double_t m = track.GetVersor().Y();
@@ -107,12 +107,12 @@ std::pair<TVector3, Bool_t> DetPlane::FindCrossPoint(const Track& track) {
   if (fabs(denom) < 1.E-8) {
     cout << "##### The track is parallel to the plane! No cross points!"
          << endl;
-    return std::make_pair(TVector3(), false);
+    return {};
   }
   if (fabs(num) < 1.E-8) {
     cout << "##### The plane includes the track! All points are common!"
          << endl;
-    return std::make_pair(TVector3(), false);
+    return {};
   }
 
   Double_t rho = num / denom;
@@ -124,10 +124,10 @@ std::pair<TVector3, Bool_t> DetPlane::FindCrossPoint(const Track& track) {
 
   if (l > 0 || fabs(crossZ) > (0.5 * fDimZ) || fabs(crossY) > (0.5 * fDimY)) {
     // cout << "\n\tCrossing point outside of the detector plane..." << endl;
-    return std::make_pair(TVector3(), false);
+    return {};
   }
 
-  return std::make_pair(position, true);
+  return position;
 }
 
 //------------------------------------------------------------------

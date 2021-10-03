@@ -1,4 +1,3 @@
-
 CC6_GENERATE_LIBRARY(
     TARGET cc6_tools
     SOURCES
@@ -19,7 +18,4 @@ CC6_GENERATE_LIBRARY(
         ROOT::Matrix
         ROOT::Physics
         ROOT::Hist
-
-    INCLUDE_DIRS
-        ../../common/lib
 )

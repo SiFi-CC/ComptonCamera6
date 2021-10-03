@@ -14,9 +14,11 @@ CC6_GENERATE_LIBRARY(
         G4SimulationAdapter.hh
         Mask.hh
 
+    LIBRARIES
+        cc6_common
+
     PRIVATE_LIBRARIES
         cc6_tools
-        cc6_common
         ROOT::Core
         spdlog::spdlog
         SiFi::CmdLineArgs

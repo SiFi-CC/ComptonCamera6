@@ -1,9 +1,13 @@
 #ifndef __DetPlane_H_
 #define __DetPlane_H_ 1
+
 #include "Track.hh"
+
 #include <TObject.h>
 #include <TString.h>
 #include <TVector3.h>
+
+#include <optional>
 
 /// Class which represents plane of the detector. The DetPlane
 /// object consists of:
@@ -58,7 +62,7 @@ public:
    *  - Cross point is outside of the plane (size of the plane is specified
    * in DetPlane object).
    */
-  std::pair<TVector3, Bool_t> FindCrossPoint(const Track& track);
+  std::optional<TVector3> FindCrossPoint(const Track& track);
 
 private:
   Double_t fA; ///< Coefficient A of the cartesian plane equation
