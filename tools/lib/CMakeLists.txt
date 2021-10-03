@@ -1,4 +1,3 @@
-
 CC6_GENERATE_LIBRARY(
     TARGET cc6_tools
     SOURCES
@@ -16,7 +15,7 @@ CC6_GENERATE_LIBRARY(
         ROOT::Core
 
     PRIVATE_LIBRARIES
-
-    INCLUDE_DIRS
-        ../../common/lib
+        ROOT::Matrix
+        ROOT::Physics
+        ROOT::Hist
 )

@@ -217,18 +217,24 @@ Bool_t CCSimulation::ProcessEvent(void) {
   fTrack1.SetVersor(fVersor1);
   fTrack1.SetEnergy(fEnergy0);
   auto scatData = fScatterer.FindCrossPoint(fTrack1);
-  fPoint1 = scatData.first;
-  if (scatData.second == kFALSE) {
+  if (!scatData.has_value()) {
     if (fVerbose) cout << "\tNo cross points with the scatterer\n" << endl;
     return kFALSE;
   }
+  fPoint1 = *scatData;
+
   /*Bool_t scatFlag = fTrack1.FindCrossPoint(&fScatterer,fPoint1);
   if(scatFlag == kFALSE){
     if(fVerbose) cout << "\tNo cross points with the scatterer\n" << endl;
     return kFALSE;
   }*/
 
-  fTrack2 = fPhysics.ComptonScatter(&fTrack1, &fScatterer);
+  fTrack2 = new Track;
+  auto cp = fScatterer.FindCrossPoint(fTrack1);
+  if (cp.has_value()) {
+    auto [finE, fin_versor] =
+        CC6::ComptonScatter(fTrack1.GetEnergy(), fTrack1.GetVersor(), *cp);
+  }
   fVersor2 = fTrack2->GetVersor();
   fEnergy2 = fTrack2->GetEnergy();
   // if(fEnergy2<=3.84){
@@ -251,7 +257,7 @@ Bool_t CCSimulation::ProcessEvent(void) {
 
   //----- position check
   TVector3 point = fTrack2->GetPoint();
-  if (point != scatData.first) {
+  if (point != *scatData) {
     cout << "\t##### Error in CCSimulation::ProcessEvent!" << endl;
     cout << "\t##### Cross point with the scaterrer is different than starting "
             "point of the new track"
@@ -260,8 +266,7 @@ Bool_t CCSimulation::ProcessEvent(void) {
   }
   //----- end of the position check
   auto absData = fAbsorber.FindCrossPoint(*fTrack2);
-  fPoint2 = absData.first;
-  if (absData.second == kFALSE) {
+  if (!absData.has_value()) {
     if (fVerbose) cout << "\tNo cross point with the absorber\n" << endl;
     return kFALSE;
   }
@@ -270,10 +275,11 @@ Bool_t CCSimulation::ProcessEvent(void) {
      if(fVerbose) cout << "\tNo cross point with the absorber\n" << endl;
      return kFALSE;
   }*/
+  auto& fPoint2 = *absData;
 
   fTree->Fill();
   hSource->Fill(fPoint0.Z(), fPoint0.Y());
-  hScat->Fill(scatData.first.Z(), scatData.first.Y());
+  hScat->Fill(scatData->Z(), scatData->Y());
   hAbs->Fill(fPoint2.Z(), fPoint2.Y());
   hEnergyLoss->Fill(fEnergy1);
   hEnergyAbs->Fill(fEnergy2);
