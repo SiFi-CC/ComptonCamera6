@@ -12,53 +12,54 @@ using namespace std;
 /// and via set of getter function passes information to reconstruction
 /// classes, i.e. CCMLEM.
 
-class InputReaderEI : public InputReader {
+class InputReaderEI : public InputReader
+{
 
 public:
-  InputReaderEI();
-  InputReaderEI(TString path);
-  ~InputReaderEI();
+    InputReaderEI();
+    InputReaderEI(TString path);
+    ~InputReaderEI();
 
-  bool LoadEvent(int i);
-  void Clear(void);
+    bool LoadEvent(int i);
+    void Clear(void);
 
-  TVector3* GetPositionScattering(void);
+    TVector3* GetPositionScattering(void);
 
-  TVector3* GetPositionAbsorption(void);
+    TVector3* GetPositionAbsorption(void);
 
-  double GetEnergyLoss(void);
-  double GetEnergyScattered(void);
-  double GetEP(void);
-  double GetReES(void);
-  //  double GetReEP(void);
-  double GetES(void);
+    double GetEnergyLoss(void);
+    double GetEnergyScattered(void);
+    double GetEP(void);
+    double GetReES(void);
+    //  double GetReEP(void);
+    double GetES(void);
 
-  int GetMultiplicityNum(void);
-  int GetClassID(void);
+    int GetMultiplicityNum(void);
+    int GetClassID(void);
 
 private:
-  int fEventNumber; ///< Event number
-  int fS;
-  int fClassID;
+    int fEventNumber; ///< Event number
+    int fS;
+    int fClassID;
 
-  TVector3* fPositionElectron; ///< Position in scatterer module
-  TVector3* fPositionPhoton;   ///< Position in absorber module
+    TVector3* fPositionElectron; ///< Position in scatterer module
+    TVector3* fPositionPhoton;   ///< Position in absorber module
 
-  TVector3* fPos_Scat;
-  TVector3* fPos_Abs;
+    TVector3* fPos_Scat;
+    TVector3* fPos_Abs;
 
-  Double_t fEnergy_Scat;
-  Double_t fEnergy_Abs;
+    Double_t fEnergy_Scat;
+    Double_t fEnergy_Abs;
 
-  Double_t fEnergy_Primary;
-  Double_t fReEnS;
-  Double_t fEnergyS;
-  //  Double_t fReEnP;
+    Double_t fEnergy_Primary;
+    Double_t fReEnS;
+    Double_t fEnergyS;
+    //  Double_t fReEnP;
 
-  bool AccessTree(TString name /*, TString name1, TString name2*/);
-  TTree* fTree;
+    bool AccessTree(TString name /*, TString name1, TString name2*/);
+    TTree* fTree;
 
-  ClassDef(InputReaderEI, 0)
+    ClassDef(InputReaderEI, 0)
 };
 
 #endif

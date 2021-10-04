@@ -10,73 +10,76 @@
 #include <TMatrix.h>
 #include <TTree.h>
 
-class CMSimulation : public TObject {
+class CMSimulation : public TObject
+{
 
 public:
-  CMSimulation() = default;
-  CMSimulation(Source* source, Mask* mask, DetPlane* detector)
-      : fSource(source), fMask(mask), fDetPlane(detector) {
-    Init();
-  }
-  virtual ~CMSimulation();
-  void RunSimulation(Int_t nEvents);
-  void ResetSimulation();
+    CMSimulation() = default;
+    CMSimulation(Source* source, Mask* mask, DetPlane* detector)
+        : fSource(source), fMask(mask), fDetPlane(detector)
+    {
+        Init();
+    }
+    virtual ~CMSimulation();
+    void RunSimulation(Int_t nEvents);
+    void ResetSimulation();
 
-  void Write(TString name) const;
-  void Print() const;
+    void Write(TString name) const;
+    void Print() const;
 
-  TH2F* GetObject() const { return fH2Source; };
-  TH2F* GetImage() const { return fH2Detector; };
+    TH2F* GetObject() const { return fH2Source; };
+    TH2F* GetImage() const { return fH2Detector; };
 
-  void SetLogLevel(spdlog::level::level_enum level) { log->set_level(level); }
+    void SetLogLevel(spdlog::level::level_enum level) { log->set_level(level); }
 
 private:
-  void Init();
-  Bool_t ProcessEvent();
-  void BuildTGeometry(TString name) const;
+    void Init();
+    Bool_t ProcessEvent();
+    void BuildTGeometry(TString name) const;
 
-  /** Source of radiation used in simulation */
-  Source* fSource = nullptr;
-  /** Mask implementation */
-  Mask* fMask = nullptr;
-  /** Detector plane */
-  DetPlane* fDetPlane = nullptr;
+    /** Source of radiation used in simulation */
+    Source* fSource = nullptr;
+    /** Mask implementation */
+    Mask* fMask = nullptr;
+    /** Detector plane */
+    DetPlane* fDetPlane = nullptr;
 
-  /** Stores data of simulated particles. Particle is saved only if projected
-   * path is crossing mask and detector, otherwise is not scored anywhere.
-   */
-  TTree* fTree;
-  /** Histogram representing distribution of tracks in Source */
-  TH2F* fH2Source;
-  /** Histogram representing distribution of tracks in detector. This image is
-   * used in reconstruction
-   *
-   * TODO: This data will be moved to Detector in the future.
-   */
-  TH2F* fH2Detector;
-  /** Distribution of theta angles of registered particles
-   */
-  TH1F* fH1Theta;
+    /** Stores data of simulated particles. Particle is saved only if projected
+     * path is crossing mask and detector, otherwise is not scored anywhere.
+     */
+    TTree* fTree;
+    /** Histogram representing distribution of tracks in Source */
+    TH2F* fH2Source;
+    /** Histogram representing distribution of tracks in detector. This image is
+     * used in reconstruction
+     *
+     * TODO: This data will be moved to Detector in the future.
+     */
+    TH2F* fH2Detector;
+    /** Distribution of theta angles of registered particles
+     */
+    TH1F* fH1Theta;
 
-  /** Distribution of phi angles of registered particles
-   */
-  TH1F* fH1Phi;
+    /** Distribution of phi angles of registered particles
+     */
+    TH1F* fH1Phi;
 
-  /**
-   * Information about currently processed particle, needs to be kept in
-   * object because TTree api requires source of data to be defined on init.
-   * fTree object is Filled usng fields of this struct.
-   */
-  struct {
-    /** Tracks representing paricle state at source mask an detector plane */
-    Track sourceTrack, maskTrack, detectorTrack;
-    /** Flag that describes whether particle was absorbed by mask */
-    Bool_t absorbed;
-  } fPersist;
+    /**
+     * Information about currently processed particle, needs to be kept in
+     * object because TTree api requires source of data to be defined on init.
+     * fTree object is Filled usng fields of this struct.
+     */
+    struct
+    {
+        /** Tracks representing paricle state at source mask an detector plane */
+        Track sourceTrack, maskTrack, detectorTrack;
+        /** Flag that describes whether particle was absorbed by mask */
+        Bool_t absorbed;
+    } fPersist;
 
-  SiFi::logger log = SiFi::createLogger("CMSimulation");
+    SiFi::logger log = SiFi::createLogger("CMSimulation");
 
-  ClassDef(CMSimulation, 0)
+    ClassDef(CMSimulation, 0)
 };
 
 #endif

@@ -7,20 +7,22 @@ ClassImp(SMElement);
 
 //------------------------------------------------------------------
 /// Default constructor.
-SMElement::SMElement() {
-  feventno = 0;
-  fGlobalBin = 0;
-  fdist = 0;
+SMElement::SMElement()
+{
+    feventno = 0;
+    fGlobalBin = 0;
+    fdist = 0;
 }
 //------------------------------------------------------------------
 /// Standard constructor
 ///\param eventno (Int_t) - event number.
 ///\param bin (Int_t) - global bin number.
 ///\param dist (Double_t) - lenght of track.
-SMElement::SMElement(Int_t eventno, Int_t bin, Double_t dist) {
-  feventno = eventno;
-  fGlobalBin = bin;
-  fdist = dist;
+SMElement::SMElement(Int_t eventno, Int_t bin, Double_t dist)
+{
+    feventno = eventno;
+    fGlobalBin = bin;
+    fdist = dist;
 }
 //------------------------------------------------------------------
 /// Deafault destructor
@@ -30,10 +32,11 @@ SMElement::~SMElement() {}
 ///\param eventno (Int_t) - event number.
 ///\param bin (Int_t) - global bin number.
 ///\param dist (Double_t) - length of track.
-void SMElement::SetEvBinDist(Int_t eventno, Int_t bin, Double_t dist) {
-  feventno = eventno;
-  fGlobalBin = bin;
-  fdist = dist;
+void SMElement::SetEvBinDist(Int_t eventno, Int_t bin, Double_t dist)
+{
+    feventno = eventno;
+    fGlobalBin = bin;
+    fdist = dist;
 }
 //------------------------------------------------------------------
 /// Sets event number.
@@ -58,10 +61,11 @@ Int_t SMElement::GetBin(void) const { return fGlobalBin; }
 Double_t SMElement::GetDist(void) { return fdist; }
 //------------------------------------------------------------------
 /// Prints details of the SMElement class object.
-void SMElement::Print(void) {
-  cout << "\nSMElement::Print()" << endl;
-  cout << "\tEvent number: \t" << feventno << endl;
-  cout << "\tGlobal bin number: \t" << fGlobalBin << endl;
-  cout << "\tLength of track: " << fdist << endl;
+void SMElement::Print(void)
+{
+    cout << "\nSMElement::Print()" << endl;
+    cout << "\tEvent number: \t" << feventno << endl;
+    cout << "\tGlobal bin number: \t" << fGlobalBin << endl;
+    cout << "\tLength of track: " << fdist << endl;
 }
 //------------------------------------------------------------------
