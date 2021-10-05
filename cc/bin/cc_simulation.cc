@@ -7,7 +7,6 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
-
     CmdLineOption _pos_y("pos_y", "-y", "y position of source", 0.0);
     CmdLineOption _pos_z("pos_z", "-z", "z position of source", 0.0);
     CmdLineOption _pos_x("pos_x", "-x", "x position of source", 0.0);
@@ -42,24 +41,22 @@ int main(int argc, char** argv)
         abort();
     }
     // DetPlane detector(da, db, dc, dd, de, df, "detector");
-    CCSimulation* sim;
     TStopwatch t;
     t.Start();
-    //   sim = new CCSimulation(
-    //       Form("CCSimulation_gen%i_corr_%.0f_%.0f_%.0f_no.%i_scat._%.0f*%.0f",
-    //       gen, x, y, z, nev, db, dc), kFALSE);
-    sim = new CCSimulation(Form("CCSimulation_gen%i_corr_%.0f_%.0f_%.0f_no.%i_"
-                                "scat._%.0f*%.0f_abs._%.0f*%.0f",
-                                gen, x, y, z, nev, db, dc, de, df),
-                           kFALSE);
+    auto name = Form("CCSimulation_gen%i_corr_%.0f_%.0f_%.0f_no.%i_"
+                     "scat._%.0fx%.0f_abs._%.0fx%.0f",
+                     gen, x, y, z, nev, db, dc, de, df);
+    printf("Creating CC simulation for '%s'\n", name);
+
+    auto sim = CCSimulation(name, kFALSE);
+
     // sim->SetGenVersion(gen.Atoi());
-    sim->BuildSetup(da, db, dc, dd, de, df);
-    sim->SetCoordinate(x, y, z);
-    sim->Loop(nev);
-    delete sim;
+    sim.BuildSetup(da, db, dc, dd, de, df);
+    sim.SetCoordinate(x, y, z);
+    sim.Loop(nev);
 
     t.Stop();
     t.Print();
 
-    return 1;
+    return 0;
 }

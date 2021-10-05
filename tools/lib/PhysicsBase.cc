@@ -113,7 +113,7 @@ auto ComptonScatter(Double_t E, const TVector3& p_versor, const TVector3& cross_
 ///\param energy (Double_t) energy of incident gamma quantum [MeV].
 Double_t RandomKleinNishinaTheta(Double_t energy)
 {
-    auto f = std::make_unique<TF1>("KNFunction", KleinNishina, 0, 180, 1);
+    static auto f = std::make_unique<TF1>("KNFunction", KleinNishina, 0, 180, 1);
     f->SetParameter(0, energy);
     return f->GetRandom() * TMath::DegToRad(); // deg
 }

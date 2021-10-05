@@ -1,30 +1,20 @@
 #include "CCSimulation.hh"
-#include "TMath.h"
-#include "TRandom.h"
-#include <fstream>
-#include <iostream>
 
 #include <CmdLineConfig.hh>
 
-using namespace std;
+#include <TFile.h>
+#include <TMath.h>
+#include <TRandom.h>
+#include <TTree.h>
 
-ClassImp(CCSimulation);
+#include <fstream>
+#include <iostream>
+
+using namespace std;
 
 CmdLineOption _source_type("Source", "-s", "source type", -1000);
 CmdLineOption _output_path("OutputPath", "-opath", "output path", "./results/");
 // CmdLineOption _output_name("Output", "-o", "output name", "");
-//------------------------------------------------------------------
-/// Default constructor.
-CCSimulation::CCSimulation()
-{
-    SetName("simulation");
-    // fOutputName = CmdLineOption::GetStringValue("Output");
-    fVerbose = kTRUE;
-    fFile = 0;
-    fTree = 0;
-    fNev = 0;
-    fGenVersion = CmdLineOption::GetIntValue("Source");
-}
 //------------------------------------------------------------------
 /// Standard constructor.
 ///\param name (TString) - name of the object
@@ -35,15 +25,23 @@ CCSimulation::CCSimulation()
 ///- tree fTree with simulation results. For the description of tree barnches
 /// see description of the class
 ///- histograms hSource, hScat, hAbs anf hEnergy.
-CCSimulation::CCSimulation(TString name, Bool_t verbose)
+CCSimulation::CCSimulation(const TString& name, Bool_t verbose) : fVerbose(verbose)
 {
-
-    SetName(name);
     TString outputName = CmdLineOption::GetStringValue("OutputPath");
     // fOutputName = CmdLineOption::GetStringValue("Output");
-    fVerbose = verbose;
+
     fFile = new TFile(outputName + name + ".root", "RECREATE");
+    if (!fFile)
+    {
+        std::cerr << "Output file " << (outputName + name + ".root").Data() << " cannot be open.\n";
+        std::abort();
+    }
     fTree = new TTree("data", "data");
+    if (!fTree)
+    {
+        std::cerr << "Tree not created.\n";
+        std::abort();
+    }
     fTree->Branch("point0", &fPoint0); // source position
     fTree->Branch("point1", &fPoint1); // interaction point on the scaterrer
     fTree->Branch("point2", &fPoint2); // interaction point on the absorber
@@ -79,18 +77,27 @@ CCSimulation::CCSimulation(TString name, Bool_t verbose)
 CCSimulation::~CCSimulation()
 {
     if (fVerbose) cout << "Inside destructor of the CCSimulation class" << endl;
-    if (fFile && fTree)
-    {
-        fTree->Write();
-        hSource->Write();
-        hScat->Write();
-        hAbs->Write();
-        hEnergyAbs->Write();
-        hEnergyLoss->Write();
-        fFile->Close();
-    }
+
+    fTree->Write();
+    hSource->Write();
+    hScat->Write();
+    hAbs->Write();
+    hEnergyAbs->Write();
+    hEnergyLoss->Write();
+
+    fFile->Close();
+
     SaveGeometryTxt();
     BuildTGeometry();
+
+    delete fFile;
+
+    //     delete fTree;
+    //     delete hEnergyAbs;
+    //     delete hEnergyLoss;
+    //     delete hSource;
+    //     delete hScat;
+    //     delete hAbs;
 }
 //------------------------------------------------------------------
 /// Sets details of detector geometry, i.e. fScaterrer and fAbsorber.
@@ -124,9 +131,8 @@ void CCSimulation::BuildSetup(Double_t scatDist = 50, // mm
 /// coordinates of source point fPoint0 and direction of the Track fVersor1.
 /// The source point is generated according to chosen generator version.
 /// Generator version can be set via SetGenVersion(Int_t gen) function.
-Bool_t CCSimulation::GenerateRay(void)
+Bool_t CCSimulation::GenerateRay()
 {
-
     Double_t theta, phi, maxz;
     fYgap = -20.;
     fZgap = -20.;
@@ -206,9 +212,8 @@ void CCSimulation::SetCoordinate(Double_t x, Double_t y, Double_t z)
 ///
 /// Only events which are in acceptance of both - scatterer and
 /// absorber, are taken into account.
-Bool_t CCSimulation::ProcessEvent(void)
+Bool_t CCSimulation::ProcessEvent()
 {
-
     Clear();
     GenerateRay();
 
@@ -217,6 +222,7 @@ Bool_t CCSimulation::ProcessEvent(void)
     // cout << endl << endl << endl;
 
     fEnergy0 = 4.44;
+    Track fTrack1;
     fTrack1.SetPoint(fPoint0);
     fTrack1.SetVersor(fVersor1);
     fTrack1.SetEnergy(fEnergy0);
@@ -234,15 +240,18 @@ Bool_t CCSimulation::ProcessEvent(void)
       return kFALSE;
     }*/
 
-    fTrack2 = new Track;
     auto cp = fScatterer.FindCrossPoint(fTrack1);
-    if (cp.has_value())
-    {
-        auto [finE, fin_versor] =
-            CC6::ComptonScatter(fTrack1.GetEnergy(), fTrack1.GetVersor(), *cp);
-    }
-    fVersor2 = fTrack2->GetVersor();
-    fEnergy2 = fTrack2->GetEnergy();
+    if (!cp.has_value()) return kFALSE;
+
+    Track fTrack2;
+    auto [finE, fin_versor] = CC6::ComptonScatter(fTrack1.GetEnergy(), fTrack1.GetVersor(), *cp);
+
+    fTrack2.SetPoint(*cp);
+    fTrack2.SetEnergy(finE);
+    fTrack2.SetVersor(fin_versor);
+    fVersor2 = fin_versor;
+    fEnergy2 = finE;
+
     // if(fEnergy2<=3.84){
     fEnergy1 = fEnergy0 - fEnergy2;
     //}
@@ -262,7 +271,7 @@ Bool_t CCSimulation::ProcessEvent(void)
     //----- end of the energy check
 
     //----- position check
-    TVector3 point = fTrack2->GetPoint();
+    TVector3 point = fTrack2.GetPoint();
     if (point != *scatData)
     {
         cout << "\t##### Error in CCSimulation::ProcessEvent!" << endl;
@@ -271,8 +280,9 @@ Bool_t CCSimulation::ProcessEvent(void)
              << endl;
         return kFALSE;
     }
+
     //----- end of the position check
-    auto absData = fAbsorber.FindCrossPoint(*fTrack2);
+    auto absData = fAbsorber.FindCrossPoint(fTrack2);
     if (!absData.has_value())
     {
         if (fVerbose) cout << "\tNo cross point with the absorber\n" << endl;
@@ -313,7 +323,7 @@ void CCSimulation::Loop(Int_t nev)
 }
 //------------------------------------------------------------------
 /// Resets private members of the class to their default values.
-void CCSimulation::Clear(void)
+void CCSimulation::Clear()
 {
     fPoint0.SetXYZ(-1000, -1000, -1000);
     fPoint1.SetXYZ(-1000, -1000, -1000);
@@ -328,7 +338,7 @@ void CCSimulation::Clear(void)
 /// Saves details of the simulated detector setup and gamma source in the
 /// text file. Name of the file: CCSimulation_geometry_genX.txt (X is the
 /// generator number).
-void CCSimulation::SaveGeometryTxt(void)
+void CCSimulation::SaveGeometryTxt()
 {
     TString outputName = CmdLineOption::GetStringValue("OutputPath");
     ofstream output(Form("%sCCSimulation_geometry_gen%i_corr_%.0f_%.0f_%.0f_no.%i.txt",
@@ -369,7 +379,7 @@ void CCSimulation::SaveGeometryTxt(void)
 /// Builds detector setup and the gamma source as TGeometry and saves
 /// it in the ROOT file. File name: CCSimulation_TGeometry_genX.root
 ///(X is the generator number)
-void CCSimulation::BuildTGeometry(void)
+void CCSimulation::BuildTGeometry()
 {
 
     TGeoManager* geom = new TGeoManager("world", "CCSimulation - world");
@@ -468,11 +478,5 @@ void CCSimulation::BuildTGeometry(void)
     geom->SetVisLevel(4);
     geom->Export(Form("%sCCSimulation_TGeometry_gen%i_corr_%.0f_%.0f_%.0f_no.%i.root",
                       outputName.Data(), fGenVersion, fXofSource, fYofSource, fZofSource, fNev));
-}
-//------------------------------------------------------------------
-/// Prints details of the CCSimulation class object.
-void CCSimulation::Print(void)
-{
-    cout << "\nCCSimulation::Print() for object " << GetName() << endl;
 }
 //------------------------------------------------------------------
