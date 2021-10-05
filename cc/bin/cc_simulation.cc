@@ -1,8 +1,13 @@
 #include "CCSimulation.hh"
+
 #include "CLog.hh"
-#include "TStopwatch.h"
+
 #include <CmdLineConfig.hh>
+
+#include <TStopwatch.h>
+
 #include <iostream>
+
 using namespace std;
 
 int main(int argc, char** argv)
@@ -14,6 +19,9 @@ int main(int argc, char** argv)
 
     CmdLineOption _det_setup(
         "Setup", "-d", "Detector plane, 6 values required, default: 200:80:80:400:100:100", 0, 0);
+
+    CmdLineOption _source_type("Source", "-s", "source type", -1000);
+    CmdLineOption _output_path("OutputPath", "-opath", "output path", "./results/");
 
     CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 
@@ -48,7 +56,10 @@ int main(int argc, char** argv)
                      gen, x, y, z, nev, db, dc, de, df);
     printf("Creating CC simulation for '%s'\n", name);
 
-    auto sim = CCSimulation(name, kFALSE);
+    TString outputPath = CmdLineOption::GetStringValue("OutputPath");
+    auto fGenVersion = CmdLineOption::GetIntValue("Source");
+
+    auto sim = CCSimulation(name, outputPath, fGenVersion, kFALSE);
 
     // sim->SetGenVersion(gen.Atoi());
     sim.BuildSetup(da, db, dc, dd, de, df);

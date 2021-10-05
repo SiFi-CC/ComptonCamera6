@@ -1,15 +1,13 @@
 #ifndef __CCSimulation_H_
-#define __CCSimulation_H_ 1
-#include "DetPlane.hh"
-#include "PhysicsBase.hh"
+#define __CCSimulation_H_
 
-#include "TGeoManager.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TObject.h"
-#include "Track.hh"
+#include "DetPlane.hh"
+
+#include <TGeoManager.h>
 
 class TFile;
+class TH1F;
+class TH2F;
 class TTree;
 
 /// Class which performs simulations of Compton Camera.
@@ -59,7 +57,7 @@ class CCSimulation
 
 public:
     CCSimulation() = delete;
-    CCSimulation(const TString& name, Bool_t verbose);
+    CCSimulation(const TString& name, const TString& outputPath, Int_t genVer, Bool_t verbose);
     ~CCSimulation();
 
     void BuildSetup(Double_t scatDist, Double_t scatZ, Double_t scatY, Double_t absDist,
@@ -90,6 +88,7 @@ public:
 private:
     // TString fOutputName;
     Bool_t fVerbose;       ///< Verbose level
+    TString fOutputPath;   ///< Output path
     Int_t fGenVersion;     ///< Version of generator (numbers from 1 to 5)
     Int_t fNev;            ///< Counter of events currently in the acceptance of the absorber
     TTree* fTree{nullptr}; ///< Tree containing results of the simulations

@@ -1,8 +1,11 @@
 #include "CCSimulation.hh"
 
-#include <CmdLineConfig.hh>
+#include "PhysicsBase.hh"
+#include "Track.hh"
 
 #include <TFile.h>
+#include <TH1F.h>
+#include <TH2F.h>
 #include <TMath.h>
 #include <TRandom.h>
 #include <TTree.h>
@@ -12,8 +15,6 @@
 
 using namespace std;
 
-CmdLineOption _source_type("Source", "-s", "source type", -1000);
-CmdLineOption _output_path("OutputPath", "-opath", "output path", "./results/");
 // CmdLineOption _output_name("Output", "-o", "output name", "");
 //------------------------------------------------------------------
 /// Standard constructor.
@@ -25,15 +26,15 @@ CmdLineOption _output_path("OutputPath", "-opath", "output path", "./results/");
 ///- tree fTree with simulation results. For the description of tree barnches
 /// see description of the class
 ///- histograms hSource, hScat, hAbs anf hEnergy.
-CCSimulation::CCSimulation(const TString& name, Bool_t verbose) : fVerbose(verbose)
+CCSimulation::CCSimulation(const TString& name, const TString& outputPath, Int_t genVer,
+                           Bool_t verbose)
+    : fVerbose(verbose), fOutputPath(outputPath), fGenVersion(genVer)
 {
-    TString outputName = CmdLineOption::GetStringValue("OutputPath");
-    // fOutputName = CmdLineOption::GetStringValue("Output");
-
-    fFile = new TFile(outputName + name + ".root", "RECREATE");
+    fFile = new TFile(fOutputPath + name + ".root", "RECREATE");
     if (!fFile)
     {
-        std::cerr << "Output file " << (outputName + name + ".root").Data() << " cannot be open.\n";
+        std::cerr << "Output file " << (fOutputPath + name + ".root").Data()
+                  << " cannot be open.\n";
         std::abort();
     }
     fTree = new TTree("data", "data");
@@ -52,7 +53,6 @@ CCSimulation::CCSimulation(const TString& name, Bool_t verbose) : fVerbose(verbo
     fTree->Branch("energy1", &fEnergy1); // energy loss
     fTree->Branch("energy2", &fEnergy2); // energy after scattering
     fNev = 0;
-    fGenVersion = CmdLineOption::GetIntValue("Source");
 
     Double_t size = 200.;
     Int_t nbins = 100;
@@ -340,9 +340,8 @@ void CCSimulation::Clear()
 /// generator number).
 void CCSimulation::SaveGeometryTxt()
 {
-    TString outputName = CmdLineOption::GetStringValue("OutputPath");
     ofstream output(Form("%sCCSimulation_geometry_gen%i_corr_%.0f_%.0f_%.0f_no.%i.txt",
-                         outputName.Data(), fGenVersion, fXofSource, fYofSource, fZofSource, fNev),
+                         fOutputPath.Data(), fGenVersion, fXofSource, fYofSource, fZofSource, fNev),
                     std::ios::out | std::ios::trunc);
     output << "Generator version: " << fGenVersion << endl;
     if (fGenVersion == 1)
@@ -473,10 +472,9 @@ void CCSimulation::BuildTGeometry()
         cout << "##### Please choose correcr version of the generaror!" << endl;
 
     //----- close geometry and save
-    TString outputName = CmdLineOption::GetStringValue("OutputPath");
     geom->CloseGeometry();
     geom->SetVisLevel(4);
     geom->Export(Form("%sCCSimulation_TGeometry_gen%i_corr_%.0f_%.0f_%.0f_no.%i.root",
-                      outputName.Data(), fGenVersion, fXofSource, fYofSource, fZofSource, fNev));
+                      fOutputPath.Data(), fGenVersion, fXofSource, fYofSource, fZofSource, fNev));
 }
 //------------------------------------------------------------------
