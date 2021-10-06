@@ -79,38 +79,58 @@ endif()
 
 #---Locating Doxygen and generating documentation
 
-option(BUILD_DOC "Build documentation" OFF)
-option(INSTALL_DOC "Build documentation" OFF)
+include(doxygen)
+option(ROOT_DOC_XREF "Root Cross-reference in doc" OFF)
 
-if (BUILD_DOC)
-    find_package(Doxygen)
+if (ROOT_DOC_XREF)
+    set(TAGFILES ${CMAKE_BINARY_DIR}/ROOT.tag=https://root.cern/doc/master/)
+else()
+    unset(TAGFILES)
 endif()
 
-if(DOXYGEN_FOUND)
-    set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
-    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+build_docs(ADD_TO_DOC DOXYFILE_PATH ${CMAKE_SOURCE_DIR}/Doxyfile.in PROCESS_DOXYFILE)
 
-    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
-    message("Doxygen build started")
-
-    add_custom_command(
-        OUTPUT ${CMAKE_SOURCE_DIR}/html/index.html
-        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMENT "Generating API documentation with Doxygen"
-        DEPENDS cc6_cc cc6_cm cc6_common cc6_tools
-        VERBATIM)
-    add_custom_target(doc ALL
-        DEPENDS ${CMAKE_SOURCE_DIR}/html/index.html)
-
-else(DOXYGEN_FOUND)
-    message("Deoxygen must be installed to generate the documentation")
-endif(DOXYGEN_FOUND)
-
-if (INSTALL_DOC AND BUILD_DOC)
-    INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/html
-    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/ComptonCamera6/doc)
+if (ROOT_XREF)
+    add_custom_target(
+        ROOT_tag
+        COMMAND curl https://root.cern.ch/doc/master/ROOT.tag -o ROOT.tag -C -
+        BYPRODUCTS ROOT.tag
+    )
+    add_dependencies(doc ROOT_tag)
 endif()
+
+#option(BUILD_DOC "Build documentation" OFF)
+#option(INSTALL_DOC "Build documentation" OFF)
+
+#if (BUILD_DOC)
+    #find_package(Doxygen)
+#endif()
+
+#if(DOXYGEN_FOUND)
+    #set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
+    #set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+
+    #configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+    #message("Doxygen build started")
+
+    #add_custom_command(
+        #OUTPUT ${CMAKE_SOURCE_DIR}/html/index.html
+        #COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+        #WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        #COMMENT "Generating API documentation with Doxygen"
+        #DEPENDS cc6_cc cc6_cm cc6_common cc6_tools
+        #VERBATIM)
+    #add_custom_target(doc ALL
+        #DEPENDS ${CMAKE_SOURCE_DIR}/html/index.html)
+
+#else(DOXYGEN_FOUND)
+    #message("Deoxygen must be installed to generate the documentation")
+#endif(DOXYGEN_FOUND)
+
+#if (DOXYGEN_FOUND AND INSTALL_DOC)
+    #INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/html
+    #DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/ComptonCamera6/doc)
+#endif()
 
 # messages
 MESSAGE(STATUS "<<< Configuration >>>

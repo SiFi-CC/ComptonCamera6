@@ -244,7 +244,7 @@ Bool_t CCSimulation::ProcessEvent()
     if (!cp.has_value()) return kFALSE;
 
     Track fTrack2;
-    auto [finE, fin_versor] = CC6::ComptonScatter(fTrack1.GetEnergy(), fTrack1.GetVersor(), *cp);
+    auto [finE, fin_versor] = CC6::ComptonScatter(fTrack1.GetEnergy(), fTrack1.GetVersor());
 
     fTrack2.SetPoint(*cp);
     fTrack2.SetEnergy(finE);
