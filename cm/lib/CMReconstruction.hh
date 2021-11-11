@@ -2,8 +2,8 @@
 #define __CMReconstruction_H_ 1
 #include "Coordinates.hh"
 #include "Mask.hh"
-#include "Source.hh"
 #include "PointSource.hh"
+#include "Source.hh"
 #include "Track.hh"
 #include <TFile.h>
 #include <TH1F.h>
@@ -30,75 +30,76 @@
  *
  *    based on epjconf-I106-05003-2016
  */
-class CMReconstruction : public TObject {
+class CMReconstruction : public TObject
+{
 public:
-  CMReconstruction() = default;
-  CMReconstruction(TString simulationFile);
-  virtual ~CMReconstruction();
+    CMReconstruction() = default;
+    CMReconstruction(TString simulationFile);
+    virtual ~CMReconstruction();
 
-  /** Start reconstruction */
-  void RunReconstruction(Int_t nIterations);
+    /** Start reconstruction */
+    void RunReconstruction(Int_t nIterations);
 
-  /** Save to file */
-  void Write(TString filename) const;
+    /** Save to file */
+    void Write(TString filename) const;
 
-  /** Calculate H matrix and save it in file */
-  void HmatrixToFile(const TString& filename);
-
-private:
-  /** calulate probability matrix */
-  void FillHMatrix(int nGamma);
-  /** run single iteration of simulation */
-  void SingleIteration();
-  /** calculate vector s to normalize probabilities */
-  Bool_t CalculateS();
+    /** Calculate H matrix and save it in file */
+    void HmatrixToFile(const TString& filename);
 
 private:
-  /** List of reconstructed objects for every iteration. Every object is kept as
-   * column vector.
-   */
-  std::vector<TMatrixT<Double_t>> fRecoObject;
+    /** calulate probability matrix */
+    void FillHMatrix(int nGamma);
+    /** run single iteration of simulation */
+    void SingleIteration();
+    /** calculate vector s to normalize probabilities */
+    Bool_t CalculateS();
 
-  /** Probability matrix
-   *  - row represent i-th detector pixel
-   *  - column represent j-th position of point source
-   *
-   *  H[i, j] represents probability of hitting i-th pixel of detector from j-th
-   * segment of source.
-   */
-  TMatrixT<Double_t> fMatrixH;
+private:
+    /** List of reconstructed objects for every iteration. Every object is kept as
+     * column vector.
+     */
+    std::vector<TMatrixT<Double_t>> fRecoObject;
 
-  /** Transposition of  H matrix */
-  TMatrixT<Double_t> fMatrixHPrime;
+    /** Probability matrix
+     *  - row represent i-th detector pixel
+     *  - column represent j-th position of point source
+     *
+     *  H[i, j] represents probability of hitting i-th pixel of detector from j-th
+     * segment of source.
+     */
+    TMatrixT<Double_t> fMatrixH;
 
-  /** Normalization terms for reconstruction itertions */
-  std::vector<Double_t> fNormS;
+    /** Transposition of  H matrix */
+    TMatrixT<Double_t> fMatrixHPrime;
 
-  /** detector image vectorized into column matrix */
-  TMatrixT<Double_t> fImageMat;
+    /** Normalization terms for reconstruction itertions */
+    std::vector<Double_t> fNormS;
 
-  /** image from simimulation result file */
-  TH2F fImage;
-  /** object that stores coordinates/dimensions of source object */
-  H2Coords fObjectCoords;
-  /** object that stores coordinates/dimensions of detector image */
-  H2Coords fImageCoords;
+    /** detector image vectorized into column matrix */
+    TMatrixT<Double_t> fImageMat;
 
-  /** object from simimulation result file, only data relating to dimensions are
-   * used.
-   * TODO: remove reference after switching to angular segments in reconstructed
-   * object.
-   */
-  TH2F fObject;
+    /** image from simimulation result file */
+    TH2F fImage;
+    /** object that stores coordinates/dimensions of source object */
+    H2Coords fObjectCoords;
+    /** object that stores coordinates/dimensions of detector image */
+    H2Coords fImageCoords;
 
-  /** Detector plane used in simulation */
-  DetPlane fDetPlane;
-  /** Mask used in simulation */
-  Mask fMask;
+    /** object from simimulation result file, only data relating to dimensions are
+     * used.
+     * TODO: remove reference after switching to angular segments in reconstructed
+     * object.
+     */
+    TH2F fObject;
 
-  SiFi::logger log = SiFi::createLogger("CMReconstruction");
+    /** Detector plane used in simulation */
+    DetPlane fDetPlane;
+    /** Mask used in simulation */
+    Mask fMask;
 
-  ClassDef(CMReconstruction, 0)
+    SiFi::logger log = SiFi::createLogger("CMReconstruction");
+
+    ClassDef(CMReconstruction, 0)
 };
 
 #endif
