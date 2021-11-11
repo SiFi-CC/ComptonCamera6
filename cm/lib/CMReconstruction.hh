@@ -2,8 +2,8 @@
 #define __CMReconstruction_H_ 1
 #include "Coordinates.hh"
 #include "Mask.hh"
-#include "Sources/PointSource.hh"
 #include "Source.hh"
+#include "Sources/PointSource.hh"
 #include "Track.hh"
 #include <TFile.h>
 #include <TH1F.h>

@@ -107,7 +107,8 @@ void G4SimulationAdapter::ParseSelected(CameraGeometry* camera)
     camera->source.zRange = {-0.1, 0.1};
     camera->source.binX = map["sourceNBinX"];
     camera->source.binY = map["sourceNBinY"];
-    if (!map["sourceNBinX"]){
+    if (!map["sourceNBinX"])
+    {
         camera->source.binX = map["sourceBinX"];
         camera->source.binY = map["sourceBinY"];
     }
