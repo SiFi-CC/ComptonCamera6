@@ -60,10 +60,10 @@ CMReconstruction::CMReconstruction(TString simulationFile) {
       TMatrixT<Double_t>(fObjectCoords.NBins(), fImageCoords.NBins());
 }
 
-void CMReconstruction::FillHMatrix() {
+void CMReconstruction::FillHMatrix(int nGamma) {
   log->info("CMReconstruction::FillHMatrix");
 
-  int nIterations = 100000;
+  int nIterations = nGamma;
   for (int objBin = 0; objBin < fObjectCoords.NBins(); objBin++) {
     double done = (double)objBin/fObjectCoords.NBins();
     if(std::floor(1000*done) == 1000*done){
@@ -256,8 +256,8 @@ void CMReconstruction::RunReconstruction(Int_t nIterations) {
     }
 
   } else {
-    log->info("Hmatrix will be calculated");
-    FillHMatrix();
+    log->info("Hmatrix will be calculated with 100000 events");
+    FillHMatrix(100000);
   }
 
   CalculateS();
@@ -356,7 +356,7 @@ void CMReconstruction::HmatrixToFile(const TString& filename) {
   file.cd();
 
   log->info("FILL Hmatrix");
-  FillHMatrix();
+  FillHMatrix(CmdLineOption::GetIntValue("Events"));
 
   log->info("WRITE Hmatrix");
   fMatrixH.Write("matrixH");
