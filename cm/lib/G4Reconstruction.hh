@@ -35,10 +35,6 @@ private:
     // vectorized column matrix representing detector image
     TMatrixT<Double_t> fImage;
 
-    // Sigmavalue  - for autoiter
-    Double_t fSigma = 100.0;
-    Int_t fIter = 0;
-
     /** Probability matrix
      *  - row represent i-th detector pixel
      *  - column represent j-th position of point source
