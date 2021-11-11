@@ -1,17 +1,23 @@
-file(GLOB cc6_tools_SRCS "*.cc")
-file(GLOB cc6_tools_HDRS "*.hh")
+CC6_GENERATE_LIBRARY(
+    TARGET cc6_tools
+    SOURCES
+        DataStructConvert.cc
+        PhysicsBase.cc
+        Smoothing.cc
 
-ROOT_GENERATE_DICTIONARY(G__cc6_tools ${cc6_tools_HDRS} LINKDEF LinkDef.h)
+    HEADERS
+        CLog.hh
+        Coordinates.hh
+        DataStructConvert.hh
+        PhysicsBase.hh
+        Smoothing.hh
 
-add_library(cc6_tools SHARED ${cc6_tools_SRCS} G__cc6_tools.cxx)
-target_link_libraries(cc6_tools
-    ${ROOT_LIBRARIES})
+    LIBRARIES
+        spdlog::spdlog
+        ROOT::Core
 
-set_target_properties(cc6_tools PROPERTIES
-    SOVERSION ${PROJECT_VERSION}
-    PUBLIC_HEADER "${cc6_tools_HDRS}"
+    PRIVATE_LIBRARIES
+        ROOT::Matrix
+        ROOT::Physics
+        ROOT::Hist
 )
-
-install(TARGETS cc6_tools
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

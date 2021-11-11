@@ -3,7 +3,7 @@
 #include "Coordinates.hh"
 #include "Mask.hh"
 #include "Source.hh"
-#include "Sources/PointSource.hh"
+#include "PointSource.hh"
 #include "Track.hh"
 #include <TFile.h>
 #include <TH1F.h>

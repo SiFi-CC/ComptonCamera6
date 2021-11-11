@@ -12,31 +12,32 @@ class DetPlane;
 ///- energy - gamma energy in MeV,
 ///- name.
 
-class Track : public TObject {
+class Track : public TObject
+{
 
 public:
-  Track() = default;
-  Track(TVector3 point, TVector3 vec, Double_t energy);
+    Track() = default;
+    Track(TVector3 point, TVector3 vec, Double_t energy);
 
-  void SetPoint(TVector3 point);
-  void SetVersor(TVector3 vec);
-  void SetEnergy(Double_t energy);
-  void Print() const;
+    void SetPoint(TVector3 point);
+    void SetVersor(TVector3 vec);
+    void SetEnergy(Double_t energy);
+    void Print() const;
 
-  /// Returns energy assigned to the track [MeV].
-  Double_t GetEnergy() const { return fEnergy; };
-  /// Returns Track leading versor coordinates.
-  TVector3 GetVersor() const { return fVersor; };
-  /// Returns Track starting point coordinates.
-  TVector3 GetPoint() const { return fPoint; };
+    /// Returns energy assigned to the track [MeV].
+    Double_t GetEnergy() const { return fEnergy; };
+    /// Returns Track leading versor coordinates.
+    TVector3 GetVersor() const { return fVersor; };
+    /// Returns Track starting point coordinates.
+    TVector3 GetPoint() const { return fPoint; };
 
 private:
-  /** Coordinates of the starting point of the Track */
-  TVector3 fPoint = TVector3(0, 0, 0);
-  TVector3 fVersor = TVector3(-1, 0, 0); ///< Leading versor of the track
-  Double_t fEnergy = 4.44;               ///< Energy assigned to the Track [MeV]
+    /** Coordinates of the starting point of the Track */
+    TVector3 fPoint = TVector3(0, 0, 0);
+    TVector3 fVersor = TVector3(-1, 0, 0); ///< Leading versor of the track
+    Double_t fEnergy = 4.44;               ///< Energy assigned to the Track [MeV]
 
-  ClassDef(Track, 1)
+    ClassDef(Track, 1)
 };
 
 #endif

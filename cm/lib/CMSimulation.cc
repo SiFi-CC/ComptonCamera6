@@ -52,12 +52,12 @@ Bool_t CMSimulation::ProcessEvent() {
   fH1Phi->Fill(sourceTrack.GetVersor().Phi());
 
   auto maskCross = fMask->FindCrossPoint(sourceTrack);
-  if (!maskCross.second) {
+  if (!maskCross.has_value()) {
     log->debug("No cross point with Mask");
     return false;
   }
   auto detCross = fDetPlane->FindCrossPoint(sourceTrack);
-  if (!detCross.second) {
+  if (!detCross.has_value()) {
     log->debug("No cross point with DetPlane");
     return false;
   }
@@ -65,14 +65,14 @@ Bool_t CMSimulation::ProcessEvent() {
   // commit data
   fPersist.sourceTrack = sourceTrack;
   fPersist.maskTrack =
-      Track(maskCross.first, sourceTrack.GetVersor(), sourceTrack.GetEnergy());
+      Track(maskCross.value(), sourceTrack.GetVersor(), sourceTrack.GetEnergy());
   fPersist.detectorTrack =
-      Track(detCross.first, sourceTrack.GetVersor(), sourceTrack.GetEnergy());
-  fPersist.absorbed = !fMask->IsOpaque(maskCross.first);
+      Track(detCross.value(), sourceTrack.GetVersor(), sourceTrack.GetEnergy());
+  fPersist.absorbed = !fMask->IsOpaque(maskCross.value());
   fTree->Fill();
 
   if (!fPersist.absorbed) {
-    fH2Detector->Fill(detCross.first.Z(), detCross.first.Y());
+    fH2Detector->Fill(detCross.value().Z(), detCross.value().Y());
   }
   return true;
 }
