@@ -123,6 +123,7 @@ int G4Reconstruction::SingleIteration()
 
     fRecoObject.push_back(nextIteration);
 
+    // Deprecated - this algorithm is very silly
     if (CmdLineOption::GetFlagValue("Autoiter") && fRecoObject.size() % 25 == 0 &&
         fRecoObject.size() > 98)
     {

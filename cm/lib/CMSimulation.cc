@@ -34,6 +34,7 @@ void CMSimulation::Init()
     double maskYdim = fMask->GetDimY() / 2;
     int nbinsz = fMask->GetPattern()->GetXaxis()->GetNbins();
     int nbinsy = fMask->GetPattern()->GetYaxis()->GetNbins();
+    // TODO changeable source dimensions
     fH2Source =
         new TH2F("sourceYZ", "Y vs Z source", 100, -maskZdim, maskZdim, 100, -maskYdim, maskYdim);
     double detZdim = fDetPlane->GetDimZ() / 2;

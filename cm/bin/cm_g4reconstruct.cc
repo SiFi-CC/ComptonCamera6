@@ -17,7 +17,9 @@ int main(int argc, char** argv)
     // CmdLineOption cmdopt_hmat("Hmatrix", "-hmat",
     //                               "Data file provides H matrix, default: NO");
     CmdLineOption cmdopt_autoiter(
-        "Autoiter", "-autoiter", "Dynamic number of iterations, but smaller then 'n', default: NO");
+        "Autoiter", "-autoiter", 
+        "Dynamic number of iterations, constrained by 'n', default: NO\n" 
+        "Deprecated since the algorithm is very silly");
 
     CmdLineArg cmdarg_simf("simfile", "Simulation file", CmdLineArg::kString);
     CmdLineArg cmdarg_dataf("datafile", "Data file", CmdLineArg::kString);

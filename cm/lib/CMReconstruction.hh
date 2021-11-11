@@ -2,7 +2,7 @@
 #define __CMReconstruction_H_ 1
 #include "Coordinates.hh"
 #include "Mask.hh"
-#include "PointSource.hh"
+#include "Sources/PointSource.hh"
 #include "Source.hh"
 #include "Track.hh"
 #include <TFile.h>
