@@ -20,10 +20,11 @@ public:
     virtual ~G4Reconstruction() = default;
 
     void RunReconstruction(int nIter);
-    void Write(TString filename) const;
+    void Write(TString filename, TH2F* simHist) const;
 
 private:
-    void SingleIteration();
+    int SingleIteration();
+    Double_t CheckConvergence(TH2F reco);
 
     // Read simulation data from TTree containg all of the events
     TMatrixT<Double_t> ReadFromTTree(TBranch* branch);
@@ -42,6 +43,7 @@ private:
      * segment of source.
      */
     TMatrixT<Double_t> fMatrixH;
+    TMatrixT<Double_t> S;
     // transposition of H matrix for performance reasons
     TMatrixT<Double_t> fMatrixHTranspose;
 

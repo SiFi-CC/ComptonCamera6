@@ -48,7 +48,7 @@ public:
 
 private:
     /** calulate probability matrix */
-    void FillHMatrix();
+    void FillHMatrix(int nGamma);
     /** run single iteration of simulation */
     void SingleIteration();
     /** calculate vector s to normalize probabilities */

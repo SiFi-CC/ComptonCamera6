@@ -13,6 +13,9 @@ int main(int argc, char** argv)
     CmdLineOption opt_output("Output", "-o", "Output file (string), default: Hmatrix.root",
                              "Hmatrix.root");
 
+    CmdLineOption opt_events("Events", "-n",
+                             "Number of events for each vertex, default: 100000 (integer)", 100000);
+
     CmdLineArg cmdarg_input("input", "Input file", CmdLineArg::kString);
 
     CmdLineConfig::instance()->ReadCmdLine(argc, argv);

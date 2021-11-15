@@ -34,17 +34,24 @@ void CMSimulation::Init()
     double maskYdim = fMask->GetDimY() / 2;
     int nbinsz = fMask->GetPattern()->GetXaxis()->GetNbins();
     int nbinsy = fMask->GetPattern()->GetYaxis()->GetNbins();
-    fH2Source = new TH2F("sourceYZ", "Y vs Z source", nbinsz, -maskZdim, maskZdim, nbinsy,
-                         -maskYdim, maskYdim);
-    fH2Detector = new TH2F("detectedYZ", "Y vs Z detected", nbinsz, -maskZdim, maskZdim, nbinsy,
-                           -maskYdim, maskYdim);
-    fH1Theta = new TH1F("hTheta", "theta angle of registered particles", 100, 0, TMath::Pi());
+    // TODO changeable source dimensions
+    fH2Source =
+        new TH2F("sourceYZ", "Y vs Z source", 100, -maskZdim, maskZdim, 100, -maskYdim, maskYdim);
+    double detZdim = fDetPlane->GetDimZ() / 2;
+    double detYdim = fDetPlane->GetDimY() / 2;
+    fH2Detector =
+        new TH2F("detectedYZ", "Y vs Z detected", 16, -detZdim, detZdim, 16, -detYdim, detYdim);
+    fH1Theta = new TH1F("hTheta", "theta angle of registered particles", 100, 0, TMath::Pi() / 8);
     fH1Phi = new TH1F("hPhi", "phi angle of registered particles", 100, -TMath::Pi(), TMath::Pi());
 }
 
 Bool_t CMSimulation::ProcessEvent()
 {
     Track sourceTrack = fSource->GenerateEvent();
+
+    fH2Source->Fill(sourceTrack.GetPoint().Z(), sourceTrack.GetPoint().Y());
+    fH1Theta->Fill(sourceTrack.GetVersor().Theta());
+    fH1Phi->Fill(sourceTrack.GetVersor().Phi());
 
     auto maskCross = fMask->FindCrossPoint(sourceTrack);
     if (!maskCross.has_value())
@@ -61,15 +68,13 @@ Bool_t CMSimulation::ProcessEvent()
 
     // commit data
     fPersist.sourceTrack = sourceTrack;
-    fPersist.maskTrack = Track(*maskCross, sourceTrack.GetVersor(), sourceTrack.GetEnergy());
-    fPersist.detectorTrack = Track(*detCross, sourceTrack.GetVersor(), sourceTrack.GetEnergy());
-    fPersist.absorbed = !fMask->IsOpaque(*maskCross);
+    fPersist.maskTrack = Track(maskCross.value(), sourceTrack.GetVersor(), sourceTrack.GetEnergy());
+    fPersist.detectorTrack =
+        Track(detCross.value(), sourceTrack.GetVersor(), sourceTrack.GetEnergy());
+    fPersist.absorbed = !fMask->IsOpaque(maskCross.value());
     fTree->Fill();
 
-    fH2Source->Fill(sourceTrack.GetPoint().Z(), sourceTrack.GetPoint().Y());
-    fH1Theta->Fill(sourceTrack.GetVersor().Theta());
-    fH1Phi->Fill(sourceTrack.GetVersor().Phi());
-    if (!fPersist.absorbed) { fH2Detector->Fill(detCross->Z(), detCross->Y()); }
+    if (!fPersist.absorbed) { fH2Detector->Fill(detCross.value().Z(), detCross.value().Y()); }
     return true;
 }
 

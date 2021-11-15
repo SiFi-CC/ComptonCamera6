@@ -15,7 +15,7 @@ int main(int argc, char** argv)
 
     CmdLineOption opt_output("Output", "-o", "Output file (string), default: simulation.root",
                              "simulation.root");
-    CmdLineOption opt_events("Events", "-n", "Number of events, default: 20 (integer)", 1000);
+    CmdLineOption opt_events("Events", "-n", "Number of events, default: 1000 (integer)", 1000);
     CmdLineOption opt_source_p("Point", "-point", "Point-type source, default: YES");
     CmdLineOption opt_source_mp("MultiPoint", "-multipoint",
                                 "Multi Point-type source, default: NO");
@@ -36,7 +36,9 @@ int main(int argc, char** argv)
     spdlog::set_level(spdlog::level::info);
     TString path = TString(gSystem->Getenv("CC6DIR")) + "/share/ComptonCamera6/masks/";
 
-    TString fullname = path + "hMURA" + args.at("mask")->GetStringValue() + ".root";
+    //  TString fullname =
+    //    path + "hMURA" + args.at("mask")->GetStringValue() + ".root";
+    TString fullname = args.at("mask")->GetStringValue();
     TFile* maskfile = new TFile(fullname, "READ");
     if (maskfile == nullptr)
     {
@@ -45,7 +47,6 @@ int main(int argc, char** argv)
     }
     TH2F* h = TString(maskfile->GetName()).Contains("2d") ? (TH2F*)maskfile->Get("hMURA2d")
                                                           : (TH2F*)maskfile->Get("hMURA1d");
-
     if (!h)
     {
         spdlog::error("Can't find required mask histograms");

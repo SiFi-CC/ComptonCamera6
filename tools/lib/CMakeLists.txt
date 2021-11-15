@@ -3,12 +3,14 @@ CC6_GENERATE_LIBRARY(
     SOURCES
         DataStructConvert.cc
         PhysicsBase.cc
+        Smoothing.cc
 
     HEADERS
         CLog.hh
         Coordinates.hh
         DataStructConvert.hh
         PhysicsBase.hh
+        Smoothing.hh
 
     LIBRARIES
         spdlog::spdlog

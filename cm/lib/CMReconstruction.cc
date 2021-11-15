@@ -10,6 +10,7 @@
 #include "CMReconstruction.hh"
 #include "CMSimulation.hh"
 #include "DataStructConvert.hh"
+#include "Smoothing.hh"
 #include "Sources/PointSource.hh"
 
 using SiFi::tools::convertHistogramToMatrix;
@@ -53,15 +54,15 @@ CMReconstruction::CMReconstruction(TString simulationFile)
     fMatrixHPrime = TMatrixT<Double_t>(fObjectCoords.NBins(), fImageCoords.NBins());
 }
 
-void CMReconstruction::FillHMatrix()
+void CMReconstruction::FillHMatrix(int nGamma)
 {
     log->info("CMReconstruction::FillHMatrix");
 
-    int nIterations = 10000;
+    int nIterations = nGamma;
     for (int objBin = 0; objBin < fObjectCoords.NBins(); objBin++)
     {
         double done = (double)objBin / fObjectCoords.NBins();
-        log->info("{} %", done * 100);
+        if (std::floor(1000 * done) == 1000 * done) { log->info("{} %", done * 100); }
         int objBinX, objBinY;
         std::tie(objBinX, objBinY) = fObjectCoords.BinXY(objBin);
         log->debug("Hmatrix ({}, {}) voxel", objBinX, objBinY);
@@ -69,7 +70,8 @@ void CMReconstruction::FillHMatrix()
         // TODO switch to angular bins
         Double_t x = fObject.GetXaxis()->GetBinCenter(objBinX + 1);
         Double_t y = fObject.GetYaxis()->GetBinCenter(objBinY + 1);
-
+        // Double_t y = fObject.GetYaxis()->GetBinCenter(fObject.GetNbinsY() - objBinY);
+        // log->info("Source coord ({}, {})", x, y);
         {
             PointSource src(TVector3(0, y, x), 1);
             CMSimulation sim(&src, &fMask, &fDetPlane);
@@ -157,7 +159,7 @@ void CMReconstruction::RunReconstruction(Int_t nIterations)
     if (CmdLineOption::GetStringValue("Hmatrix"))
     {
         TString hfilename(CmdLineOption::GetStringValue("Hmatrix"));
-        log->info("Hmatrix file: {}", hfilename.Data());
+        log->info("Hmatrix file: {}", hfilename);
         TFile hfile(hfilename);
         hfile.cd();
 
@@ -279,8 +281,8 @@ void CMReconstruction::RunReconstruction(Int_t nIterations)
     }
     else
     {
-        log->info("Hmatrix will be calculated");
-        FillHMatrix();
+        log->info("Hmatrix will be calculated with 100000 events");
+        FillHMatrix(100000);
     }
 
     CalculateS();
@@ -382,7 +384,7 @@ void CMReconstruction::HmatrixToFile(const TString& filename)
     file.cd();
 
     log->info("FILL Hmatrix");
-    FillHMatrix();
+    FillHMatrix(CmdLineOption::GetIntValue("Events"));
 
     log->info("WRITE Hmatrix");
     fMatrixH.Write("matrixH");
