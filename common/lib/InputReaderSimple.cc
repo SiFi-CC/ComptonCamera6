@@ -37,6 +37,9 @@ bool InputReaderSimple::AccessTree(TString name)
         return false;
     }
 
+    fPositionScat = new TVector3();
+    fPositionAbs  = new TVector3();
+    fDirectionScat = new TVector3();
     fPoint0 = new TVector3();
     fPoint1 = new TVector3();
     fPoint2 = new TVector3();
@@ -59,7 +62,6 @@ bool InputReaderSimple::AccessTree(TString name)
 }
 bool InputReaderSimple::LoadEvent(int i)
 {
-
     int imax = fTree->GetEntries();
 
     if (i > imax)
