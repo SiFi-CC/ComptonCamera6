@@ -116,10 +116,17 @@ bool InputReaderNN::AccessTree(TString name) {
 
   cout << "\n\nIn InputReaderNN::AccessTree()." << endl;
   cout << fTree->GetName() << " tree accessed.\n" << endl;
-  
+
   return true;
 }
 
+void InputReaderNN::SelectEvents(){  
+  for(int i=0;i<fTree->GetEntries();i++) {
+  	fTree->GetEntry(i);
+  	if(fCorrectOnly!=fEventType) continue; 
+  	fSelectedEvents.push_back(i);
+  }
+}
 //------------------------------------------------------------------
 /// loads events from trees to analyze them in CCMLEM class.
 ///\param i (int) - number of events
@@ -135,7 +142,7 @@ bool InputReaderNN::LoadEvent(int i) {
   }
 
   fTree->GetEntry(i);
-  if(fCorrectOnly && fEventType!=2) return false; 
+  if(fCorrectOnly>fEventType) return false; 
   fPositionScat->SetXYZ(fX1,fY1,fZ1);
   fPositionAbs->SetXYZ(fX2,fY2,fZ2);
   fDirectionScat->SetXYZ(fPX,fPY,fPZ);

@@ -1,21 +1,29 @@
 # Name of the input file  
-./results/example.root
+examplefile.root
+# Name of the output file
+outfile.root
 # Size of image volume
-101 101 0
+301 301 0
 # No. of bins
-101 101 0
+301 301 0
 # No. of MLEM iterations
-50
+5
 # Fresh output
-0
+1
+# Save Intermediate
+1
 # No. of first and last event
-0 310633
+0 0 
+# No. used events 
+300 
 # Verbose flag
 0
 # Convergence Simple
 0
 # ROI
-40 40 0
+145 145 0
+# GausFilter 
+2
 # Smear
 0
 # Position resolution
@@ -24,5 +32,5 @@
 2300 0.1 1
 # Load Real
 0
-# Load only correct identified
-0
+# Load only correct identified : 0 all, 1 position is correct, 2 completely correct, 3 real bg (no wrong comptons), 4 wrong comptons
+2

@@ -4,6 +4,7 @@
 #include "G4Input.hh"
 #include "InputReader.hh"
 #include <iostream>
+#include <list>
 
 using namespace std;
 
@@ -31,6 +32,8 @@ public:
   ///\param i (int) - number of events
   bool LoadEvent(int i);
   int GetNumberOfEventsInFile(void);
+  void SelectEvents(void);  
+  list<int> GetSelectedEvents(void);
   void Clear(void);
   TVector3* GetPositionPrimary(void);
   TVector3* GetPositionScattering(void);
@@ -44,12 +47,13 @@ public:
   double GetEnergyScattered(void);
 
   void SetLoadMonteCarlo(void);
-  void SetLoadOnlyCorrect(void);
+  void SetLoadOnlyCorrect(int value);
 private:
   //TREEVARIABLES
   int fEventNumber;     ///< Event number
   int fIdentified;      ///< Number of events were labeled 
   bool fPurCrossed;
+  int fSimulatedEventType;
   Double_t fEnergy_Primary;     ///< Primary photon energy
   Double_t fRealEnergy_e;       ///< Electron energy + uncertainty [MeV]
   Double_t fRealEnergy_p;       ///< Photon energy + uncertainty [MeV]
@@ -83,7 +87,9 @@ private:
   //CLASSVARIABLES
   
   bool fLoadReal;
-  bool fCorrectOnly;
+  int fCorrectOnly;//Indicates which kind of reco data shall be loaded 0: all identified events;1: only type correct ones;2: only correct identified;3: only real bg (no wrong comptons); 4: wrong comptons
+
+  list<int> fSelectedEvents;
 
   TVector3* fPositionSource;
   TVector3* fDirectionSource;
@@ -104,6 +110,7 @@ private:
 ///\param name (TString) - name of tree.
 ///\param namesetup (TString) - name of tree holding setp information.
   bool AccessTree(TString name, TString namesetup);
+  bool SelectSingleEvent(void);
   TTree* fTree;
   TTree* fTreeSetup;
 
@@ -111,8 +118,10 @@ private:
 };
 
 inline int InputReaderGeant::GetNumberOfEventsInFile(void){return fTree->GetEntries();}
+
+inline list<int> InputReaderGeant::GetSelectedEvents(void){return fSelectedEvents;}
 inline void InputReaderGeant::SetLoadMonteCarlo(void){fLoadReal=true;}
-inline void InputReaderGeant::SetLoadOnlyCorrect(void){fCorrectOnly=true;}
+inline void InputReaderGeant::SetLoadOnlyCorrect(int value){fCorrectOnly=value;}
 inline TVector3* InputReaderGeant::GetPositionScattering(void) {return fPositionScat;}
 inline TVector3* InputReaderGeant::GetPositionAbsorption(void) {  return fPositionAbs;}
 inline TVector3* InputReaderGeant::GetGammaDirScattered(void) {return fDirectionScat;}

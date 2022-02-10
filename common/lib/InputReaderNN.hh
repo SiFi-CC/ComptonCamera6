@@ -17,6 +17,8 @@ public:
 
   bool LoadEvent(int i);
   int GetNumberOfEventsInFile(void);
+  void SelectEvents(void);  
+  list<int> GetSelectedEvents(void);
   void Clear(void);
   
   TVector3* GetPositionScattering(void);
@@ -27,10 +29,11 @@ public:
   double GetEnergyLoss(void);
   double GetEnergyScattered(void);
   
-  void SetLoadOnlyCorrect(void);
+  void SetLoadOnlyCorrect(int value);
 
 private:
-  bool fCorrectOnly;
+  int fCorrectOnly;
+  list<int> fSelectedEvents;
   
   float fX1;
   float fY1;
@@ -82,7 +85,8 @@ private:
   ClassDef(InputReaderNN, 0)
 };
 inline int InputReaderNN::GetNumberOfEventsInFile(void){return fTree->GetEntries();}
-inline void InputReaderNN::SetLoadOnlyCorrect(void){fCorrectOnly=true;}
+inline list<int> InputReaderNN::GetSelectedEvents(void){return fSelectedEvents;}
+inline void InputReaderNN::SetLoadOnlyCorrect(int value){fCorrectOnly=value;}
 inline TVector3* InputReaderNN::GetPositionScattering(void) {return fPositionScat;}
 inline TVector3* InputReaderNN::GetPositionAbsorption(void) {  return fPositionAbs;}
 inline TVector3* InputReaderNN::GetGammaDirScattered(void) {return fDirectionScat;}

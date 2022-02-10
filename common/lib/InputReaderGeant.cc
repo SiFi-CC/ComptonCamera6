@@ -12,7 +12,7 @@ InputReaderGeant::InputReaderGeant() : InputReader() {
 InputReaderGeant::InputReaderGeant(TString path):
 InputReader(path),
 fLoadReal(false),
-fCorrectOnly(false),
+fCorrectOnly(0),
 fPrimaryEnergy(0),
 fEnergyLoss(0), 
 fEnergyScattered(0) 
@@ -96,6 +96,7 @@ bool InputReaderGeant::AccessTree(TString name, TString namesetup) {
   
   fTree->SetBranchAddress("EventNumber", &fEventNumber);
   fTree->SetBranchAddress("Energy_Primary", &fEnergy_Primary);
+  fTree->SetBranchAddress("SimulatedEventType", &fSimulatedEventType);
   fTree->SetBranchAddress("RealEnergy_e", &fRealEnergy_e);
   fTree->SetBranchAddress("RealEnergy_p", &fRealEnergy_p);
   fTree->SetBranchAddress("RealPosition_source", &fRealPosition_source);
@@ -125,8 +126,119 @@ bool InputReaderGeant::AccessTree(TString name, TString namesetup) {
   fTreeSetup->GetEntry(0);
   fScattererDim->SetXYZ(scattererThickness_x,scattererThickness_y,scattererThickness_z);
   fAbsorberDim->SetXYZ(absorberThickness_x,absorberThickness_y,absorberThickness_z);
-  
   return true;
+}
+void InputReaderGeant::SelectEvents(){  
+  fSelectedEvents.clear(); 
+  for(int i=0;i<fTree->GetEntries();i++) {
+  	fTree->GetEntry(i);
+ 	if(SelectSingleEvent())fSelectedEvents.push_back(i);
+  }
+}	
+bool InputReaderGeant::SelectSingleEvent(){
+	bool returner=true;
+	if(fLoadReal){
+  	      // For the detector also only events where interactions in both detector moduls occure are triggered, for better comparison also only these real events are used. 
+  	      bool physinteractions[2]={false,false};
+  	      for(auto k=0;k<fRecoClusterPositions->size();k++){
+  	              if(fRecoClusterPositions->at(k).position.x()<(fScattererPosition->X()+fScattererDim->X()/2))physinteractions[0]=true;
+  	              else if(fRecoClusterPositions->at(k).position.x()>(fAbsorberPosition->X()-fAbsorberDim->X()/2))physinteractions[1]=true;
+  	      }
+  	      if(!physinteractions[0] || !physinteractions[1] ) return false;
+  	      // Only Compton Events with at least one additional interaction of the photon( first one is the compton effect (fRealInteraction.at(0) is the compton effect itself) and at least one interaction of the electron can be reconstructed.
+  	      if(fSimulatedEventType!=2) return false;
+  	      if(!(fRealEnergy_e>0)) return false;
+  	      if(fRealInteractions_p->size() < 2 || fRealInteractions_e->size() < 1) return false; 
+  	      // Also a selection with one of the particles interacting in both modules (besides the first compton effect) are difficult to select so these ones are not chosen as well
+  	      //indicates if photon/electron inetacted in scatterer/absorber
+  	      //photonscatter/electronscatterer/photonabsorber/electronscatterer
+              bool interactions[4]={false,false,false,false};
+	      bool photosec=false;
+	      bool electronsec=false;
+  	      for(int m = 1; m < fRealInteractions_p->size(); m++) {
+		if(fRealInteractions_p->at(m)<10 && fRealInteractions_p->at(m)>0)photosec=true;
+  	      	if(fRealPosition_p->at(m).X()<(fScattererPosition->X()+fScattererDim->X()/2))interactions[0]=true;
+  	      	else if(fRealPosition_p->at(m).X()>(fAbsorberPosition->X()-fAbsorberDim->X()/2))interactions[2]=true;
+  	      }
+  	      for(int m = 0; m < fRealInteractions_e->size(); m++) {
+		if(fRealInteractions_e->at(m)<20)electronsec=true;
+  	      	if(fRealPosition_e->at(m).X()<(fScattererPosition->X()+fScattererDim->X()))interactions[1]=true;
+  	      	else if(fRealPosition_e->at(m).X()>(fAbsorberPosition->X()-fAbsorberDim->X()))interactions[3]=true;
+  	      }
+  	      if(!photosec || !electronsec) return false;
+              if(interactions[0]&&interactions[1])return false;
+  	      if(interactions[2]&&interactions[3])return false;
+  	}
+  	else{
+  	      if(fIdentified==0) return false;
+  	      if(fCorrectOnly){
+  	        if(!(fRealEnergy_e>0)) returner=false;
+  	        if(fSimulatedEventType!=2) returner=false;
+        	if(fRealInteractions_p->size() < 2 || fRealInteractions_e->size() < 1)returner=false; 
+		bool interactions[4]={false,false,false,false};
+	      	bool photosec=false;
+	      	bool electronsec=false;
+		int e_pos_index=-1;
+		int p_pos_index=-1;
+        	for(int m = 1; m < fRealInteractions_p->size(); m++) {
+			if(fRealInteractions_p->at(m)<10 && fRealInteractions_p->at(m)>0){
+				if(photosec==false)p_pos_index=m;	
+				photosec=true;
+			}
+        		if(fRealPosition_p->at(m).X()<(fScattererPosition->X()+fScattererDim->X()))interactions[0]=true;
+        		else if(fRealPosition_p->at(m).X()>(fAbsorberPosition->X()-fAbsorberDim->X()))interactions[2]=true;
+		}
+        	for(int m = 0; m < fRealInteractions_e->size(); m++) {
+			if(fRealInteractions_e->at(m)<20){
+				if(electronsec==false)e_pos_index=m;	
+				electronsec=true;
+			}
+        		if(fRealPosition_e->at(m).X()<(fScattererPosition->X()+fScattererDim->X()))interactions[1]=true;
+        		else if(fRealPosition_e->at(m).X()>(fAbsorberPosition->X()-fAbsorberDim->X()))interactions[3]=true;
+        	}
+  	      	if(!photosec || !electronsec) returner=false;
+		if(interactions[0]==interactions[1])returner=false;
+		if(interactions[2]==interactions[3])returner=false;
+		//checking the asked events
+		if(fCorrectOnly==3 && returner==false){
+			return true;
+		}
+		else if (fCorrectOnly==3)returner=false;
+		if(returner){
+			if(fCorrectOnly==1){
+				return true;
+			}
+			if((fCorrectOnly==2 || fCorrectOnly==4)){
+				//Compare reco and real
+				TVector3 uncvec(2.6,30,2.6);
+				double uncen=0.12;
+				TVector3 diffvec;
+				double diffen=0;
+				double en=0;
+				for(int u=0;u<2;u++){
+					if(u==0){
+						diffvec= fRealPosition_e->at(e_pos_index)-fRecoPosition_e->position;
+						diffen=fRealEnergy_e-fRecoEnergy_e->value; 
+						en=fRecoEnergy_e->value;
+					}
+					else{
+						diffvec= fRealPosition_p->at(p_pos_index)-fRecoPosition_p->position;
+						diffen=fRealEnergy_p-fRecoEnergy_p->value; 
+						en=fRecoEnergy_p->value;
+					}
+					if(fabs(diffvec.x())>(uncvec.x()))returner=false;
+					if(fabs(diffvec.y())>(uncvec.y()))returner=false;
+					if(fabs(diffvec.z())>(uncvec.z()))returner=false;
+					if((fabs(diffen)/en)>uncen) returner=false;
+				}
+				if(fCorrectOnly==2 && returner==true) return true;
+				if(fCorrectOnly==4 && returner==false) return true;
+				else if(fCorrectOnly==4) returner=false;
+			}
+		}
+	      }
+	}
+	return returner;
 }
 //------------------------------------------------------------------
 bool InputReaderGeant::LoadEvent(int i) {
@@ -139,35 +251,28 @@ bool InputReaderGeant::LoadEvent(int i) {
     return false;
   }
   fTree->GetEntry(i);
+  //Freakycombo
+  if(SelectSingleEvent()==false)return false;
   if(fLoadReal){
-        // Only Compton Events with at least one additional interaction of the photon( first one is the compton effect (fRealInteraction.at(0) is the compton effect itself) and at least one interaction of the electron can be reconstructed.
-        if(fRealInteractions_p->size() < 2 || fRealInteractions_e->size() < 1)return false; 
-        // For the detector also only events where interactions in both detector moduls occure are triggered, for better comparison also only these real events are used. Also a selection with one of the particles interacting in both modules (besides the first compton effect) are difficult to select so these ones are not chosen as well
-	//indicates if photon/electron inetacted in scatterer/absorber
-	//photonscatter/electronscatterer/photonabsorber/electronscatterer
-	bool interactions[4]={false,false,false,false};
-        for(int m = 1; m < fRealInteractions_p->size(); m++) {
-        	if(fRealPosition_p->at(m).X()<(fScattererPosition->X()+fScattererDim->X()))interactions[0]=true;
-        	else if(fRealPosition_p->at(m).X()>(fAbsorberPosition->X()-fAbsorberDim->X()))interactions[2]=true;
+  	for(int m = 1; m < fRealInteractions_p->size(); m++) {
+		if(fRealInteractions_p->at(m)<10 &&fRealInteractions_p->at(m)>0){
+       			fPositionAbs->SetXYZ(fRealPosition_p->at(m).X(), fRealPosition_p->at(m).Y(), fRealPosition_p->at(m).Z());
+			break;
+		}
 	}
-        for(int m = 0; m < fRealInteractions_e->size(); m++) {
-        	if(fRealPosition_e->at(m).X()<(fScattererPosition->X()+fScattererDim->X()))interactions[1]=true;
-        	else if(fRealPosition_e->at(m).X()>(fAbsorberPosition->X()-fAbsorberDim->X()))interactions[3]=true;
-        }
-	if(interactions[0]==interactions[1])return false;
-	if(interactions[2]==interactions[3])return false;
-       	fPositionScat->SetXYZ(fRealPosition_e->at(0).X(), fRealPosition_e->at(0).Y(), fRealPosition_e->at(0).Z());
-       	fPositionAbs->SetXYZ(fRealPosition_p->at(1).X(), fRealPosition_p->at(1).Y(), fRealPosition_p->at(1).Z());
+  	for(int m = 1; m < fRealInteractions_e->size(); m++) {
+		if(fRealInteractions_e->at(m)<20){
+       			fPositionScat->SetXYZ(fRealPosition_e->at(m).X(), fRealPosition_e->at(m).Y(), fRealPosition_e->at(m).Z());
+			break;
+		}
+	}
   	fDirectionScat->SetXYZ(fRealDirection_scatter->X(),fRealDirection_scatter->Y(),fRealDirection_scatter->Z());
   	
 	fPrimaryEnergy = fRealEnergy_e + fRealEnergy_p;
 	fEnergyLoss=fRealEnergy_e; 
 	fEnergyScattered=fRealEnergy_p; 
-      
   }
   else{
-	if(fIdentified==0) return false;
- 	if(fCorrectOnly && fIdentified<0) return false; 
 	fPositionScat->SetXYZ(fRecoPosition_e->position.X(),fRecoPosition_e->position.Y(),fRecoPosition_e->position.Z());
   	fPositionAbs->SetXYZ(fRecoPosition_p->position.X(),fRecoPosition_p->position.Y(),fRecoPosition_p->position.Z());
 	fDirectionScat->SetXYZ(fRecoDirection_scatter->position.X(),fRecoDirection_scatter->position.Y(),fRecoDirection_scatter->position.Z());
@@ -204,6 +309,7 @@ void InputReaderGeant::Clear(void) {
   fEventNumber = -1;
   fIdentified = -1000;
   fPurCrossed = false;
+  fSimulatedEventType= -1000;
   fEnergy_Primary = -1000;
   fRealEnergy_e = -1000;
   fRealEnergy_p = -1000;
@@ -246,9 +352,6 @@ void InputReaderGeant::Clear(void) {
   fPositionScat = NULL;
   fPositionAbs = NULL;
   fDirectionScat = NULL;
-
-  fScattererDim =NULL;
-  fAbsorberDim =NULL;
 
   return;
 }

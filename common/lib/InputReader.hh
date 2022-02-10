@@ -7,6 +7,7 @@
 #include "TTree.h"
 #include "TVector3.h"
 #include <iostream>
+#include <list>
 
 using namespace std;
 
@@ -29,7 +30,14 @@ public:
   /// Loads requested event from the opened tree with simulations results.
   ///\param i (int) - number of the requested event.
   bool virtual LoadEvent(int i);
+  /// Returns the number of events in the file.
   int virtual GetNumberOfEventsInFile(void);
+  /// Applies the cuts to all events in the files and determine the ones passing the cuts. The event numbers are stored in a std::list<int>.
+  void virtual SelectEvents(void); 
+  /// Applies the cut to a single event in the file. Used in SelectEvents 
+  bool virtual SelectSingleEvent(void);
+  /// Returns the list of event numbers that fullfilled the cuts. These were determined in SelectEvents 
+  list<int> virtual GetSelectedEvents(void);
   TVector3 virtual* GetPositionPrimary(void);
   TVector3 virtual* GetPositionScattering(void);
   TVector3 virtual* GetPositionAbsorption(void);
@@ -38,7 +46,7 @@ public:
   
   int virtual GetMultiplicityNum(void);
   int virtual GetClassID(void);
-//REMOVE/CHANGE IN EI
+//EI Input Reader is at the moment not normalized to the other ones since it was a real mess
   double virtual GetEP(void);
   double virtual GetReES(void);
   double virtual GetES(void);
@@ -58,9 +66,9 @@ public:
 
 //GEANT4 SPECIFIC
   void virtual SetLoadMonteCarlo(void);
-  void virtual SetLoadOnlyCorrect(void);
+//Geant4/NN SPECIFIC
+  void virtual SetLoadOnlyCorrect(int value);
 
-//NN SPECIFIC
 
 
 protected:
@@ -74,10 +82,13 @@ protected:
   
   ClassDef(InputReader, 0)
 };
+inline void InputReader::SelectEvents(void){}  
+inline bool InputReader::SelectSingleEvent(void){return false;}
 inline int InputReader::GetNumberOfEventsInFile(void){return 0;}
+inline list<int> InputReader::GetSelectedEvents(void){return std::list<int>();}
 /// GEANT4 SPECIFIC
 inline void InputReader::SetLoadMonteCarlo(void){}
-inline void InputReader::SetLoadOnlyCorrect(void){}
+inline void InputReader::SetLoadOnlyCorrect(int value){}
 /// SIMPLE SPECIFIC
 inline void InputReader::SetSmearing(bool smear,Double_t posX,Double_t posY, Double_t posZ){}
 inline Double_t InputReader::SmearGaus(double val, double sigma){ return 0;}
