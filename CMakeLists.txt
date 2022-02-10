@@ -17,16 +17,37 @@ list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
 list(APPEND CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/Modules
     $ENV{ROOTSYS}
-    ${CMAKE_SOURCE_DIR}/cmake-scripts
 )
+
+# =================================================================================================
+# fetch external content
+include(FetchContent) # requires >= cmake-3.11
+
+set(SIFI_BUILTIN_SPDLOG AUTO CACHE STRING "Use built-in spdlog")
+set_property(CACHE SIFI_BUILTIN_SPDLOG PROPERTY STRINGS AUTO ON OFF)
+
+#-------------------------------------------------------------------------------
+# cmake-scripts
+FetchContent_Declare(cmake-scripts
+    GIT_REPOSITORY https://github.com/StableCoder/cmake-scripts.git
+    GIT_TAG        774a07ece3945b4f72e3ddc11646ab7cc9a349e2 # from main after sanitizer updates
+)
+
+FetchContent_MakeAvailable(cmake-scripts)
+list(APPEND CMAKE_MODULE_PATH
+    ${cmake-scripts_SOURCE_DIR}
+)
+
+# spdlog
+SET (REQUIRED_SPDLOG_VERSION 1.9.2)
+include(cmake/check_3rdparty_spdlog.cmake)
+
+# =================================================================================================
 
 #---Locate the ROOT package and defines a number of variables (e.g. ROOT_INCLUDE_DIRS)
 find_package(ROOT REQUIRED COMPONENTS Gpad Geom Hist MathMore Physics Tree)
 
 find_package(CmdLineArgs 2.2.0 REQUIRED)
-
-add_subdirectory(spdlog)
-set_property(TARGET spdlog PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 include(GNUInstallDirs)
 
