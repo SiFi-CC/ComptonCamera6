@@ -1,11 +1,12 @@
 #ifndef __CCMLEM_H_
 #define __CCMLEM_H_ 1
 #include "ComptonCone.hh"
+#include "Coordinates.hh"
 #include "InputReader.hh"
-#include "InputReaderGeant.hh"
-#include "InputReaderSimple.hh"
 #include "InputReaderEI.hh"
+#include "InputReaderGeant.hh"
 #include "InputReaderNN.hh"
+#include "InputReaderSimple.hh"
 #include "TFile.h"
 #include "TGraph.h"
 #include "TRandom3.h"
@@ -16,12 +17,11 @@
 #include "TObject.h"
 #include "TStopwatch.h"
 #include "TString.h"
+#include "TStyle.h"
 #include "TTree.h"
 #include "TVector3.h"
 #include "Track.hh"
-#include "TStyle.h"
 #include <TMatrixT.h>
-#include "Coordinates.hh"
 #include <vector>
 #include <map>
 #include <list>
@@ -71,14 +71,13 @@ private:
 //  TVector3* fScatposition; 
 //  TVector3* fAbsposition;
 
-///SIMPLE SIMULATION INPUT
-  Bool_t fSmear;        ///< Smear flag for smearing energy and position only used for simple Simulation results
-  Double_t fResolutionX;        ///< Position resolution in direction x-axis only used for simple Simulation results
-  Double_t fResolutionY;        ///< Position resolution in direction y-axis only used for simple Simulation results
-  Double_t fResolutionZ;        ///< Position resolution in direction z-axis only used for simple Simulation results
-  Double_t fP0;     ///< Fitting parameter used for the energy smearing in simple simulation 
-  Double_t fP1;     ///< Fitting parameter used for the energy smearing in simple simulation
-  Double_t fP2;     ///< Fitting parameter used for the energy smearing in simple simulation
+    // Convergence
+    Bool_t fSimpleConvergence;      ///< Flag or function or pixel convergence
+    Double_t fROIX;                 ///< x-component of ROI for convergence criterium
+    Double_t fROIY;                 ///< y-component of ROI for convergence criterium
+    Double_t fROIZ;                 ///< z-component of ROI for convergence criterium
+    Double_t fConvergenceCriterium; ///< value that leads to stop of iterations
+    Double_t fSigma[250];           ///< Relative sigma values between adjustent iterations
 
 ///GEANT4 SIMULATION INPUT
   Bool_t fLoadReal; ///< Flag if Real or Reco data is loaded from the input
@@ -104,13 +103,6 @@ private:
   Double_t fPixelSizeY;     ///< Size of pixel in y-axis direction
   Double_t fPixelSizeX;     ///< Size of pixel in x-axis direction
 
-  //Convergence
-  Bool_t fSimpleConvergence; ///< Flag or function or pixel convergence
-  Double_t fROIX;       ///< x-component of ROI for convergence criterium 
-  Double_t fROIY;       ///< y-component of ROI for convergence criterium
-  Double_t fROIZ;       ///< z-component of ROI for convergence criterium
-  Double_t fConvergenceCriterium;     ///< value that leads to stop of iterations 
-  Double_t fSigma[250];     ///< Relative sigma values between adjustent iterations
   //Reconstructionparameters
   Double_t fDenominator[10000000];
   TH2F* fSensitivity;

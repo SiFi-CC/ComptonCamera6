@@ -13,11 +13,12 @@ using namespace std;
 /// ROOT file containing tree with simulation results and via set of
 /// getter function passes information to reconstruction classes, i.e.
 /// CCREconstruction and CCMLEM.
-/// Two Types of information can be loaded: 
-/// 1. the real information from the simulation 
-/// 2. the information of the reconstructed events (only identified ones are passed)
-/// Which one is loaded is toggled with SetLoadMonteCarlo() 
-class InputReaderGeant : public InputReader {
+/// Two Types of information can be loaded:
+/// 1. the real information from the simulation
+/// 2. the information of the reconstructed events (only identified ones are
+/// passed) Which one is loaded is toggled with SetLoadMonteCarlo()
+class InputReaderGeant : public InputReader
+{
 
 public:
   /// Default constructor.

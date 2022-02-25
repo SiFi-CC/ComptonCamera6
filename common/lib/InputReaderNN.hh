@@ -7,13 +7,15 @@ using namespace std;
 
 /// Class for accessing data from the selection done by the NN.
 /// This is class derived from InputReader class.
-/// A ROOTfile is opened a tree containing the selected events and a tree containing information about the SiFi-CC setup are loaded. 
-class InputReaderNN: public InputReader {
+/// A ROOTfile is opened a tree containing the selected events and a tree
+/// containing information about the SiFi-CC setup are loaded.
+class InputReaderNN : public InputReader
+{
 
 public:
-  InputReaderNN();
-  InputReaderNN(TString path);
-  ~InputReaderNN();
+    InputReaderNN();
+    InputReaderNN(TString path);
+    ~InputReaderNN();
 
   bool LoadEvent(int i);
   int GetNumberOfEventsInFile(void);
@@ -77,13 +79,14 @@ private:
   double fEnergyLoss;
   double fEnergyScattered;
 
-  bool AccessTree(TString name);
-  TTree* fTree;
+    bool AccessTree(TString name);
+    TTree* fTree;
 
-  void Rotate(TVector3* vec);
+    void Rotate(TVector3* vec);
 
-  ClassDef(InputReaderNN, 0)
+    ClassDef(InputReaderNN, 0)
 };
+
 inline int InputReaderNN::GetNumberOfEventsInFile(void){return fTree->GetEntries();}
 inline list<int> InputReaderNN::GetSelectedEvents(void){return fSelectedEvents;}
 inline void InputReaderNN::SetLoadOnlyCorrect(int value){fCorrectOnly=value;}
@@ -93,6 +96,5 @@ inline TVector3* InputReaderNN::GetGammaDirScattered(void) {return fDirectionSca
 inline double InputReaderNN::GetEnergyPrimary(void) {return fPrimaryEnergy;}
 inline double InputReaderNN::GetEnergyLoss(void) { return fEnergyLoss; }
 inline double InputReaderNN::GetEnergyScattered(void) { return fEnergyScattered; }
-
 
 #endif

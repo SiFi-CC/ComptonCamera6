@@ -1,0 +1,30 @@
+name: clang-format Check
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  formatting-check:
+    name: Formatting Check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        path:
+          - 'cm'
+          - 'cc'
+          - 'common'
+          - 'tools'
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install common dependencies
+      run: |
+        sudo apt update
+        sudo apt install clang-format-12 -y
+    - name: Run clang-format style check for C/C++ programs.
+      uses: jidicula/clang-format-action@v3.2.0
+      with:
+        clang-format-version: 12
+        check-path: ${{ matrix.path }}
+        fallback-style: 'Mozilla' # optional
