@@ -7,6 +7,7 @@
 #include "InputReaderGeant.hh"
 #include "InputReaderNN.hh"
 #include "InputReaderSimple.hh"
+#include "InputReaderPMI.hh"
 #include "TFile.h"
 #include "TGraph.h"
 #include "TRandom3.h"
@@ -71,13 +72,22 @@ private:
 //  TVector3* fScatposition; 
 //  TVector3* fAbsposition;
 
+    ///SIMPLE SIMULATION INPUT
+    Bool_t fSmear; ///< Smear flag for smearing energy and position only used for simple Simulation results
+    Double_t fResolutionX; ///< Position resolution in direction x-axis only used for simple Simulation results
+    Double_t fResolutionY; ///< Position resolution in direction y-axis only used for simple Simulation results
+    Double_t fResolutionZ; ///< Position resolution in direction z-axis only used for simple Simulation results
+    Double_t fP0; ///< Fitting parameter used for the energy smearing in simple simulation
+    Double_t fP1; ///< Fitting parameter used for the energy smearing in simple simulation
+    Double_t fP2; ///< Fitting parameter used for the energy smearing in simple simulation
+
     // Convergence
     Bool_t fSimpleConvergence;      ///< Flag or function or pixel convergence
     Double_t fROIX;                 ///< x-component of ROI for convergence criterium
     Double_t fROIY;                 ///< y-component of ROI for convergence criterium
     Double_t fROIZ;                 ///< z-component of ROI for convergence criterium
     Double_t fConvergenceCriterium; ///< value that leads to stop of iterations
-    Double_t fSigma[250];           ///< Relative sigma values between adjustent iterations
+    Double_t fSigma[251];           ///< Relative sigma values between adjustent iterations
 
 ///GEANT4 SIMULATION INPUT
   Bool_t fLoadReal; ///< Flag if Real or Reco data is loaded from the input

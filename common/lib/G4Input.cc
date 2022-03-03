@@ -188,7 +188,7 @@ Bool_t G4Input::LoadEvent(Int_t no, Bool_t real = false, Bool_t iden = false)
     }
     if (error)
     {
-        if (no = 0) std::cerr << "No event with the requested specification found!" << std::endl;
+        if (no == 0) std::cerr << "No event with the requested specification found!" << std::endl;
         return false;
     }
     else

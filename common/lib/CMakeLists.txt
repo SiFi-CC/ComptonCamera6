@@ -14,6 +14,7 @@ CC6_GENERATE_LIBRARY(
         InputReaderGeant.cc
         InputReaderNN.cc
         InputReaderSimple.cc
+        InputReaderPMI.cc
         IsectionPoint.cc
         Source.cc
         Track.cc
@@ -32,6 +33,7 @@ CC6_GENERATE_LIBRARY(
         InputReaderGeant.hh
         InputReaderNN.hh
         InputReaderSimple.hh
+        InputReaderPMI.hh
         IsectionPoint.hh
         Source.hh
         Track.hh

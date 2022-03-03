@@ -179,7 +179,14 @@ Bool_t CCMLEM::SetInputReader(void)
         fReader = new InputReaderNN(fullName);
 	fReader->SetLoadOnlyCorrect(fCorrectIdentified);
         fReader->SelectEvents(); 
-    } 
+    }
+
+    else if (file->Get("CalibratedEvents"))
+    {
+        file->Close();
+        fReader = new InputReaderPMI(fullName);
+    }
+
     else {
         cout << "##### Error in CCMLEM::SetInputReader()!" << endl;
         cout << "Unknown data format" << endl;
@@ -1346,6 +1353,7 @@ Bool_t CCMLEM::DrawCanvas(void)
     SaveToFile(cany);
     return kTRUE;
 }
+
 //------------------------------------
 /// Reads configuration file and sets values of private class
 /// members according to read information.
@@ -1482,6 +1490,7 @@ Bool_t CCMLEM::ReadConfig(TString path)
     else {
       cout << "##### Warning in CCMLEM::Config()! Unknown syntax!" << endl;
       cout << comment << endl;
+    }
     }
 
     if (fVerbose) Print();
