@@ -185,6 +185,7 @@ Bool_t CCMLEM::SetInputReader(void)
     {
         file->Close();
         fReader = new InputReaderPMI(fullName);
+        fReader->SelectEvents();
     }
 
     else {
@@ -277,7 +278,7 @@ Bool_t CCMLEM::Reconstruct(){
         goodeventcounter++;
         if(goodeventcounter%100==0) cout << goodeventcounter << " Events are done" << endl;
         
-        ComptonCone* cone = new ComptonCone(point_e, point_p, energy1 + energy2, energy2); 
+        ComptonCone* cone = new ComptonCone(point_e, point_p, energy1 + energy2, energy2);
     
         interactionPoint = cone->GetApex();
         coneAxis = cone->GetAxis();
@@ -386,6 +387,7 @@ Bool_t CCMLEM::Reconstruct(){
             z=z+fPixelSizeZ;
       
         } //end of loop over vertical lines
+
         Int_t index[fNIpoints];
         Int_t fA[fNIpoints];
         IsectionPoint* tempp;
@@ -428,10 +430,32 @@ Bool_t CCMLEM::Reconstruct(){
             dist = ((*tmpvec1) - (*tmpvec2)).Mag();
             if (dist > maxdist)
             {
-                // cout<<"Event "<<h<<": distance exceeds pixel
-                // diagonal"<<dist/maxdist<<" times"<<endl;
+                // cout<<"Event "<<h<<": distance exceeds pixel diagonal"<<dist/maxdist<<" times"<<endl;
                 continue;
             }
+
+            double x1, y1, z1, x2, y2, z2, dmb;
+
+            int bx1, by1, bz1, bx2, by2, bz2;
+
+            // for(Int_t i=0; i<fImage[0]->GetNbinsX(); ++i) {
+            //     printf("%d %f \n", i, fImage[0]->GetBinContent(i, 1) );
+            // }
+
+            //fImage[0]->Print();
+            // fImage[0]->GetBinXYZ(binno1, bx1, by1, bz1);
+            // x1 = fImage[0]->GetXaxis()->GetBinCenter(bx1);
+            // y1 = fImage[0]->GetXaxis()->GetBinCenter(by1);
+
+            // fImage[0]->GetBinXYZ(binno2, bx2, by2, bz2);
+            // x2 = fImage[0]->GetXaxis()->GetBinCenter(bx2);
+            // y2 = fImage[0]->GetXaxis()->GetBinCenter(by2);
+
+            // dmb = sqrt(pow(x1-x2,2)+pow(y1-y2,2));
+
+            // cout << "distance between bin centres: " << dmb << endl;
+
+            if (binno1 == binno2) cout << "bin numbers are the same" << endl;
 
             if (binno1 != binno2) {
                 //count++;
@@ -444,6 +468,7 @@ Bool_t CCMLEM::Reconstruct(){
                 cout << "Position 2 : " << tmpvec2->X() << ","
                      << "\t" << tmpvec2->Y() << ","
                      << "\t" << tmpvec2->Z() << endl;
+                h = h-1;
                 continue;
             }
 
@@ -482,8 +507,10 @@ Bool_t CCMLEM::Reconstruct(){
     cout << " DisQualified events : " << badeventcounter << endl;
     cout << "number of events : " << goodeventcounter << endl;
 
-    for(k=0; k< fNbinsZ + 1 ; k++){
-    	for(j=0; j< fNbinsY + 1 ; j++){
+    for(k=1; k< fNbinsZ + 1 ; k++){
+    	for(j=1; j< fNbinsY + 1 ; j++){
+            // cout<<"fImage[0] = "<<fImage[0] << "k, j :" << k << ", " << j <<endl;
+            // cout << "bin content: " << fImage[0]->GetBinContent(k,j) << endl;
 		fImage[0]->SetBinContent(k,j,fImage[0]->GetBinContent(k,j)+1);
 	}
     }
@@ -1369,7 +1396,7 @@ Bool_t CCMLEM::ReadConfig(TString path)
         return kFALSE;
     }
 
-    cout << "\n\nIn CCMLEM::Config(). Reading config file..." << endl;
+    cout << "\n\nIn CCMLEM::ReadConfig(). Reading config file..." << endl;
 
     TString comment;
 
@@ -1377,33 +1404,37 @@ Bool_t CCMLEM::ReadConfig(TString path)
     comment.ReadLine(config);
     cout << "READ FROM FILE: " << comment.Data() << endl;
     if (comment.Contains("Name of the input file")) {
-      config >> fInputName;
+        config >> fInputName;
+        cout << "input name: " << fInputName << endl;
       if (!fInputName.Contains(".root")) {
-        cout << "##### Error in CCMLEM::Config()! Unknown file type!" << endl;
+        cout << "##### Error in CCMLEM::ReadConfig()! Unknown file type!" << endl;
         return false;
       }
     }
     else if (comment.Contains("Name of the output file")) {
       config >> fOutputName;
+      cout << "output name: " << fOutputName << endl;
       if (!fOutputName.Contains(".root")) {
-        cout << "##### Error in CCMLEM::Config()! Unknown file type!" << endl;
+        cout << "##### Error in CCMLEM::ReadConfig()! Unknown file type!" << endl;
         return false;
       }
     }
     else if (comment.Contains("Size of image volume")) {
       config >> fDimZ >> fDimY >> fDimX;
+    cout << "sizes: " << fDimZ  << ", " << fDimY << ", " << fDimX << endl;
       //if (fDimZ < 1 || fDimY < 1 || fDimX<1) {//THREEDIMENSIONS
       if (fDimZ < 1 || fDimY < 1) {    
-        cout << "##### Error in CCMLEM::Config()! Image size incorrect!"
+        cout << "##### Error in CCMLEM::ReadConfig()! Image size incorrect!"
              << endl;
         return false;
       }
     } 
     else if (comment.Contains("No. of bins")) {
       config >> fNbinsZ >> fNbinsY >> fNbinsX;
+        cout << "bins: " << fNbinsZ << ", " << fNbinsY << ", " << fNbinsX << endl;
       //if (fNbinsZ < 1 || fNbinsY < 1 || fNbinsX<1) {//THREEDIMENSIONS
       if (fNbinsZ < 1 || fNbinsY < 1) {
-        cout << "##### Error in CCMLEM::Config()! Number of bins incorrect!"
+        cout << "##### Error in CCMLEM::ReadConfig()! Number of bins incorrect!"
              << endl;
         return false;
       }
@@ -1412,34 +1443,41 @@ Bool_t CCMLEM::ReadConfig(TString path)
     //USED to set the Convergence Method  
     else if(comment.Contains("Convergence Simple")){
 	config >> fSimpleConvergence;
+    cout << "covergence simple: " << fSimpleConvergence << endl;
     }
     //USED to set the ROI for the convergence criterium from Nadja. Need to be fixed to the Image volume/Bins. Should be placed also in the Bragg-peak region. Makes only sense if oyu want to achieve convergence, outherwise limit the number of iterations 
     else if(comment.Contains("ROI")){
 	config >> fROIX>> fROIY>> fROIZ;
+    cout << "ROIs: " << fROIX << ", " << fROIY << ", " << fROIZ << endl;
     }
     //This is a method by Majid that only makes sense for the simple input 
     //USED to set smearing for the Simple Simulation 
     else if (comment.Contains("Smear")) {
       config >> fSmear;
+      cout << "smear: " << fSmear << endl;
     }
     //USED to set kernel for the filter that is applied on the reco images (a gaussian filter is used) 
     else if (comment.Contains("GausFilter")) {
       config >> fGausFilter;
+      cout << "Gauss filter: " << fGausFilter << endl;
     }
     //This is a method by Majid that only makes sense for the simple input 
     //USED to set pos resolution for the smearing for the Simple Simulation 
     else if (comment.Contains("Position resolution")) {
       config >> fResolutionX >> fResolutionY >> fResolutionZ;
+      cout << "position resolution: " << fResolutionX << ", " << fResolutionY << ", " << fResolutionZ << endl;
     }
     //USED to set ???, could not find the meaning of this 
     else if (comment.Contains("Fitting parameters")) {
       config >> fP0 >> fP1 >> fP2;
+      cout << "fitting params " << fP0 << ", " << fP1 << ", " << fP2 << endl;
     }
     //USED to set maximum number of iterations. This should be used oif you know that convergence will not be reached 
     else if (comment.Contains("No. of MLEM iterations")) {
       config >> fIter;
+      cout << "no of iterations " << fIter << endl;
       if (fIter < 0) {
-        cout << "##### Error in CCMLEM::Config()! Number of iterations "
+        cout << "##### Error in CCMLEM::ReadConfig()! Number of iterations "
                 "incorrect!"
              << endl;
         return false;
@@ -1448,10 +1486,12 @@ Bool_t CCMLEM::ReadConfig(TString path)
     //USED to set the recreation of the output instead of updating. In the most cases this should be set to true 
     else if (comment.Contains("Fresh output")) {
       config >> fFreshOutput;
+      cout << "fresh output: " << fFreshOutput << endl;
     }
     //USED to set the saving of the intermediate results. If this is set to false way less histograms are saved. Makes it faster 
     else if (comment.Contains("Save Intermediate")) {
       config >> fSaveAll;
+      cout << "save intermediate: " << fSaveAll << endl;
     }
     //USED to set the number events that is reconstructed
     //fStart normally should be =0 since you do not want to cut stuff from your file starting simply by order
@@ -1459,8 +1499,9 @@ Bool_t CCMLEM::ReadConfig(TString path)
     //if fStop !0 fStart, fStop is the number of events that are used in the reco. It is checked if enough events full fill the cuts to reach fStops, If not the reconstruction is not done 
     else if (comment.Contains("No. of first and last event")) {
       config >> fStart >> fStop;
+      cout << "start and stop: " << fStart << ", " << fStop << endl;
       if (fStart < 0 || fStop < 0 || fStop < fStart) {
-        cout << "##### Error in CCMLEM::Config()! Number of first or last "
+        cout << "##### Error in CCMLEM::ReadConfig()! Number of first or last "
                 "event incorrect!"
              << endl;
         return false;
@@ -1470,25 +1511,29 @@ Bool_t CCMLEM::ReadConfig(TString path)
     //	see explanation above. Can be used to set fStop seperatly of fStart 
     else if (comment.Contains("No. used events")) {
       config >> fStop;
+      cout << "used events: " << fStop << endl;
       fStart=0;
       if (fStart < 0 || fStop < 0 || fStop < fStart) {
-        cout << "##### Error in CCMLEM::Config()! Number of used selected events is not meaningful"<< endl;
+        cout << "##### Error in CCMLEM::ReadConfig()! Number of used selected events is not meaningful"<< endl;
         return false;
       }
     }
     else if (comment.Contains("Verbose flag")) {
       config >> fVerbose;
+      cout << "verbose: " << fVerbose << endl;
     }
     //USED to set that the Monte Carlo data is loaded from the Geant4 simulation instead of the reco
     else if (comment.Contains("Load Real")) {
       config >> fLoadReal;
+      cout << "load real: " << fLoadReal << endl;
     }
     //USED to set that only the correct identified events are loaded from the geant4 or NN input. Integers are used. What the meaning is see in the InputReaders
     else if (comment.Contains("Load only correct identified")) {
       config >> fCorrectIdentified;
+      cout << "correct identified: " << fCorrectIdentified << endl;
     }
     else {
-      cout << "##### Warning in CCMLEM::Config()! Unknown syntax!" << endl;
+      cout << "##### Warning in CCMLEM::ReadConfig()! Unknown syntax!" << endl;
       cout << comment << endl;
     }
     }

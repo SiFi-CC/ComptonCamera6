@@ -15,7 +15,7 @@ InputReaderPMI::InputReaderPMI() : InputReader() {
 ///\param path (TString) - path to the input file.
 InputReaderPMI::InputReaderPMI(TString path) : InputReader(path) {
 
-    if (!AccessTree("CalibratedEVents")) {
+    if (!AccessTree("CalibratedEvents")) {
         throw "##### Exception in InputReaderPMI constructor!";
     }
 }

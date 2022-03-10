@@ -9,11 +9,11 @@ using namespace std;
 int main(int argc, char* argv[])
 {
 
-    CmdLineOption _path("output_path", "-op", "output path", "./results/");
+    CmdLineOption _path("config_file", "-cf", "config file", "./config.txt");
 
     CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 
-    TString path = CmdLineOption::GetStringValue("output_path");
+    TString path = CmdLineOption::GetStringValue("config_file");
 
     /*
       if (argc != 2) {
