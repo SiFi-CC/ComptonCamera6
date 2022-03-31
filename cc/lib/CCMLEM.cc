@@ -434,27 +434,6 @@ Bool_t CCMLEM::Reconstruct(){
                 continue;
             }
 
-            double x1, y1, z1, x2, y2, z2, dmb;
-
-            int bx1, by1, bz1, bx2, by2, bz2;
-
-            // for(Int_t i=0; i<fImage[0]->GetNbinsX(); ++i) {
-            //     printf("%d %f \n", i, fImage[0]->GetBinContent(i, 1) );
-            // }
-
-            //fImage[0]->Print();
-            // fImage[0]->GetBinXYZ(binno1, bx1, by1, bz1);
-            // x1 = fImage[0]->GetXaxis()->GetBinCenter(bx1);
-            // y1 = fImage[0]->GetXaxis()->GetBinCenter(by1);
-
-            // fImage[0]->GetBinXYZ(binno2, bx2, by2, bz2);
-            // x2 = fImage[0]->GetXaxis()->GetBinCenter(bx2);
-            // y2 = fImage[0]->GetXaxis()->GetBinCenter(by2);
-
-            // dmb = sqrt(pow(x1-x2,2)+pow(y1-y2,2));
-
-            // cout << "distance between bin centres: " << dmb << endl;
-
             if (binno1 == binno2) cout << "bin numbers are the same" << endl;
 
             if (binno1 != binno2) {
@@ -655,6 +634,14 @@ Bool_t CCMLEM::Reconstruct(){
  */ 
 /// End of Sensitivity map calculation
 
+    TCanvas* can_allIterations  = new TCanvas("MLEM2D_allIterations","MLEM2D_allIterations",1000,1000);
+    TCanvas* can_allIterations_z  = new TCanvas("MLEM1DZ_allIterations","MLEM1DZ_allIterations",1000,1000);
+    TCanvas* can_allIterations_y  = new TCanvas("MLEM1DY_allIterations","MLEM1DY_allIterations",1000,1000);
+
+    can_allIterations->DivideSquare(20);
+    can_allIterations_z->DivideSquare(20);
+    can_allIterations_y->DivideSquare(20);
+
     for (int iter = 1; iter < fIter + 1; iter++) {
       
         bool status=Iterate(fStop, iter);
@@ -662,9 +649,21 @@ Bool_t CCMLEM::Reconstruct(){
             cout<<"-----------------------------------------"<<endl;
             cout<< "ITERATINGPROCESS STOPPED AT: " << iter << endl; 
             cout<< "Relative Error is: " << fSigma[iter-1] << endl;
-	    DrawAtConvergence(iter);
+        DrawAtConvergence(iter);
+        can_allIterations->cd(iter);
+        fImage[iter]->Draw("colz");
+        can_allIterations_z->cd(iter);
+        fImage[iter]->ProjectionX()->Draw();
+        can_allIterations_y->cd(iter);
+        fImage[iter]->ProjectionY()->Draw();
+        
             return false;
 	}
+
+    can_allIterations->Write();
+    can_allIterations_z->Write();
+    can_allIterations_y->Write();
+
     } 
     if(fSigma[fIter-1]>fConvergenceCriterium){
 	cout << "NOT CONVERGED!!" << endl; 
@@ -1534,7 +1533,7 @@ Bool_t CCMLEM::ReadConfig(TString path)
     }
     else {
       cout << "##### Warning in CCMLEM::ReadConfig()! Unknown syntax!" << endl;
-      cout << comment << endl;
+      cout << "Unknown syntax: " << comment << endl;
     }
     }
 
