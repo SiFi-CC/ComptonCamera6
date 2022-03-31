@@ -1543,6 +1543,7 @@ Bool_t CCMLEM::DrawHisto(void)
 
     for(int iter = 1; iter < fIter +1; iter++) {
         can_allIterations->cd(iter);
+        cout << "iteration number " << iter << ", current pad: " << gPad->GetName() << endl;
         fImage[iter]->Draw("colz");
         can_allIterations_z->cd(iter);
         fImage[iter]->ProjectionX()->Draw();
