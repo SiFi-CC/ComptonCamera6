@@ -115,6 +115,7 @@ fGausFilter(3)
     fEvents.sort();
     fEvents.unique();
     cout << "Events: " << fEvents.size() << endl;
+    DrawHisto();
 }
 //--------------------
 /// Default constructor.
@@ -1533,7 +1534,7 @@ Bool_t CCMLEM::DrawHisto(void)
 
     int lastiter = fIter;
 
-    TCanvas* can_allIterations  = new TCanvas("MLEM2D_allIterations","MLEM2D_allIterations",1000,1000);
+    TCanvas* can_allIterations = new TCanvas("MLEM2D_allIterations","MLEM2D_allIterations",1000,1000);
     TCanvas* can_allIterations_z  = new TCanvas("MLEM1DZ_allIterations","MLEM1DZ_allIterations",1000,1000);
     TCanvas* can_allIterations_y  = new TCanvas("MLEM1DY_allIterations","MLEM1DY_allIterations",1000,1000);
 
