@@ -634,14 +634,6 @@ Bool_t CCMLEM::Reconstruct(){
  */ 
 /// End of Sensitivity map calculation
 
-    TCanvas* can_allIterations  = new TCanvas("MLEM2D_allIterations","MLEM2D_allIterations",1000,1000);
-    TCanvas* can_allIterations_z  = new TCanvas("MLEM1DZ_allIterations","MLEM1DZ_allIterations",1000,1000);
-    TCanvas* can_allIterations_y  = new TCanvas("MLEM1DY_allIterations","MLEM1DY_allIterations",1000,1000);
-
-    can_allIterations->DivideSquare(20);
-    can_allIterations_z->DivideSquare(20);
-    can_allIterations_y->DivideSquare(20);
-
     for (int iter = 1; iter < fIter + 1; iter++) {
       
         bool status=Iterate(fStop, iter);
@@ -650,19 +642,9 @@ Bool_t CCMLEM::Reconstruct(){
             cout<< "ITERATINGPROCESS STOPPED AT: " << iter << endl; 
             cout<< "Relative Error is: " << fSigma[iter-1] << endl;
         DrawAtConvergence(iter);
-        can_allIterations->cd(iter);
-        fImage[iter]->Draw("colz");
-        can_allIterations_z->cd(iter);
-        fImage[iter]->ProjectionX()->Draw();
-        can_allIterations_y->cd(iter);
-        fImage[iter]->ProjectionY()->Draw();
         
             return false;
 	}
-
-    can_allIterations->Write();
-    can_allIterations_z->Write();
-    can_allIterations_y->Write();
 
     } 
     if(fSigma[fIter-1]>fConvergenceCriterium){
@@ -1550,6 +1532,27 @@ Bool_t CCMLEM::DrawHisto(void)
 {
 
     int lastiter = fIter;
+
+    TCanvas* can_allIterations  = new TCanvas("MLEM2D_allIterations","MLEM2D_allIterations",1000,1000);
+    TCanvas* can_allIterations_z  = new TCanvas("MLEM1DZ_allIterations","MLEM1DZ_allIterations",1000,1000);
+    TCanvas* can_allIterations_y  = new TCanvas("MLEM1DY_allIterations","MLEM1DY_allIterations",1000,1000);
+
+    can_allIterations->DivideSquare(20);
+    can_allIterations_z->DivideSquare(20);
+    can_allIterations_y->DivideSquare(20);
+
+    for(int iter = 1; iter < fIter +1; iter++) {
+        can_allIterations->cd(iter);
+        fImage[iter]->Draw("colz");
+        can_allIterations_z->cd(iter);
+        fImage[iter]->ProjectionX()->Draw();
+        can_allIterations_y->cd(iter);
+        fImage[iter]->ProjectionY()->Draw();
+    }
+
+    can_allIterations->Write();
+    can_allIterations_z->Write();
+    can_allIterations_y->Write();
 
     TH1D* hProZ[250];
     TH1D* hProY[250];
