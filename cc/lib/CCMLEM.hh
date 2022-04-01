@@ -59,6 +59,7 @@ public:
   void Clear(void);
   /** Calculate H matrix and save it in file */
   void SmatrixToFile(const TString& filename);
+  void DrawAllIterations(void);
 
 private:
   TString fInputName;       ///< Path to the file with simulation data
