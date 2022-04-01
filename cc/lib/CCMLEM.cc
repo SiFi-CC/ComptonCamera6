@@ -1534,36 +1534,21 @@ Bool_t CCMLEM::DrawHisto(void)
 
     int lastiter = fIter;
 
-    // TCanvas* can_allIterations = new TCanvas("MLEM2D_allIterations","MLEM2D_allIterations",1000,1000);
-    // TCanvas* can_allIterations_z  = new TCanvas("MLEM1DZ_allIterations","MLEM1DZ_allIterations",1000,1000);
-    // TCanvas* can_allIterations_y  = new TCanvas("MLEM1DY_allIterations","MLEM1DY_allIterations",1000,1000);
-
-    // can_allIterations->DivideSquare(20);
-    // can_allIterations_z->DivideSquare(20);
-    // can_allIterations_y->DivideSquare(20);
-
-    // for(int iter = 1; iter < fIter +1; iter++) {
-    //     can_allIterations->cd(iter);
-    //     cout << "iteration number " << iter << ", current pad: " << gPad->GetName() << endl;
-    //     fImage[iter]->Draw("colz");
-    //     can_allIterations_z->cd(iter);
-    //     fImage[iter]->ProjectionX()->Draw();
-    //     can_allIterations_y->cd(iter);
-    //     fImage[iter]->ProjectionY()->Draw();
-    // }
-
-    // can_allIterations->Write();
-    // can_allIterations_z->Write();
-    // can_allIterations_y->Write();
-
     TH1D* hProZ[250];
     TH1D* hProY[250];
     // TH1D* hProX[150];
+
+    cout << "before creating canvas" << endl;
+
     TCanvas* can = new TCanvas("MLEM2D", "MLEM2D", 1000, 1000);
+
+    cout << "before dividing canvas" << endl;
 
     can->Divide(2, 2);
     can->cd(1);
     // gPad->SetLogz(1);
+
+    cout << "before drawing fImage" << endl;
 
     fImage[lastiter]->Draw("colz");
     // fImage[iter]->SetMinimum(200);
@@ -1576,6 +1561,8 @@ Bool_t CCMLEM::DrawHisto(void)
     hProY[lastiter]->Draw();
     // can->cd(4);
     // hProX[lastiter]->Draw();
+
+    cout << "before saving to file" << endl;
 
     SaveToFile(can);
 
