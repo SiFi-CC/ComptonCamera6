@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 
     rec->Reconstruct();
     // rec->DrawHisto();
-    rec->DrawAllIterations();
+    rec->DrawAllIterations(void);
     // rec->HmatrixToFile(outputfile);
 
     delete rec;
