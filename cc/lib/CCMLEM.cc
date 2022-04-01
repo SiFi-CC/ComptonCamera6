@@ -115,7 +115,6 @@ fGausFilter(3)
     fEvents.sort();
     fEvents.unique();
     cout << "Events: " << fEvents.size() << endl;
-    DrawHisto();
 }
 //--------------------
 /// Default constructor.
