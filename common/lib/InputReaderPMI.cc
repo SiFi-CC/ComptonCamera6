@@ -100,7 +100,7 @@ TVector3* InputReaderPMI::GetGammaDirScattered(void) {
     TVector3 sca = *(GetPositionScattering());
     TVector3 abs = *(GetPositionAbsorption());
     TVector3 dir = (abs-sca).Unit();
-    fDirectionScat.SetXYZ(dir.X(), dir.Y(), dir.Z());
+    fDirectionScat->SetXYZ(dir.X(), dir.Y(), dir.Z());
     return fDirectionScat;
 }
 //------------------------------------------------------------------
