@@ -83,23 +83,24 @@ bool InputReaderPMI::LoadEvent(int i) {
 }
 //------------------------------------------------------------------
 TVector3* InputReaderPMI::GetPositionScattering(void) {
-    fPositionScat->SetX(fPoint1->X());
+    fPositionScat->SetX(-fPoint1->Z());
     fPositionScat->SetY(fPoint1->Y());
-    fPositionScat->SetZ(fPoint1->Z());
+    fPositionScat->SetZ(fPoint1->X());
     return fPositionScat;
 }
 //------------------------------------------------------------------
 TVector3* InputReaderPMI::GetPositionAbsorption(void) {
-    fPositionAbs->SetX(fPoint2->X());
+    fPositionAbs->SetX(-fPoint2->Z());
     fPositionAbs->SetY(fPoint2->Y());
-    fPositionAbs->SetZ(fPoint2->Z());
+    fPositionAbs->SetZ(fPoint2->X());
     return fPositionAbs;
 }
 //------------------------------------------------------------------
 TVector3* InputReaderPMI::GetGammaDirScattered(void) {
-    fDirectionScat->SetX((fPoint2->X()-fPoint1->X())/sqrt(pow(fPoint1->X(), 2)+pow(fPoint2->X(),2)));
-    fDirectionScat->SetY((fPoint2->Y()-fPoint1->Y())/sqrt(pow(fPoint1->Y(), 2)+pow(fPoint2->Y(),2)));
-    fDirectionScat->SetZ((fPoint2->Z()-fPoint1->Z())/sqrt(pow(fPoint1->Z(), 2)+pow(fPoint2->Z(),2)));
+    TVector3* sca = (GetPositionScattering());
+    TVector3* abs = (GetPositionAbsorption());
+    TVector3 dir = (abs-sca).Unit();
+    fDirectionScat.SetXYZ(dir.X(), dir.Y(), dir.Z());
     return fDirectionScat;
 }
 //------------------------------------------------------------------
