@@ -1879,15 +1879,17 @@ void CCMLEM::DrawAllIterations(void)
     can_allIterations_y->DivideSquare(18);
     can_allIterations_2->DivideSquare(18);
 
-    for(int iter = 1; iter < fIter +1; iter+=2) {
+    for(int iter = 1; iter < fIter*2 +1; iter+=2) {
         can_allIterations->cd(iter);
+        gPad->SetLogx(0);
         fImage[iter]->Draw("colz");
         can_allIterations->cd(iter+1);
+        gPad->SetLogx(0);
         fSH[iter]->Draw("colz");
         can_allIterations_2->cd(iter);
         gPad->SetLogx(1);
         fImage[iter]->Draw("colz");
-        can_allIterations->cd(iter+1);
+        can_allIterations_2->cd(iter+1);
         gPad->SetLogx(1);
         fSH[iter]->Draw("colz");
         can_allIterations_z->cd(iter);
