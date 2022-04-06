@@ -1159,7 +1159,7 @@ void CCMLEM::DrawREGraph(int iter){
     for (Int_t i = 0; i <= iter-1 ; i++) {
             x[i] = i+1;
             y[i] = fSigma[i];
-	    // std::cout << fSigma[i] << std::endl;
+	    std::cout << "fSigma[i]: " << fSigma[i] << std::endl;
     }
     TCanvas* can = new TCanvas("RE vs. Iteration", "RE vs. Iteration", 1000, 1000);
     can->cd(1);
