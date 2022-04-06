@@ -31,13 +31,15 @@ public:
     double GetEnergyLoss(void);
     double GetEnergyScattered(void);
 
+    void SetLoadOnlyCorrect(int value);
+
 private:
 
     //LOADING FROM THE TREE
     TVector3* fPoint1; ///< Coordinates of the interaction in the scatterer
     TVector3* fPoint2; ///< Coordinates of the interaction in the absorber (absorption)
-    double fEnergy1;    ///< Energy deposited in the scatterer [keV]
-    double fEnergy2;    ///< Energy of the scattered gamma [keV]
+    double fEnergy1;    ///< Energy deposited in the scatterer [MeV]
+    double fEnergy2;    ///< Energy of the scattered gamma [MeV]
     //PARAMETERS PASSED ON
     TVector3* fPositionScat;  ///< Position of interaction in scatterer
     TVector3* fPositionAbs;   ///< Position of interaction in absorber
@@ -45,6 +47,8 @@ private:
     double fEnergyLoss;
     double fEnergyScattered;
     int fabsclustersize;
+
+    int fCorrectOnly; ///< If 1: load only the correct events
 
     bool AccessTree(TString name);
     //TTree* fTree;
@@ -56,5 +60,6 @@ private:
 
 inline int InputReaderPMI::GetNumberOfEventsInFile(void){return fTree->GetEntries();}
 inline list<int> InputReaderPMI::GetSelectedEvents(void){return fSelectedEvents;}
+inline void InputReaderPMI::SetLoadOnlyCorrect(int value){fCorrectOnly=value;}
 
 #endif
