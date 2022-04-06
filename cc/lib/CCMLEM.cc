@@ -1879,27 +1879,35 @@ void CCMLEM::DrawAllIterations(void)
     can_allIterations_y->DivideSquare(18);
     can_allIterations_2->DivideSquare(18);
 
-    for(int iter = 1; iter < fIter*2 +1; iter+=2) {
-        can_allIterations->cd(iter);
+    for(int iter = 0; iter < fIter; iter++) {
+
+        can_allIterations->cd(2*iter+1);
         gPad->SetLogx(0);
-        fImage[iter]->Draw("colz");
-        can_allIterations->cd(iter+1);
+        fImage[iter+1]->Draw("colz");
+
+        can_allIterations->cd(2*iter+2);
         gPad->SetLogx(0);
-        fSH[iter]->Draw("colz");
-        can_allIterations_2->cd(iter);
+        fSH[iter+1]->Draw("colz");
+
+        can_allIterations_2->cd(2*iter+1);
         gPad->SetLogx(1);
-        fImage[iter]->Draw("colz");
-        can_allIterations_2->cd(iter+1);
+        fImage[iter+1]->Draw("colz");
+
+        can_allIterations_2->cd(2*iter+2);
         gPad->SetLogx(1);
-        fSH[iter]->Draw("colz");
-        can_allIterations_z->cd(iter);
-        fImage[iter]->ProjectionX()->Draw();
-        can_allIterations_z->cd(iter)+1;
-        fSH[iter]->ProjectionX()->Draw();
-        can_allIterations_y->cd(iter);
-        fImage[iter]->ProjectionY()->Draw();
-        can_allIterations_y->cd(iter+1);
-        fSH[iter]->ProjectionY()->Draw();
+        fSH[iter+1]->Draw("colz");
+
+        can_allIterations_z->cd(2*iter+1);
+        fImage[iter+1]->ProjectionX()->Draw();
+
+        can_allIterations_z->cd(2*iter+2);
+        fSH[iter+1]->ProjectionX()->Draw();
+
+        can_allIterations_y->cd(2*iter+1);
+        fImage[iter+1]->ProjectionY()->Draw();
+
+        can_allIterations_y->cd(2*iter+2);
+        fSH[iter+1]->ProjectionY()->Draw();
     }
 
     can_allIterations->Write();
