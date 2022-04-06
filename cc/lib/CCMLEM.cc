@@ -434,8 +434,6 @@ Bool_t CCMLEM::Reconstruct(){
                 continue;
             }
 
-            if (binno1 == binno2) cout << "bin numbers are the same" << endl;
-
             if (binno1 != binno2) {
                 //count++;
                 cout << "eventno :" << counter << endl;
