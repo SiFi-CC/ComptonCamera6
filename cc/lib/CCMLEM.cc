@@ -1871,13 +1871,12 @@ void CCMLEM::DrawAllIterations(void)
     TCanvas* can_allIterations = new TCanvas("MLEM2D_allIterations","MLEM2D_allIterations",1000,1000);
     TCanvas* can_allIterations_z  = new TCanvas("MLEM1DZ_allIterations","MLEM1DZ_allIterations",1000,1000);
     TCanvas* can_allIterations_y  = new TCanvas("MLEM1DY_allIterations","MLEM1DY_allIterations",1000,1000);
-
     TCanvas* can_allIterations_2 = new TCanvas("MLEM2D_allIterations_2","MLEM2D_allIterations_2",1000,1000);
 
-    can_allIterations->DivideSquare(18);
-    can_allIterations_z->DivideSquare(18);
-    can_allIterations_y->DivideSquare(18);
-    can_allIterations_2->DivideSquare(18);
+    can_allIterations->DivideSquare(20);
+    can_allIterations_z->DivideSquare(20);
+    can_allIterations_y->DivideSquare(20);
+    can_allIterations_2->DivideSquare(20);
 
     for(int iter = 0; iter < fIter; iter++) {
 
