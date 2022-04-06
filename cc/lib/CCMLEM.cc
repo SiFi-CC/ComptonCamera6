@@ -1880,7 +1880,7 @@ void CCMLEM::DrawAllIterations(void)
     can_allIterations_2->DivideSquare(18);
 
     for(int iter = 1; iter < fIter +1; iter==iter+2) {
-        cout << "fIter: " fIter << endl;
+        cout << "fIter: " << fIter << endl;
         cout << "iteration number " << iter << endl;
         // can_allIterations->cd(iter);
         // fImage[iter]->Draw("colz");
