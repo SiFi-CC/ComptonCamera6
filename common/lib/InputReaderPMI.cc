@@ -124,7 +124,7 @@ void InputReaderPMI::SelectEvents() {
 //------------------------------------------------------------------
 bool InputReaderPMI::SelectSingleEvent() {
     if (fCorrectOnly == 1) {
-        if (fEnergy2 < 0.2) {
+        if (fEnergy2 > 0.2) {
             return true;
         } else {
             return false;
