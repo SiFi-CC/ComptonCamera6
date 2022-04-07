@@ -130,6 +130,7 @@ bool InputReaderPMI::SelectSingleEvent() {
         } else {
             return false;
         }
+    }
 }
 //------------------------------------------------------------------
 void InputReaderPMI::Clear(void) {
