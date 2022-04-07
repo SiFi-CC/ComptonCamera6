@@ -123,15 +123,13 @@ void InputReaderPMI::SelectEvents() {
 }
 //------------------------------------------------------------------
 bool InputReaderPMI::SelectSingleEvent() {
+    if(fabsclustersize>2) return false;
     if (fCorrectOnly == 1) {
         if (fEnergy2 > 0.2) {
             return true;
         } else {
             return false;
         }
-    } else {
-        return fabsclustersize < 3;
-    }
 }
 //------------------------------------------------------------------
 void InputReaderPMI::Clear(void) {
