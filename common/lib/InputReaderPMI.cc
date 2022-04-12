@@ -39,9 +39,9 @@ bool InputReaderPMI::AccessTree(TString name) {
 
     fPoint1 = new TVector3();
     fPoint2 = new TVector3();
-
-    int fscafibernumber, fabsfibernumber;
-    long long int ftimestampR, ftimestampL, ftimestampAbs;
+    fPositionScat = new TVector3();
+    fPositionAbs  = new TVector3();
+    fDirectionScat = new TVector3();
 
     fTree->SetBranchAddress("ScaPosition", &fPoint1);
     fTree->SetBranchAddress("AbsPosition", &fPoint2);
@@ -56,16 +56,13 @@ bool InputReaderPMI::AccessTree(TString name) {
   
     cout << "\n\nIn InputReaderPMI::AccessTree()." << endl;
     cout << fTree->GetName() << " tree accessed.\n" << endl;
-
+    
     return true;
 }
 //------------------------------------------------------------------
 /// Loads events from the tree to analyze them.
 bool InputReaderPMI::LoadEvent(int i) {
 
-    fPositionScat = new TVector3();
-    fPositionAbs  = new TVector3();
-    fDirectionScat = new TVector3();
 
     int imax = fTree->GetEntries();
 
@@ -77,7 +74,7 @@ bool InputReaderPMI::LoadEvent(int i) {
     }
 
     fTree->GetEntry(i);
-
+    
     return true;
 
 }
@@ -120,17 +117,21 @@ void InputReaderPMI::SelectEvents() {
   	fTree->GetEntry(i);
  	if(SelectSingleEvent()) fSelectedEvents.push_back(i);
   }
+  cout << "Number of selected events: " << fSelectedEvents.size() << endl;
 }
 //------------------------------------------------------------------
 bool InputReaderPMI::SelectSingleEvent() {
-    if(fabsclustersize>2) return false;
-    if (fCorrectOnly == 1) {
+    if(fabsclustersize>2 || fEnergy2 < 0 || !(fEnergy1 > 0)) {
+        return false;
+    }
+    else if (fCorrectOnly == 1) {
         if (fEnergy2 > 0.2) {
             return true;
         } else {
             return false;
         }
     }
+    else return true;
 }
 //------------------------------------------------------------------
 void InputReaderPMI::Clear(void) {

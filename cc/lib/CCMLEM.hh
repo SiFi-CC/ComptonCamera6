@@ -121,9 +121,9 @@ private:
   std::list<int> fEvents;
   TRandom3* fRandomGen;
   double fGausFilter; 
-  TH2F* fImage[250];        ///< Reconstructed image histogram
+  TH2F* fImage[251];        ///< Reconstructed image histogram
   
-  TH2F* fSH[250];
+  TH2F* fSH[251];
   TH2F* fSmatrix;
 
   list<Double_t> fBraggPeakPosition;     ///< determined Braggpeak position with a ERR function fit

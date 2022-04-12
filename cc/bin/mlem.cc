@@ -9,7 +9,7 @@ using namespace std;
 int main(int argc, char* argv[])
 {
 
-    CmdLineOption _path("config_file", "-cf", "config file", "./config.txt");
+    new CmdLineOption("config_file", "-cf", "config file", "./config.txt");
 
     CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 

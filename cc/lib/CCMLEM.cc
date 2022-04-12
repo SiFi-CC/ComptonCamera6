@@ -185,6 +185,7 @@ Bool_t CCMLEM::SetInputReader(void)
     {
         file->Close();
         fReader = new InputReaderPMI(fullName);
+        fReader->SetLoadOnlyCorrect(fCorrectIdentified);
         fReader->SelectEvents();
     }
 
@@ -1045,7 +1046,7 @@ Bool_t CCMLEM::DetermineConvergence(Int_t iter)
         fSigma[iter] = func_z->GetParameter(2);
         // NEED 20 ITERATIONS TO COMPARE
         if (iter < 20) return true;
-        if ((fabs(fSigma[iter] - fSigma[iter - 10])) / fabs(fSigma[iter]) < fConvergenceCriterium)
+        if ((fabs(fSigma[iter] - fSigma[iter - 10])) / fabs(fSigma[iter]) < fConvergenceCriterium) //BUG ??
         {
             // cout << "SigmaIter" << iter << " - " << "SigmaIter" << j - 10 << " = "
             // << " Relative Error : " << fSigma[250] << endl;
@@ -1531,7 +1532,7 @@ Bool_t CCMLEM::DrawHisto(void)
 
     int lastiter = fIter;
 
-    TH1D* hProZ[250];
+    TH1D* hProZ[250]; //TODO 251?
     TH1D* hProY[250];
     // TH1D* hProX[150];
 
@@ -1876,42 +1877,38 @@ void CCMLEM::DrawAllIterations(void)
     can_allIterations->DivideSquare(20);
     can_allIterations_z->DivideSquare(20);
     can_allIterations_y->DivideSquare(20);
-    can_allIterations_2->DivideSquare(20);
 
     for(int iter = 0; iter < fIter; iter++) {
 
         can_allIterations->cd(2*iter+1);
         gPad->SetLogx(0);
         fImage[iter+1]->Draw("colz");
+        fImage[iter+1]->Write();
 
         can_allIterations->cd(2*iter+2);
         gPad->SetLogx(0);
         fSH[iter+1]->Draw("colz");
-
-        can_allIterations_2->cd(2*iter+1);
-        gPad->SetLogx(1);
-        fImage[iter+1]->Draw("colz");
-
-        can_allIterations_2->cd(2*iter+2);
-        gPad->SetLogx(1);
-        fSH[iter+1]->Draw("colz");
+        fSH[iter+1]->Write();
 
         can_allIterations_z->cd(2*iter+1);
         fImage[iter+1]->ProjectionX()->Draw();
+        fImage[iter+1]->ProjectionX()->Write();
 
         can_allIterations_z->cd(2*iter+2);
         fSH[iter+1]->ProjectionX()->Draw();
+        fSH[iter+1]->ProjectionX()->Write();
 
         can_allIterations_y->cd(2*iter+1);
         fImage[iter+1]->ProjectionY()->Draw();
+        fImage[iter+1]->ProjectionY()->Write();
 
         can_allIterations_y->cd(2*iter+2);
         fSH[iter+1]->ProjectionY()->Draw();
+        fSH[iter+1]->ProjectionY()->Write();
     }
 
     can_allIterations->Write();
     can_allIterations_z->Write();
     can_allIterations_y->Write();
-    can_allIterations_2->Write();
 
 }

@@ -28,6 +28,9 @@ public:
     TVector3* GetPositionAbsorption(void);
     TVector3* GetGammaDirScattered(void);
 
+    int fscafibernumber, fabsfibernumber;
+    long long int ftimestampR, ftimestampL, ftimestampAbs;
+
     double GetEnergyLoss(void);
     double GetEnergyScattered(void);
 
