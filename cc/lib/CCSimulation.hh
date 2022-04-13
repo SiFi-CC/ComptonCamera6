@@ -57,12 +57,12 @@ class CCSimulation
 
 public:
     CCSimulation() = delete;
-    CCSimulation(const TString& name, const TString& outputPath, Int_t genVer, Bool_t verbose);
+    CCSimulation(const TString& name, const TString& outputPath, Int_t genVer, Double_t angleMin, Double_t angleMax, Bool_t verbose);
     ~CCSimulation();
 
     void BuildSetup(Double_t scatDist, Double_t scatZ, Double_t scatY, Double_t absDist,
                     Double_t absZ, Double_t absY);
-    Bool_t GenerateRay();
+    Double_t GenerateRay();
 
     Bool_t ProcessEvent();
     void Loop(Int_t nev);
@@ -111,6 +111,8 @@ private:
     Double_t fZgap;        ///< For generator #3 - distance between two point-like sources
                            /// along Z axis
     Double_t fRadius;      ///< For generator #5 - radius of the gamma source
+    Double_t fAngleMin;    ///< Minimum angle (phi) at which photons are generated
+    Double_t fAngleMax;    ///< Maximum angle (phi) at which photons are generated
 
     TH2F* hSource{nullptr};     ///< 2D histogram of distribution of the gamma source
     TH2F* hScat{nullptr};       ///< 2D histogram of distribution of evens on scatterer plane

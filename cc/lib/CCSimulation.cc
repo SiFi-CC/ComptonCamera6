@@ -26,9 +26,8 @@ using namespace std;
 ///- tree fTree with simulation results. For the description of tree barnches
 /// see description of the class
 ///- histograms hSource, hScat, hAbs anf hEnergy.
-CCSimulation::CCSimulation(const TString& name, const TString& outputPath, Int_t genVer,
-                           Bool_t verbose)
-    : fVerbose(verbose), fOutputPath(outputPath), fGenVersion(genVer)
+CCSimulation::CCSimulation(const TString& name, const TString& outputPath, Int_t genVer, Double_t angleMin, Double_t angleMax, Bool_t verbose)
+    : fVerbose(verbose), fOutputPath(outputPath), fGenVersion(genVer), fAngleMin(angleMin), fAngleMax(angleMax)
 {
     fFile = new TFile(fOutputPath + name + ".root", "RECREATE");
     if (!fFile)
@@ -131,7 +130,7 @@ void CCSimulation::BuildSetup(Double_t scatDist = 50, // mm
 /// coordinates of source point fPoint0 and direction of the Track fVersor1.
 /// The source point is generated according to chosen generator version.
 /// Generator version can be set via SetGenVersion(Int_t gen) function.
-Bool_t CCSimulation::GenerateRay()
+Double_t CCSimulation::GenerateRay()
 {
     Double_t theta, phi, maxz;
     fYgap = -20.;
@@ -188,7 +187,7 @@ Bool_t CCSimulation::GenerateRay()
 
     fVersor1.SetMagThetaPhi(1, theta, phi);
 
-    return kTRUE;
+    return phi;
 }
 //------------------------------------------------------------------
 /// Sets the coordinate of the source.
@@ -215,13 +214,19 @@ void CCSimulation::SetCoordinate(Double_t x, Double_t y, Double_t z)
 Bool_t CCSimulation::ProcessEvent()
 {
     Clear();
-    GenerateRay();
+    Double_t phi = GenerateRay();
+    
+    cout << "phi = " << phi << endl;
+    
+    if(phi < fAngleMin || phi > fAngleMax) return kFALSE;
+    
+    cout << "after the selection: phi = " << phi << endl;
 
     // cout << endl << endl << endl;
     // cout << fXofSource << "\t" << fYofSource << "\t" << fZofSource << endl;
     // cout << endl << endl << endl;
 
-    fEnergy0 = 4.44;
+    fEnergy0 = 0.511;
     Track fTrack1;
     fTrack1.SetPoint(fPoint0);
     fTrack1.SetVersor(fVersor1);
@@ -233,6 +238,8 @@ Bool_t CCSimulation::ProcessEvent()
         return kFALSE;
     }
     fPoint1 = *scatData;
+    
+    cout << "after defining fPoint1" << endl;
 
     /*Bool_t scatFlag = fTrack1.FindCrossPoint(&fScatterer,fPoint1);
     if(scatFlag == kFALSE){
@@ -242,6 +249,8 @@ Bool_t CCSimulation::ProcessEvent()
 
     auto cp = fScatterer.FindCrossPoint(fTrack1);
     if (!cp.has_value()) return kFALSE;
+    
+    cout << "before defining fTrack2" << endl;
 
     Track fTrack2;
     auto [finE, fin_versor] = CC6::ComptonScatter(fTrack1.GetEnergy(), fTrack1.GetVersor());
@@ -251,6 +260,8 @@ Bool_t CCSimulation::ProcessEvent()
     fTrack2.SetVersor(fin_versor);
     fVersor2 = fin_versor;
     fEnergy2 = finE;
+    
+    cout << "after defining fEnergy2" << endl;
 
     // if(fEnergy2<=3.84){
     fEnergy1 = fEnergy0 - fEnergy2;
@@ -267,6 +278,8 @@ Bool_t CCSimulation::ProcessEvent()
         cout << "\t##### Energies of tracks do not sum correctly! Please check!" << endl;
         return kFALSE;
     }
+    
+    cout << "after the energy check" << endl;
 
     //----- end of the energy check
 
