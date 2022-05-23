@@ -39,9 +39,12 @@ ClassImp(CCMLEM);
 ///\param path (TString) - full path to the configuration file.
 CCMLEM::CCMLEM(TString path):
 fSmear(false),
-fResolutionX(1.3),
-fResolutionY(10),
-fResolutionZ(1.3),
+fScatResolutionX(1.3),
+fScatResolutionY(10),
+fScatResolutionZ(1.3),
+fAbsResolutionX(1.3),
+fAbsResolutionY(10),
+fAbsResolutionZ(1.3),
 fLoadReal(false),
 fCorrectIdentified(0),
 fIter(1),
@@ -155,7 +158,9 @@ Bool_t CCMLEM::SetInputReader(void)
         file->Close();
         fReader = new InputReaderSimple(fullName);
     	//Here the smearing things from the files are set. Somehow there where also fits performed but then the outcome wa snot used ... no quaranty for anything here
-	fReader->SetSmearing(fSmear,fResolutionX,fResolutionY,fResolutionZ);
+        fReader->SetSmearing(fSmear, fScatResolutionX, fAbsResolutionX, fScatResolutionY, fAbsResolutionY, fScatResolutionZ, fAbsResolutionZ);
+        fReader->SelectEvents();
+        fReader->ReadGeometry();
     } 
     else if (file->Get("Setup") &&
                file->Get("Events")) {
@@ -264,11 +269,11 @@ Bool_t CCMLEM::Reconstruct(){
         if (fVerbose)
         cout << "CCMLEM::Reconstruct(...) event " << eve << endl << endl;
         status = fReader->LoadEvent(eve);
+        
         if (status == false) {
             badeventcounter++;
             continue;
         }
-
         energy1 = fReader->GetEnergyLoss();
         energy2 = fReader->GetEnergyScattered();
         energy0 = fReader->GetEnergyPrimary();
@@ -487,8 +492,6 @@ Bool_t CCMLEM::Reconstruct(){
 
     for(k=1; k< fNbinsZ + 1 ; k++){
     	for(j=1; j< fNbinsY + 1 ; j++){
-            // cout<<"fImage[0] = "<<fImage[0] << "k, j :" << k << ", " << j <<endl;
-            // cout << "bin content: " << fImage[0]->GetBinContent(k,j) << endl;
 		fImage[0]->SetBinContent(k,j,fImage[0]->GetBinContent(k,j)+1);
 	}
     }
@@ -496,6 +499,8 @@ Bool_t CCMLEM::Reconstruct(){
     SaveToFile(fImage[0]);
     fSH[0] = dynamic_cast<TH2F*>(SmoothGauss(fImage[0], fGausFilter));
     SaveToFile(fSH[0]);
+    
+    cout << "after saving fSH[0] to file" << endl;
 
     /// Sensitivity map calculation////
 
@@ -634,6 +639,8 @@ Bool_t CCMLEM::Reconstruct(){
 /// End of Sensitivity map calculation
 
     for (int iter = 1; iter < fIter + 1; iter++) {
+        
+        cout << "in the loop over fIter" << endl;
       
         bool status=Iterate(fStop, iter);
         if(!status){
@@ -654,6 +661,8 @@ Bool_t CCMLEM::Reconstruct(){
     // fSM->Clear("C");
     t.Stop();
     t.Print();
+    
+    cout << "end of the Reconstruct() method" << endl;
 
     return kTRUE;
 }
@@ -1360,7 +1369,6 @@ Bool_t CCMLEM::DrawCanvas(void)
     SaveToFile(cany);
     return kTRUE;
 }
-
 //------------------------------------
 /// Reads configuration file and sets values of private class
 /// members according to read information.
@@ -1443,9 +1451,13 @@ Bool_t CCMLEM::ReadConfig(TString path)
     }
     //This is a method by Majid that only makes sense for the simple input 
     //USED to set pos resolution for the smearing for the Simple Simulation 
-    else if (comment.Contains("Position resolution")) {
-      config >> fResolutionX >> fResolutionY >> fResolutionZ;
-      cout << "position resolution: " << fResolutionX << ", " << fResolutionY << ", " << fResolutionZ << endl;
+    else if (comment.Contains("Position resolution of the scatterer")) {
+      config >> fScatResolutionX >> fScatResolutionY >> fScatResolutionZ;
+      cout << "position resolution scat: " << fScatResolutionX << ", " << fScatResolutionY << ", " << fScatResolutionZ << endl;
+    }
+    else if (comment.Contains("Position resolution of the absorber")) {
+      config >> fAbsResolutionX >> fAbsResolutionY >> fAbsResolutionZ;
+      cout << "position resolution abs: " << fAbsResolutionX << ", " << fAbsResolutionY << ", " << fAbsResolutionZ << endl;
     }
     //USED to set ???, could not find the meaning of this 
     else if (comment.Contains("Fitting parameters")) {
@@ -1750,8 +1762,10 @@ void CCMLEM::Print(void)
     cout << setw(35) << "Verbose level: \t" << fVerbose << endl << endl;
     cout << setw(35) << "INFORMATION FOR SIMPLEINPUT" << endl;
     cout << setw(35) << "Smear level: \t" << fSmear << endl;
-    cout << setw(35) << "Pos resolution: \t" << fResolutionX << ", " << fResolutionY << ", "
-         << fResolutionZ << endl;
+    cout << setw(35) << "Pos resolution of the scat: \t" << fScatResolutionX << ", " << fScatResolutionY << ", "
+         << fScatResolutionZ << endl;
+    cout << setw(35) << "Pos resolution of the abs: \t" << fAbsResolutionX << ", " << fAbsResolutionY << ", "
+         << fAbsResolutionZ << endl;
     cout << setw(35) << "Fitting parameters: \t" << fP0 << ", " << fP1 << ", " << fP2 << endl;
     cout << setw(35) << "INFORMATION FOR GEANTINPUT" << endl;
     cout << setw(35) << "Loading Real: \t" << fLoadReal << endl << endl;
@@ -1772,9 +1786,12 @@ void CCMLEM::Clear(void) {
   fNbinsZ = -1000;
   fNbinsY = -1000;
   fNbinsX = -1000;
-  fResolutionX = -1000;
-  fResolutionY = -1000;
-  fResolutionZ = -1000;
+  fScatResolutionX = -1000;
+  fScatResolutionY = -1000;
+  fScatResolutionZ = -1000;
+  fAbsResolutionX = -1000;
+  fAbsResolutionY = -1000;
+  fAbsResolutionZ = -1000;
   fP0 = -1000;
   fP1 = -1000;
   fP2 = -1000;

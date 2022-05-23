@@ -121,7 +121,7 @@ void InputReaderPMI::SelectEvents() {
 }
 //------------------------------------------------------------------
 bool InputReaderPMI::SelectSingleEvent() {
-    if(fabsclustersize>2 || fEnergy2 < 0 || !(fEnergy1 > 0)) {
+    if(fabsclustersize > 2 || fEnergy2 < 0 || fEnergy1 <= 0 || fEnergy1+fEnergy2 < 1.2) {
         return false;
     }
     else if (fCorrectOnly == 1) {

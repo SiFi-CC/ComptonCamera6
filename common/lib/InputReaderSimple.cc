@@ -15,7 +15,7 @@ InputReaderSimple::InputReaderSimple() : InputReader()
 ///\param path (TString) - path to the input file.
 InputReaderSimple::InputReaderSimple(TString path) : InputReader(path)
 {
-
+    fInputFile = path;
     if (!AccessTree("data")) { throw "##### Exception in InputReaderSimple constructor!"; }
 }
 //------------------------------------------------------------------
@@ -42,6 +42,9 @@ bool InputReaderSimple::AccessTree(TString name)
     fPoint2 = new TVector3();
     fVersor1 = new TVector3();
     fVersor2 = new TVector3();
+    fPositionScat = new TVector3();
+    fPositionAbs  = new TVector3();
+    fDirectionScat = new TVector3();
 
     fTree->SetBranchAddress("point0", &fPoint0);
     fTree->SetBranchAddress("point1", &fPoint1);
@@ -59,7 +62,6 @@ bool InputReaderSimple::AccessTree(TString name)
 }
 bool InputReaderSimple::LoadEvent(int i)
 {
-
     int imax = fTree->GetEntries();
 
     if (i > imax)
@@ -70,26 +72,100 @@ bool InputReaderSimple::LoadEvent(int i)
     }
 
     fTree->GetEntry(i);
+
     fPositionScat->SetXYZ(fPoint1->X(), fPoint1->Y(), fPoint1->Z());
     fPositionAbs->SetXYZ(fPoint2->X(), fPoint2->Y(), fPoint2->Z());
     fDirectionScat->SetXYZ(fVersor2->X(), fVersor2->Y(), fVersor2->Z());
+
     fPrimaryEnergy = fEnergy0;
     fEnergyLoss = fEnergy1;
     fEnergyScattered = fEnergy2;
+
     if (fSmear)
     {
-        fPositionScat->SetXYZ(SmearBox(fPositionScat->X(), fResolutionX),
-                              SmearGaus(fPositionScat->Y(), fResolutionY),
-                              SmearBox(fPositionScat->Z(), fResolutionZ));
-        fPositionAbs->SetXYZ(SmearBox(fPositionAbs->X(), fResolutionX),
-                             SmearGaus(fPositionAbs->Y(), fResolutionY),
-                             SmearBox(fPositionAbs->Z(), fResolutionZ));
-        fEnergyLoss = SmearGaus(fEnergyLoss, GetSigmaE(fEnergyLoss));
-        fEnergyScattered = SmearGaus(fEnergyScattered, GetSigmaE(fEnergyScattered));
+        fPositionScat->SetXYZ(SmearBox(fPositionScat->X(), fScatResolutionX),
+                              SmearGaus(fPositionScat->Y(), fScatResolutionY),
+                              SmearBox(fPositionScat->Z(), fScatResolutionZ));
+        fPositionAbs->SetXYZ(SmearGaus(fPositionAbs->X(), fAbsResolutionX),
+                             SmearBox(fPositionAbs->Y(), fAbsResolutionY),
+                             SmearBox(fPositionAbs->Z(), fAbsResolutionZ));
+        fEnergyLoss = SmearGaus(fEnergyLoss, GetSigmaEScat(fEnergyLoss));
+        fEnergyScattered = SmearGaus(fEnergyScattered, GetSigmaEAbs(fEnergyScattered));
+        
+//         if (fPositionScat->Y() < -fScatHeight/2) fPositionScat->Y() = -fScatHeight/2;
+//         if (fPositionScat->Y() > fScatHeight/2) fPositionScat->Y() = fScatHeight/2;
+//         if (fPositionScat->Z() < -fScatWidth/2) fPositionScat->Y() = -fScatWidth/2;
+//         if (fPositionScat->Z() > fScatWidth/2) fPositionScat->Y() = fScatWidth/2;
+//         
+//         if (fPositionAbs->Y() < -fAbsHeight/2) fPositionAbs->Y() = -fAbsHeight/2;
+//         if (fPositionAbs->Y() > fAbsHeight/2) fPositionAbs->Y() = fAbsHeight/2;
+//         if (fPositionAbs->Z() < -fAbsWidth/2) fPositionAbs->Y() = -fAbsWidth/2;
+//         if (fPositionAbs->Z() > fAbsWidth/2) fPositionAbs->Y() = fAbsWidth/2;
     }
     return true;
 }
 
+//------------------------------------------------------------------
+void InputReaderSimple::SelectEvents() {  
+  fSelectedEvents.clear(); 
+  for(int i = 0; i < fTree->GetEntries(); i++) {
+  	fTree->GetEntry(i);
+ 	if(SelectSingleEvent()) fSelectedEvents.push_back(i);
+  }
+  cout << "Number of selected events: " << fSelectedEvents.size() << endl;
+}
+//------------------------------------------------------------------
+bool InputReaderSimple::SelectSingleEvent() {
+    return true;
+}
+//------------------------------------------------------------------
+/// Reads scatterer's and absorber's dimensions from Simple Simulation.
+Bool_t InputReaderSimple::ReadGeometry(void)
+{
+    cout << "fInputFile: " << fInputFile.Data() << endl;
+
+    string inputFile(fInputFile.Data());
+    cout << "in CCMLEM   input file: " << inputFile << endl;
+
+//     string geometryPath = inputFile;
+//     geometryPath.replace(0, 21, "results/CCSimulation_geometry_");
+//     geometryPath = geometryPath.substr(0, geometryPath.find("_scat")) + ".txt";
+//     
+//     cout << "in CCMLEM   geometry path: " << geometryPath << endl;
+//     
+//     ifstream geometry(geometryPath);
+//     
+//     if (geometry.is_open()) {
+//         string line;
+//         bool scattererSection = true;
+//         while (getline(geometry, line)) {
+//             if (line.rfind("fDimZ", 0) == 0) {
+//                 double value = stod(line.substr(8));
+//                 if (scattererSection) {
+//                     fScatWidth = value;
+//                 } else {
+//                     fAbsWidth = value;
+//                 }
+//             } else if (line.rfind("fDimY", 0) == 0) {
+//                 double value = stod(line.substr(8));
+//                 if (scattererSection) {
+//                     fScatHeight = value;
+//                     scattererSection = false;
+//                 } else {
+//                     fAbsHeight = value;
+//                 }
+//             }
+//         }
+//         geometry.close();
+//     }
+//     
+//     cout << "fScatWidth: " << fScatWidth << endl;
+//     cout << "fScatHeight: " << fScatHeight << endl;
+//     cout << "fAbsWidth: " << fAbsWidth << endl;
+//     cout << "fAbsHeight: " << fAbsHeight << endl;
+
+    return true;
+}
 //------------------------------------------------------------------
 void InputReaderSimple::Clear(void)
 {
@@ -105,7 +181,7 @@ void InputReaderSimple::Clear(void)
     fEnergy2 = -100;
     return;
 }
-void InputReaderSimple::SetSmearing(bool smear, Double_t posX, Double_t posY, Double_t posZ)
+void InputReaderSimple::SetSmearing(bool smear, Double_t posScatX, Double_t posAbsX, Double_t posScatY, Double_t posAbsY, Double_t posScatZ, Double_t posAbsZ)
 {
     /// To smear camera performance(simple simulation), this file is called for
     /// energy resolution. It shows a function of energy deposited in a 10-cm-long
@@ -120,9 +196,12 @@ void InputReaderSimple::SetSmearing(bool smear, Double_t posX, Double_t posY, Do
 
     fHisto->Fit("fit1", "r");
 
-    fResolutionX = posX;
-    fResolutionY = posY;
-    fResolutionZ = posZ;
+    fScatResolutionX = posScatX;
+    fScatResolutionY = posScatY;
+    fScatResolutionZ = posScatZ;
+    fAbsResolutionX = posAbsX;
+    fAbsResolutionY = posAbsY;
+    fAbsResolutionZ = posAbsZ;
 }
 //------------------------------------------------------------------
 /// Gausian function to smear position resolution along y axis.
@@ -143,8 +222,16 @@ Double_t InputReaderSimple::SmearBox(double x, double resolution)
 //------------------------------------
 /// Returns the sigma value from the fitting function of deposited energy plot.
 ///\param energy (double) - the given energy value.
-Double_t InputReaderSimple::GetSigmaE(double energy)
+Double_t InputReaderSimple::GetSigmaEScat(double energy)
 {
-    double sigma = fHisto->GetFunction("fit1")->Eval(energy) * energy;
+    double sigma = fHisto->GetFunction("fit1")->Eval(energy) * energy * 9/7.2;
+    return sigma;
+}
+//------------------------------------
+Double_t InputReaderSimple::GetSigmaEAbs(double energy)
+{
+//     double sigma = fHisto->GetFunction("fit1")->Eval(energy) * energy * 4.5/7.2;
+    
+    double sigma = (-0.00488 * energy + 0.04688) * energy;
     return sigma;
 }

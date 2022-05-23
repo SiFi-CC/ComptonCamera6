@@ -23,8 +23,8 @@ int main(int argc, char** argv)
         "Setup", "-d", "Detector plane, 6 values required, default: 200:80:80:400:100:100", 0, 0);
 
     CmdLineOption _source_type("Source", "-s", "source type", -1000);
-    CmdLineOption _angle_min("angle_min", "-amin", "minimum angle of generated photons", -TMath::Pi());
-    CmdLineOption _angle_max("angle_max", "-amax", "maximum angle of generated photons", -TMath::Pi());
+    CmdLineOption _angle_min("angle_min", "-amin", "minimum angle of generated photons", 0.0);
+    CmdLineOption _angle_max("angle_max", "-amax", "maximum angle of generated photons", 0.0);
     CmdLineOption _output_path("OutputPath", "-opath", "output path", "./results/");
 
     CmdLineConfig::instance()->ReadCmdLine(argc, argv);
@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     Double_t amax = CmdLineOption::GetDoubleValue("angle_max");
     int gen = CmdLineOption::GetIntValue("Source");
 
-    Double_t da = 200, db = 80, dc = 80, dd = 400, de = 100, df = 100;
+    Double_t da = 145, db = 22.18, dc = 100, dd = 353.3, de = 48, df = 48;
     // Double_t da, db, dc, dd, de, df;
     if (_det_setup.GetArraySize() == 6)
     {

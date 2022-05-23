@@ -44,6 +44,7 @@ int main(int argc, char* argv[])
     }
 
     rec->Reconstruct();
+    cout << "after reconstruction" << endl;
     // rec->DrawHisto();
     rec->DrawAllIterations();
     // rec->HmatrixToFile(outputfile);

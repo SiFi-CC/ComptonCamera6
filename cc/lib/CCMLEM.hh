@@ -75,9 +75,12 @@ private:
 
     ///SIMPLE SIMULATION INPUT
     Bool_t fSmear; ///< Smear flag for smearing energy and position only used for simple Simulation results
-    Double_t fResolutionX; ///< Position resolution in direction x-axis only used for simple Simulation results
-    Double_t fResolutionY; ///< Position resolution in direction y-axis only used for simple Simulation results
-    Double_t fResolutionZ; ///< Position resolution in direction z-axis only used for simple Simulation results
+    Double_t fScatResolutionX; ///< Position resolution of the scatterer in direction x-axis only used for simple Simulation results
+    Double_t fScatResolutionY; ///< Position resolution of the scatterer in direction y-axis only used for simple Simulation results
+    Double_t fScatResolutionZ; ///< Position resolution of the scatterer in direction z-axis only used for simple Simulation results
+    Double_t fAbsResolutionX; ///< Position resolution of the absorber in direction x-axis only used for simple Simulation results
+    Double_t fAbsResolutionY; ///< Position resolution of the absorber in direction y-axis only used for simple Simulation results
+    Double_t fAbsResolutionZ; ///< Position resolution of the absorber in direction z-axis only used for simple Simulation results
     Double_t fP0; ///< Fitting parameter used for the energy smearing in simple simulation
     Double_t fP1; ///< Fitting parameter used for the energy smearing in simple simulation
     Double_t fP2; ///< Fitting parameter used for the energy smearing in simple simulation

@@ -36,7 +36,19 @@ public:
     double GetEnergyLoss(void);
     double GetEnergyScattered(void);
 
-    void SetSmearing(bool smear, Double_t posX, Double_t posY, Double_t posZ);
+    void SetSmearing(bool smear, Double_t posScatX, Double_t posAbsX, Double_t posScatY, Double_t posAbsY, Double_t posScatZ, Double_t posAbsZ);
+    
+    void SelectEvents(void);
+    list<int> GetSelectedEvents(void);
+    
+    TString fInputFile; ///< Path to the root file
+    
+    Bool_t ReadGeometry(void); ///< Reads scatterer's and absorber's width and height
+    /* Scatterer's and absorber's width and height read from geometry file */
+    Double_t fScatWidth;
+    Double_t fScatHeight;
+    Double_t fAbsWidth;
+    Double_t fAbsHeight;
 
 private:
     // LOADING FROM THE TREE
@@ -60,15 +72,22 @@ private:
     Bool_t fSmear;
     TH1D* fHisto; ///< Histogram containing energy resolution obtained by Geant4
 
-    Double_t fResolutionX; ///< Position resolution in direction x-axis
-    Double_t fResolutionY; ///< Position resolution in direction y-axis
-    Double_t fResolutionZ; ///< Position resolution in direction z-axis
+    Double_t fScatResolutionX; ///< Position resolution in direction x-axis of the scatterer
+    Double_t fScatResolutionY; ///< Position resolution in direction y-axis of the scatterer
+    Double_t fScatResolutionZ; ///< Position resolution in direction z-axis of the scatterer
+    Double_t fAbsResolutionX; ///< Position resolution in direction x-axis of the absorber
+    Double_t fAbsResolutionY; ///< Position resolution in direction y-axis of the absorber
+    Double_t fAbsResolutionZ; ///< Position resolution in direction z-axis of the absorber
 
     Double_t SmearGaus(double val, double sigma);
     Double_t SmearBox(double x, double resolution);
-    Double_t GetSigmaE(double energy);
+    Double_t GetSigmaEScat(double energy);
+    Double_t GetSigmaEAbs(double energy);
 
     bool AccessTree(TString name);
+    
+    list<int> fSelectedEvents;
+    bool SelectSingleEvent(void);
 
     ClassDef(InputReaderSimple, 0)
 };
@@ -88,5 +107,7 @@ inline double InputReaderSimple::GetEnergyPrimary(void) { return fPrimaryEnergy;
 inline double InputReaderSimple::GetEnergyLoss(void) { return fEnergyLoss; }
 //------------------------------------------------------------------
 inline double InputReaderSimple::GetEnergyScattered(void) { return fEnergyScattered; }
+//------------------------------------------------------------------
+inline list<int> InputReaderSimple::GetSelectedEvents(void){return fSelectedEvents; }
 
 #endif
