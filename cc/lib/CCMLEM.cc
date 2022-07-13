@@ -1,5 +1,10 @@
 #include "CCMLEM.hh"
+#include "CLog.hh"
+#include "DataStructConvert.hh"
 #include "IsectionPoint.hh"
+#include "Math/GenVector/Plane3D.h"
+#include "Math/Point3D.h"
+#include "ROOT/TDataFrame.hxx"
 #include "SMElement.hh"
 #include "TCanvas.h"
 #include "TClonesArray.h"
@@ -7,14 +12,15 @@
 #include "TRandom.h"
 #include "TStyle.h"
 #include "TSystem.h"
+#include <CmdLineConfig.hh>
 #include <fstream>
 #include <iostream>
 #include <math.h>
 #include <sstream>
-#include <string>
 #include <stdio.h>
 #include <stdlib.h>
 #include <chrono>
+#include <string>
 #include "Math/GenVector/Plane3D.h"
 #include "Math/Point3D.h"
 #include <CmdLineConfig.hh>
@@ -59,7 +65,6 @@ fROIZ(1),
 fConvergenceCriterium(0.01),
 fGausFilter(3)
 {
-    
 
     Clear();
 
@@ -113,8 +118,9 @@ fGausFilter(3)
 }
 //--------------------
 /// Default constructor.
-CCMLEM::CCMLEM() {
-    
+CCMLEM::CCMLEM()
+{
+
     cout << "##### Warning in CCMLEM constructor!" << endl;
     cout << "You are using default constructor!" << endl;
 
@@ -122,27 +128,30 @@ CCMLEM::CCMLEM() {
 }
 //----------------------------------------
 /// Default destructor.
-CCMLEM::~CCMLEM() {
-    
+CCMLEM::~CCMLEM()
+{
+
     if (fOutputFile) fOutputFile->Close();
 }
 //------------------------------------------
 /// Based on the given input simulation file creates suitable
-/// InputReader object - For simple input, Geant4 input or machine learning output as an input.
-Bool_t CCMLEM::SetInputReader(void) {
-    
+/// InputReader object - For simple input, Geant4 input or machine learning
+/// output as an input.
+Bool_t CCMLEM::SetInputReader(void)
+{
 
     TString fullName = fInputName;
-  
 
     TFile* file = new TFile(fullName, "READ");
-    if (!file->IsOpen()) {
+    if (!file->IsOpen())
+    {
         cout << "##### Error in CCMLEM::SetInputReader!" << endl;
         cout << "Could not open requested file" << endl;
         return false;
     }
 
-    if (file->Get("data")) {
+    if (file->Get("data"))
+    {
         file->Close();
         fReader = new InputReaderSimple(fullName);
     	//Here the smearing things from the files are set. Somehow there where also fits performed but then the outcome wa snot used ... no quaranty for anything here
@@ -159,17 +168,26 @@ Bool_t CCMLEM::SetInputReader(void) {
 	// look at the SelectEvents fucntion in the InputReader.hh 
         fReader->SelectEvents(); 
     }
-    else if (file->Get("TreeSB")) {
+    else if (file->Get("TreeSB"))
+    {
         file->Close();
         fReader = new InputReaderEI(fullName);
-        
-    } 
-    else if (file->Get("ConeList")) {
+    }
+    else if (file->Get("ConeList"))
+    {
         file->Close();
         fReader = new InputReaderNN(fullName);
 	fReader->SetLoadOnlyCorrect(fCorrectIdentified);
         fReader->SelectEvents(); 
-    } 
+    }
+
+    else if (file->Get("CalibratedEvents"))
+    {
+        file->Close();
+        fReader = new InputReaderPMI(fullName);
+        fReader->SelectEvents();
+    }
+
     else {
         cout << "##### Error in CCMLEM::SetInputReader()!" << endl;
         cout << "Unknown data format" << endl;
@@ -181,9 +199,9 @@ Bool_t CCMLEM::SetInputReader(void) {
     return true;
 }
 //------------------------------------------
-///Function for image reconstruction and returns kTRUE when the last iteration of   
-///the reconstructed image is done.Sets 2D image histogram and 
-///1D histogram (graph) of non-pixelized reconstructed image.
+/// Function for image reconstruction and returns kTRUE when the last iteration
+/// of the reconstructed image is done.Sets 2D image histogram and 1D histogram
+/// (graph) of non-pixelized reconstructed image.
 /// Even it can produce 3D image histogram but commented for this moment.
 ///By calling cones from ComptonCone class, it uses the necessary input data from InputReader,
 ///In the loop, it reconstructs requested numbers of ComptonCones and uses the numerical method 
@@ -197,20 +215,20 @@ Bool_t CCMLEM::Reconstruct(){
     
     cout << "Iteration 0 " << endl;
     // image histogram
-    fImage[0] = new TH2F("image", "image", fNbinsZ, -fDimZ / 2. , fDimZ / 2.,
-                       fNbinsY, -fDimY / 2., fDimY / 2.);
-  
+    fImage[0] = new TH2F("image", "image", fNbinsZ, -fDimZ / 2., fDimZ / 2., fNbinsY, -fDimY / 2.,
+                         fDimY / 2.);
+
     fImage[0]->GetXaxis()->SetTitle("z [mm]");
     fImage[0]->GetYaxis()->SetTitle("y [mm]");
-  
+
     fPixelSizeZ = fDimZ / fNbinsZ;
     fPixelSizeY = fDimY / fNbinsY;
     fPixelSizeX = fDimX / fNbinsX;
     Double_t A = fDimY / 2.;
     Double_t B = fDimZ / 2.;
     Double_t F = fDimX / 2.;
-    Int_t binz,biny;
-    Double_t z1,y1;
+    Int_t binz, biny;
+    Double_t z1, y1;
     Int_t m, n, j, k;
     Double_t z, y, x;
     Double_t sum;
@@ -218,7 +236,7 @@ Bool_t CCMLEM::Reconstruct(){
     TVector3 coneAxis;
     Double_t coneTheta;
     Double_t energy1, energy2, energy0;
-  
+
     TVector3 *point_e, *point_p, *point_dir, *point_abs_sc, *pointreco_e, *pointreco_p;
     point_abs_sc = new TVector3();
     fNIpoints = 0;
@@ -231,12 +249,12 @@ Bool_t CCMLEM::Reconstruct(){
     bool status;
     int badeventcounter = 0;
     int goodeventcounter = 0;
-  
-////////////////////////////////////////////////////
-  
+
+    ////////////////////////////////////////////////////
+
     TStopwatch t;
     t.Start();
-  
+
 /// This loop will always analyze all events in the fEvents list. The number is given by the cuts you perform and/or the number of events you actually want to use 
     int counter=0;
     for (Int_t eve :fEvents) {
@@ -249,43 +267,41 @@ Bool_t CCMLEM::Reconstruct(){
             badeventcounter++;
             continue;
         }
-      
+
         energy1 = fReader->GetEnergyLoss();
         energy2 = fReader->GetEnergyScattered();
         energy0 = fReader->GetEnergyPrimary();
-        
+
         point_e = fReader->GetPositionScattering();
         point_p = fReader->GetPositionAbsorption();
-      
-      
-      
+
         goodeventcounter++;
         if(goodeventcounter%100==0) cout << goodeventcounter << " Events are done" << endl;
         
-        ComptonCone* cone = new ComptonCone(point_e, point_p, energy1 + energy2, energy2); 
+        ComptonCone* cone = new ComptonCone(point_e, point_p, energy1 + energy2, energy2);
     
         interactionPoint = cone->GetApex();
         coneAxis = cone->GetAxis();
         coneTheta = cone->GetAngle();
-        //cout<< "theta :" << "\t"<< coneTheta << endl;
+        // cout<< "theta :" << "\t"<< coneTheta << endl;
 
         Double_t K = cos(coneTheta);
         Double_t a, b, c1, c2, c3, c4, c, z1, z2;
         Double_t d, e, f1, f2, f3, f4, f, y1, y2;
-    
-///For 3D image, when No. of bins is odd along third component of volume,
-///user should add a half value of pixel size to it.
 
-        //x = -F + fPixelSizeX/2;//THIRDDIMENSION
-        //x = -F;//THIRDDIMENSION
+        /// For 3D image, when No. of bins is odd along third component of volume,
+        /// user should add a half value of pixel size to it.
+
+        // x = -F + fPixelSizeX/2;//THIRDDIMENSION
+        // x = -F;//THIRDDIMENSION
         x = 0;
-    
-        //for (m = 1; m < fNbinsX + 1; m++) {//THIRDDIMENSION
-        
-            //fNIpoints = 0;//THIRDDIMENSION
-    
+
+        // for (m = 1; m < fNbinsX + 1; m++) {//THIRDDIMENSION
+
+        // fNIpoints = 0;//THIRDDIMENSION
+
         y = -A;
-    
+
         if(fVerbose) cout<<"Loop over horizontal lines..."<<endl;
     
         for(j=0; j< fNbinsY + 1 ; j++){
@@ -324,7 +340,6 @@ Bool_t CCMLEM::Reconstruct(){
                 //if(fabs(z2)<1e-14) z2 = z2*1e6;
                 AddIsectionPoint("hor", x, y, z1);
                 AddIsectionPoint("hor", x, y, z2);
-	
             }
             y=y+fPixelSizeY;
       
@@ -372,11 +387,13 @@ Bool_t CCMLEM::Reconstruct(){
             z=z+fPixelSizeZ;
       
         } //end of loop over vertical lines
+
         Int_t index[fNIpoints];
         Int_t fA[fNIpoints];
         IsectionPoint* tempp;
 
-        for (Int_t i = 0; i < fNIpoints; i++) {
+        for (Int_t i = 0; i < fNIpoints; i++)
+        {
             tempp = (IsectionPoint*)fArray->At(i);
             fA[i] = tempp->GetBin();
             // if(fVerbose) tempp->Print();
@@ -389,62 +406,90 @@ Bool_t CCMLEM::Reconstruct(){
         Double_t dist;
         Int_t binno1, binno2, binno;
         SMElement* temp;
-    
 
-        for (int h = 0; h < fNIpoints; h = h + 2) {
+        for (int h = 0; h < fNIpoints; h = h + 2)
+        {
 
             if (fVerbose)
-            cout << " index[" << h << "]=" << index[h] << ", index[" << h + 1
-             << "]=" << index[h + 1] << endl;
+                cout << " index[" << h << "]=" << index[h] << ", index[" << h + 1
+                     << "]=" << index[h + 1] << endl;
             tmppoint1 = (IsectionPoint*)fArray->At(index[h]);
             tmppoint2 = (IsectionPoint*)fArray->At(index[h + 1]);
-            if (tmppoint1 == NULL || tmppoint2 == NULL) {
-            if (fVerbose)
-                cout << "Something went wrong"
-               << "\t" << tmppoint1 << "\t" << tmppoint2 << endl;
-            continue;
+            if (tmppoint1 == NULL || tmppoint2 == NULL)
+            {
+                if (fVerbose)
+                    cout << "Something went wrong"
+                         << "\t" << tmppoint1 << "\t" << tmppoint2 << endl;
+                continue;
             }
             tmpvec1 = tmppoint1->GetPointCoordinates();
             binno1 = tmppoint1->GetBin();
             tmpvec2 = tmppoint2->GetPointCoordinates();
             binno2 = tmppoint2->GetBin();
-            if (fVerbose)
-                cout << " binno1=" << binno1 << ", binno2=" << binno2 << endl << endl;
+            if (fVerbose) cout << " binno1=" << binno1 << ", binno2=" << binno2 << endl << endl;
             dist = ((*tmpvec1) - (*tmpvec2)).Mag();
-            if (dist > maxdist) {
-                // cout<<"Event "<<h<<": distance exceeds pixel
-                // diagonal"<<dist/maxdist<<" times"<<endl;
+            if (dist > maxdist)
+            {
+                // cout<<"Event "<<h<<": distance exceeds pixel diagonal"<<dist/maxdist<<" times"<<endl;
                 continue;
             }
+
+            double x1, y1, z1, x2, y2, z2, dmb;
+
+            int bx1, by1, bz1, bx2, by2, bz2;
+
+            // for(Int_t i=0; i<fImage[0]->GetNbinsX(); ++i) {
+            //     printf("%d %f \n", i, fImage[0]->GetBinContent(i, 1) );
+            // }
+
+            //fImage[0]->Print();
+            // fImage[0]->GetBinXYZ(binno1, bx1, by1, bz1);
+            // x1 = fImage[0]->GetXaxis()->GetBinCenter(bx1);
+            // y1 = fImage[0]->GetXaxis()->GetBinCenter(by1);
+
+            // fImage[0]->GetBinXYZ(binno2, bx2, by2, bz2);
+            // x2 = fImage[0]->GetXaxis()->GetBinCenter(bx2);
+            // y2 = fImage[0]->GetXaxis()->GetBinCenter(by2);
+
+            // dmb = sqrt(pow(x1-x2,2)+pow(y1-y2,2));
+
+            // cout << "distance between bin centres: " << dmb << endl;
+
+            if (binno1 == binno2) cout << "bin numbers are the same" << endl;
 
             if (binno1 != binno2) {
                 //count++;
                 cout << "eventno :" << counter << endl;
                 cout << binno1 << "!=" << binno2
-             << " ->Bin numbers are different when they should not!" << endl;
-                cout<< "Position 1 : " << tmpvec1->X() << "," << "\t" << tmpvec1->Y() << "," << "\t" << tmpvec1->Z() <<endl; 
-                cout<< "Position 2 : " << tmpvec2->X() << "," << "\t" << tmpvec2->Y() << "," << "\t" << tmpvec2->Z() <<endl; 
+                     << " ->Bin numbers are different when they should not!" << endl;
+                cout << "Position 1 : " << tmpvec1->X() << ","
+                     << "\t" << tmpvec1->Y() << ","
+                     << "\t" << tmpvec1->Z() << endl;
+                cout << "Position 2 : " << tmpvec2->X() << ","
+                     << "\t" << tmpvec2->Y() << ","
+                     << "\t" << tmpvec2->Z() << endl;
+                h = h-1;
                 continue;
             }
-      
+
             //fImage[0]->SetBinContent(binno1, fImage[0]->GetBinContent(binno1) + dist);
             fImage[0]->SetBinContent(binno1, fImage[0]->GetBinContent(binno1) +1);
 	    temp = (SMElement*)fSM->ConstructedAt(fPoints++);
             temp->SetEvBinDist(counter, binno1, dist);
            
             if (fVerbose) temp->Print();
-            //SaveToFile(temp);
+            // SaveToFile(temp);
         }
-        //fSM->Write("SMElement");
-        //cout << "event = " << i << endl;
-        //cout << "fPoints = " << fPoints << endl;
-        //cout<< "no. of Ipoints : " << fNIpoints<<endl;
-    
+        // fSM->Write("SMElement");
+        // cout << "event = " << i << endl;
+        // cout << "fPoints = " << fPoints << endl;
+        // cout<< "no. of Ipoints : " << fNIpoints<<endl;
+
         //  x = x + fPixelSizeX;//THIRDDIMENSION
-      
+
         // } // end of third dimension loop//THIRDDIMENSION
-    
-        //cout<< " number of bins : " << goodeventcounter<<endl;
+
+        // cout<< " number of bins : " << goodeventcounter<<endl;
         delete cone;
 
         if (fVerbose)
@@ -458,12 +503,14 @@ Bool_t CCMLEM::Reconstruct(){
   //cout<< "no. of Points : " << fPoints<<endl;
   
     fArray->Clear("C");
-  
-    cout << " DisQualified events : " << badeventcounter<< endl;
-    cout<< "number of events : " << goodeventcounter <<endl;
 
-    for(k=0; k< fNbinsZ + 1 ; k++){
-    	for(j=0; j< fNbinsY + 1 ; j++){
+    cout << " DisQualified events : " << badeventcounter << endl;
+    cout << "number of events : " << goodeventcounter << endl;
+
+    for(k=1; k< fNbinsZ + 1 ; k++){
+    	for(j=1; j< fNbinsY + 1 ; j++){
+            // cout<<"fImage[0] = "<<fImage[0] << "k, j :" << k << ", " << j <<endl;
+            // cout << "bin content: " << fImage[0]->GetBinContent(k,j) << endl;
 		fImage[0]->SetBinContent(k,j,fImage[0]->GetBinContent(k,j)+1);
 	}
     }
@@ -471,123 +518,135 @@ Bool_t CCMLEM::Reconstruct(){
     SaveToFile(fImage[0]);
     fSH[0] = dynamic_cast<TH2F*>(SmoothGauss(fImage[0], fGausFilter));
     SaveToFile(fSH[0]);
-  
-/// Sensitivity map calculation////
-  
-/// with respect to our geometry in Geant4 simulation
-/*  
-   
-    fScatthick_z = fReader->GetScattererDimensions()->X();
-    fScatthick_y = fReader->GetScattererDimensions()->Y();
-    fScatthick_x = fReader->GetScattererDimensions()->Z();
-    fAbsthick_z = fReader->GetAbsorberDimensions()->X();
-    fAbsthick_y = fReader->GetAbsorberDimensions()->Y();
-    fAbsthick_x = fReader->GetAbsorberDimensions()->Z();
-    fScatposition = fReader->GetScattererPosition();
-    fAbsposition = fReader->GetAbsorberPosition();
+
+    /// Sensitivity map calculation////
+
+    /// with respect to our geometry in Geant4 simulation
+    /*
+
+        fScatthick_z = fReader->GetScattererDimensions()->X();
+        fScatthick_y = fReader->GetScattererDimensions()->Y();
+        fScatthick_x = fReader->GetScattererDimensions()->Z();
+        fAbsthick_z = fReader->GetAbsorberDimensions()->X();
+        fAbsthick_y = fReader->GetAbsorberDimensions()->Y();
+        fAbsthick_x = fReader->GetAbsorberDimensions()->Z();
+        fScatposition = fReader->GetScattererPosition();
+        fAbsposition = fReader->GetAbsorberPosition();
 
 
-    Int_t binz, biny, binx;
-    Double_t pixelX;
-    Double_t pixelY, pixelZ;
-    Double_t pixelx, pixely, pixelz;
-    Double_t VecSize;
-    TVector3 pixelCenter;
-    TVector3 DetCenter;
-    TVector3 UnitDetCenter;
-    TVector3 Vector;
-    Double_t angle, costheta;
-    Double_t factor,factor1,factor2;
-    Int_t nbinZ = fScatthick_z;
-  //cout<<fScatthick_z<<endl;
-    Int_t nbinY = fScatthick_y;
-    Int_t nbinX = fScatthick_x;
-    //fSensitivity = new TH2F("Sensitivity map", "Sensitivity map", fNbinsZ, -fDimZ / 2. , fDimZ / 2.,
-                       fNbinsY, -fDimY / 2., fDimY / 2., fNbinsX, -fDimX / 2. , fDimX / 2.);
-    fSensitivity->GetXaxis()->SetTitle("z [mm]");
-    fSensitivity->GetYaxis()->SetTitle("y [mm]");
-  //fSensitivity->GetZaxis()->SetTitle("x [mm]");
-  //TH3F *Scat = new TH3F("scatterer", "scatterer", 99, -49.5 , 49.5,
-  //                     100, -50, 50, 13, 193.5, 206.5);
-  TH2F *Scat = new TH2F("scatterer", "scatterer", 51, -25.5 , 25.5, 51, -25.5 , 25.5);
-  /*TH2F *Scat = new TH2F("scatterer", "scatterer", nbinZ, -fScatthick_z/2. , fScatthick_z/2., nbinY, -fScatthick_y/2. , fScatthick_y/2./*, nbinX, Scatposition->X() - fScatthick_x/2. , Scatposition->X() + fScatthick_x/2.);  
-  //for (Int_t k = 1; k < fNbinsX + 1; k++) {
-    for (Int_t i = 0; i < fNbinsZ + 1; i++) {
-     
-      for (Int_t j = 0; j < fNbinsY + 1; j++) {
-          factor = 0;
-          factor1 = 0;
-          factor2 = 0;
-          //pixelX = fSensitivity->GetZaxis()->GetBinCenter(k);
-          pixelZ = fSensitivity->GetXaxis()->GetBinCenter(i) + 0.5;
-          pixelY = fSensitivity->GetYaxis()->GetBinCenter(j) + 0.5;
-          
-          //cout<< pixelZ << "," << pixelY << "," << pixelX << endl;
-          pixelCenter.SetXYZ(pixelX, pixelY, pixelZ);
-          //pixelCenter.Print();
-          //double x = Scatposition->X() - fScatthick_x/2.;
-          //double x = 193.5;
-          //while (x <= Scatposition->X() + fScatthick_x/2.) {  
-          //while (x <= 206.5) {     
-          //for (int n = 1; n <= nbinZ; n++) {
-          for (int n = 1; n <= 51; n++) {    
-              for ( int m = 1; m <= 51; m++) {
-               pixelz = Scat->GetXaxis()->GetBinCenter(n);
-               pixely = Scat->GetYaxis()->GetBinCenter(m);
-               
-               DetCenter.SetXYZ(-200, pixely, pixelz);
-               //cout<< x << "," << pixely << "," << pixelz << endl;
-               //DetCenter.Print();
-               
-               Vector.SetXYZ(pixelCenter.X() - DetCenter.X(), pixelCenter.Y() - DetCenter.Y(), pixelCenter.Z() - DetCenter.Z());
-               //Vector.Print();
-               UnitDetCenter = DetCenter.Unit();
-               //UnitDetCenter.Print();
-               VecSize = Vector.Mag();
-               //angle = Vector.Angle(UnitDetCenter)*TMath::RadToDeg();
-               costheta = ((Vector.X()*UnitDetCenter.X()) + (Vector.Y()*UnitDetCenter.Y()) + (Vector.Z()*UnitDetCenter.Z()))/VecSize;
-               //costheta = TMath::Cos(angle);
-               //cout << "angle :" << angle << " cos : " << costheta << endl;
-               //cout<< pixelZ << "\t" << pixelY << "\t" << fabs(costheta)/(VecSize) << endl;
-               //fSensitivity->Fill(pixelZ,pixelY,pixelX,fabs(costheta)/VecSize);
-               factor1 = factor1 + fabs(costheta)/(VecSize*VecSize);
-               //cout<< factor1 << " \t z" << endl;
-            }
+        Int_t binz, biny, binx;
+        Double_t pixelX;
+        Double_t pixelY, pixelZ;
+        Double_t pixelx, pixely, pixelz;
+        Double_t VecSize;
+        TVector3 pixelCenter;
+        TVector3 DetCenter;
+        TVector3 UnitDetCenter;
+        TVector3 Vector;
+        Double_t angle, costheta;
+        Double_t factor,factor1,factor2;
+        Int_t nbinZ = fScatthick_z;
+      //cout<<fScatthick_z<<endl;
+        Int_t nbinY = fScatthick_y;
+        Int_t nbinX = fScatthick_x;
+        //fSensitivity = new TH2F("Sensitivity map", "Sensitivity map", fNbinsZ,
+    -fDimZ / 2. , fDimZ / 2., fNbinsY, -fDimY / 2., fDimY / 2., fNbinsX, -fDimX
+    / 2. , fDimX / 2.); fSensitivity->GetXaxis()->SetTitle("z [mm]");
+        fSensitivity->GetYaxis()->SetTitle("y [mm]");
+      //fSensitivity->GetZaxis()->SetTitle("x [mm]");
+      //TH3F *Scat = new TH3F("scatterer", "scatterer", 99, -49.5 , 49.5,
+      //                     100, -50, 50, 13, 193.5, 206.5);
+      TH2F *Scat = new TH2F("scatterer", "scatterer", 51, -25.5 , 25.5, 51, -25.5
+    , 25.5);
+      /*TH2F *Scat = new TH2F("scatterer", "scatterer", nbinZ, -fScatthick_z/2. ,
+    fScatthick_z/2., nbinY, -fScatthick_y/2. , fScatthick_y/2./*, nbinX,
+    Scatposition->X() - fScatthick_x/2. , Scatposition->X() + fScatthick_x/2.);
+      //for (Int_t k = 1; k < fNbinsX + 1; k++) {
+        for (Int_t i = 0; i < fNbinsZ + 1; i++) {
+
+          for (Int_t j = 0; j < fNbinsY + 1; j++) {
+              factor = 0;
+              factor1 = 0;
+              factor2 = 0;
+              //pixelX = fSensitivity->GetZaxis()->GetBinCenter(k);
+              pixelZ = fSensitivity->GetXaxis()->GetBinCenter(i) + 0.5;
+              pixelY = fSensitivity->GetYaxis()->GetBinCenter(j) + 0.5;
+
+              //cout<< pixelZ << "," << pixelY << "," << pixelX << endl;
+              pixelCenter.SetXYZ(pixelX, pixelY, pixelZ);
+              //pixelCenter.Print();
+              //double x = Scatposition->X() - fScatthick_x/2.;
+              //double x = 193.5;
+              //while (x <= Scatposition->X() + fScatthick_x/2.) {
+              //while (x <= 206.5) {
+              //for (int n = 1; n <= nbinZ; n++) {
+              for (int n = 1; n <= 51; n++) {
+                  for ( int m = 1; m <= 51; m++) {
+                   pixelz = Scat->GetXaxis()->GetBinCenter(n);
+                   pixely = Scat->GetYaxis()->GetBinCenter(m);
+
+                   DetCenter.SetXYZ(-200, pixely, pixelz);
+                   //cout<< x << "," << pixely << "," << pixelz << endl;
+                   //DetCenter.Print();
+
+                   Vector.SetXYZ(pixelCenter.X() - DetCenter.X(), pixelCenter.Y()
+    - DetCenter.Y(), pixelCenter.Z() - DetCenter.Z());
+                   //Vector.Print();
+                   UnitDetCenter = DetCenter.Unit();
+                   //UnitDetCenter.Print();
+                   VecSize = Vector.Mag();
+                   //angle = Vector.Angle(UnitDetCenter)*TMath::RadToDeg();
+                   costheta = ((Vector.X()*UnitDetCenter.X()) +
+    (Vector.Y()*UnitDetCenter.Y()) + (Vector.Z()*UnitDetCenter.Z()))/VecSize;
+                   //costheta = TMath::Cos(angle);
+                   //cout << "angle :" << angle << " cos : " << costheta << endl;
+                   //cout<< pixelZ << "\t" << pixelY << "\t" <<
+    fabs(costheta)/(VecSize) << endl;
+                   //fSensitivity->Fill(pixelZ,pixelY,pixelX,fabs(costheta)/VecSize);
+                   factor1 = factor1 + fabs(costheta)/(VecSize*VecSize);
+                   //cout<< factor1 << " \t z" << endl;
+                }
+              }
+              //for (int m = 1; m <= nbinY; m++) {
+    //           for (int m = 1; m <= 100; m++) {
+    //
+    //               pixely = Scat->GetYaxis()->GetBinCenter(m);
+    //
+    //               //cout<< pixelx << "," << pixely << "," << pixelz << endl;
+    //               DetCenter.SetXYZ(x + 1, pixely, 0);
+    //               //DetCenter.Print();
+    //
+    //               Vector.SetXYZ(pixelCenter.X() - DetCenter.X(),
+    pixelCenter.Y() - DetCenter.Y(), pixelCenter.Z() - DetCenter.Z());
+    //               //Vector.Print();
+    //               UnitDetCenter = DetCenter.Unit();
+    //               //UnitDetCenter.Print();
+    //               VecSize = Vector.Mag();
+    //               //angle = Vector.Angle(UnitDetCenter)*TMath::RadToDeg();
+    //               costheta = ((Vector.X()*UnitDetCenter.X()) +
+    (Vector.Y()*UnitDetCenter.Y()) + (Vector.Z()*UnitDetCenter.Z()))/VecSize;
+    //               //costheta = TMath::Cos(angle);
+    //               //cout << "angle :" << angle << " cos : " << costheta <<
+    endl;
+    //               //cout<< pixelZ << "\t" << pixelY << "\t" <<
+    fabs(costheta)/(VecSize) << endl;
+    // //fSensitivity->Fill(pixelZ,pixelY,pixelX,fabs(costheta)/VecSize);
+    //               factor2 = factor2 + fabs(costheta)/(VecSize*VecSize);
+    //
+    //               //cout<< factor2 << " \t y" << endl;
+    //             }
+    //
+    //
+    //           x = x + 2;
+    //         }
+    //           factor = factor1 + factor2;
+              //cout<< factor << endl;
+              //cout<<"---------------------------"<<endl;
+              //cout<< factor1 << endl;
+              fSensitivity->Fill(pixelZ,pixelY,factor1);
+              //fSensitivity->Fill(pixelZ,pixelY,pixelX,factor);
           }
-          //for (int m = 1; m <= nbinY; m++) {
-//           for (int m = 1; m <= 100; m++) {    
-//               
-//               pixely = Scat->GetYaxis()->GetBinCenter(m);
-//                   
-//               //cout<< pixelx << "," << pixely << "," << pixelz << endl;
-//               DetCenter.SetXYZ(x + 1, pixely, 0);
-//               //DetCenter.Print();
-//               
-//               Vector.SetXYZ(pixelCenter.X() - DetCenter.X(), pixelCenter.Y() - DetCenter.Y(), pixelCenter.Z() - DetCenter.Z());
-//               //Vector.Print();
-//               UnitDetCenter = DetCenter.Unit();
-//               //UnitDetCenter.Print();
-//               VecSize = Vector.Mag();
-//               //angle = Vector.Angle(UnitDetCenter)*TMath::RadToDeg();
-//               costheta = ((Vector.X()*UnitDetCenter.X()) + (Vector.Y()*UnitDetCenter.Y()) + (Vector.Z()*UnitDetCenter.Z()))/VecSize;
-//               //costheta = TMath::Cos(angle);
-//               //cout << "angle :" << angle << " cos : " << costheta << endl;
-//               //cout<< pixelZ << "\t" << pixelY << "\t" << fabs(costheta)/(VecSize) << endl;
-//               //fSensitivity->Fill(pixelZ,pixelY,pixelX,fabs(costheta)/VecSize);
-//               factor2 = factor2 + fabs(costheta)/(VecSize*VecSize);
-//           
-//               //cout<< factor2 << " \t y" << endl;
-//             }    
-//        
-//           
-//           x = x + 2;
-//         }
-//           factor = factor1 + factor2;
-          //cout<< factor << endl;
-          //cout<<"---------------------------"<<endl;
-          //cout<< factor1 << endl;
-          fSensitivity->Fill(pixelZ,pixelY,factor1); 
-          //fSensitivity->Fill(pixelZ,pixelY,pixelX,factor); 
+        //}
       }
     //}
   }
@@ -612,7 +671,7 @@ Bool_t CCMLEM::Reconstruct(){
 	DrawAtConvergence(fIter);
     }
 
-  //fSM->Clear("C");
+    // fSM->Clear("C");
     t.Stop();
     t.Print();
 
@@ -620,28 +679,31 @@ Bool_t CCMLEM::Reconstruct(){
 }
 
 //------------------------------------
-///Function to check direction of intersecting lines and get coordinate of intersection points.
-///TClonesArray is filled by coordinate of intersection points and their global bin number.
-///To get intersection points and global bin number, adding and subtracting 
-///a bit value make us sure each point belongs to which two of pixels. 
-/// So this function returns two points added for each pixel if all conditions are met.
-///\param dir (TString) - direction of intersecting lines marched to 
-///get intersection points on pixel borders
+/// Function to check direction of intersecting lines and get coordinate of
+/// intersection points. TClonesArray is filled by coordinate of intersection
+/// points and their global bin number. To get intersection points and global
+/// bin number, adding and subtracting a bit value make us sure each point
+/// belongs to which two of pixels. So this function returns two points added
+/// for each pixel if all conditions are met.
+///\param dir (TString) - direction of intersecting lines marched to
+/// get intersection points on pixel borders
 ///\param x (Double_t) - x-component of intersection point on the image plane
 ///\param y (Double_t) - y-component of intersection point on the image plane
 ///\param z (Double_t) - z-component of intersection point on the image plane
-Int_t CCMLEM::AddIsectionPoint(TString dir, Double_t x, Double_t y,
-                               Double_t z) {
-    
+Int_t CCMLEM::AddIsectionPoint(TString dir, Double_t x, Double_t y, Double_t z)
+{
+
     if (fVerbose) cout << dir << "\t" << x << "\t" << y << "\t" << z << endl;
     dir.ToLower();
-    if (dir != "hor" && dir != "ver") {
-        if(fVerbose) cout<<"Unknown direction of intrsecting line: "<<dir<<endl;
+    if (dir != "hor" && dir != "ver")
+    {
+        if (fVerbose) cout << "Unknown direction of intrsecting line: " << dir << endl;
         return 0;
     }
 
-    if (fabs(y) > fDimY / 2. || fabs(z) > fDimZ / 2./* || fabs(x) > fDimX / 2.*/) {
-         if(fVerbose) cout<<"point outside of image range..."<<endl;
+    if (fabs(y) > fDimY / 2. || fabs(z) > fDimZ / 2. /* || fabs(x) > fDimX / 2.*/)
+    {
+        if (fVerbose) cout << "point outside of image range..." << endl;
         return 0;
     }
 
@@ -651,64 +713,75 @@ Int_t CCMLEM::AddIsectionPoint(TString dir, Double_t x, Double_t y,
     Int_t pixelZ, pixelY, pixelX;
     Double_t yplus, yminus;
     Double_t zplus, zminus;
-    if (dir == "hor") { // adding point from intersections with horizontal lines
-        
+    if (dir == "hor")
+    { // adding point from intersections with horizontal lines
+
         pixelZ = fImage[0]->GetXaxis()->FindBin(z);
-        //HERE -> This is maybe the artifact in the corners we used to see?
+        // HERE -> This is maybe the artifact in the corners we used to see?
         if (pixelZ > fNbinsZ) pixelZ = fNbinsZ; // inclusion of upper edges of histo
         yplus = y + 0.005 * fPixelSizeY;
         yminus = y - 0.005 * fPixelSizeY;
 
-        if (fabs(yplus) <= fDimY / 2) {
+        if (fabs(yplus) <= fDimY / 2)
+        {
             tmppoint = (IsectionPoint*)fArray->ConstructedAt(fNIpoints++);
             pixelY = fImage[0]->GetYaxis()->FindBin(yplus);
-            //tmppoint->SetBinPoint(fImage[0]->GetBin(pixelZ, pixelY,pixelX), x, y, z);//THREEDIMENSION
+            // tmppoint->SetBinPoint(fImage[0]->GetBin(pixelZ, pixelY,pixelX), x, y,
+            // z);//THREEDIMENSION
             tmppoint->SetBinPoint(fImage[0]->GetBin(pixelZ, pixelY), x, y, z);
-            if(fVerbose) tmppoint->Print();
+            if (fVerbose) tmppoint->Print();
             added++;
         }
-        if (fabs(yminus) <= fDimY / 2) {
+        if (fabs(yminus) <= fDimY / 2)
+        {
             tmppoint = (IsectionPoint*)fArray->ConstructedAt(fNIpoints++);
             pixelY = fImage[0]->GetYaxis()->FindBin(yminus);
-            //tmppoint->SetBinPoint(fImage[0]->GetBin(pixelZ, pixelY,pixelX), x, y, z);//THREEDIMENSION
+            // tmppoint->SetBinPoint(fImage[0]->GetBin(pixelZ, pixelY,pixelX), x, y,
+            // z);//THREEDIMENSION
             tmppoint->SetBinPoint(fImage[0]->GetBin(pixelZ, pixelY), x, y, z);
-            if(fVerbose) tmppoint->Print();
+            if (fVerbose) tmppoint->Print();
             added++;
         }
     }
-  
-    if (dir == "ver") { // adding point from intersections with vertical lines
-      
+
+    if (dir == "ver")
+    { // adding point from intersections with vertical lines
+
         pixelY = fImage[0]->GetYaxis()->FindBin(y);
         if (pixelY > fNbinsY) pixelY = fNbinsY; // inclusion of upper edges of histo
         zplus = z + 0.005 * fPixelSizeZ;
         zminus = z - 0.005 * fPixelSizeZ;
 
-        if (fabs(zplus) <= fDimZ / 2) {
+        if (fabs(zplus) <= fDimZ / 2)
+        {
             tmppoint = (IsectionPoint*)fArray->ConstructedAt(fNIpoints++);
 
             pixelZ = fImage[0]->GetXaxis()->FindBin(zplus);
-            //tmppoint->SetBinPoint(fImage[0]->GetBin(pixelZ, pixelY,pixelX), x, y, z);//THREEDIMENSION
+            // tmppoint->SetBinPoint(fImage[0]->GetBin(pixelZ, pixelY,pixelX), x, y,
+            // z);//THREEDIMENSION
             tmppoint->SetBinPoint(fImage[0]->GetBin(pixelZ, pixelY), x, y, z);
-            if(fVerbose) tmppoint->Print();
+            if (fVerbose) tmppoint->Print();
             added++;
         }
-        if (fabs(zminus) <= fDimZ / 2) {
+        if (fabs(zminus) <= fDimZ / 2)
+        {
             tmppoint = (IsectionPoint*)fArray->ConstructedAt(fNIpoints++);
 
             pixelZ = fImage[0]->GetXaxis()->FindBin(zminus);
-            //tmppoint->SetBinPoint(fImage[0]->GetBin(pixelZ, pixelY,pixelX), x, y, z);//THREEDIMENSION
+            // tmppoint->SetBinPoint(fImage[0]->GetBin(pixelZ, pixelY,pixelX), x, y,
+            // z);//THREEDIMENSION
             tmppoint->SetBinPoint(fImage[0]->GetBin(pixelZ, pixelY), x, y, z);
-      	    if(fVerbose) tmppoint->Print();
+            if (fVerbose) tmppoint->Print();
             added++;
         }
     }
-    if(fVerbose)  cout<<added<<" points added..."<<endl<<endl;;
+    if (fVerbose) cout << added << " points added..." << endl << endl;
+    ;
     return added;
 }
 
 //------------------------------------
-/// Applies the iteration formula (multiplicative correction) 
+/// Applies the iteration formula (multiplicative correction)
 ///and update the image of reconstructed cones after each iteration.
 ///then returns kTRUE when the last reconstructed image is bulit.
 /// the sensitivity map calculation is outcommented here.
@@ -717,14 +790,15 @@ Int_t CCMLEM::AddIsectionPoint(TString dir, Double_t x, Double_t y,
 Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
     cout << "Iteration " << iter << " is processed" << endl;
     int lastiter = iter - 1;
-  
-  //double sigma[lastiter + 1];
-  //TH1D* ProZ[150];
-  //TH1D* ProY[150];
-  //TH1D* ProX[150];
-    
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    if (fImage[lastiter] == NULL) {
+
+    // double sigma[lastiter + 1];
+    // TH1D* ProZ[150];
+    // TH1D* ProY[150];
+    // TH1D* ProX[150];
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    if (fImage[lastiter] == NULL)
+    {
         cout << "Error in CCMELM::Iterate(). Last iteration NULL" << endl;
         return kFALSE;
     }
@@ -732,10 +806,10 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
     TH2F* hlastiter = (TH2F*)fImage[lastiter];
     fImage[lastiter + 1] = (TH2F*)hlastiter->Clone();
     TH2F* hthisiter = fImage[lastiter + 1];
-  
-    //TH2F* Sensitivity = (TH2F*)hthisiter->Clone(Form("Sensitivity_%i", lastiter  ));
-    //Sensitivity->SetTitle(Form("Sensitivity_iter%i", lastiter  ));
-  
+
+    // TH2F* Sensitivity = (TH2F*)hthisiter->Clone(Form("Sensitivity_%i", lastiter
+    // )); Sensitivity->SetTitle(Form("Sensitivity_iter%i", lastiter  ));
+
     hthisiter->Reset();
     hthisiter->SetName(Form("%s_iter%i", fImage[0]->GetName(), lastiter + 1));
     hthisiter->SetTitle(Form("%s_iter%i", fImage[0]->GetTitle(), lastiter + 1));
@@ -743,8 +817,8 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
     Int_t eventno_prev = 0;
     Int_t entry;
     Int_t binno;
-  //Int_t nz = fNbinsZ + 2.;
-  //Int_t ny = fNbinsY + 2.;
+    // Int_t nz = fNbinsZ + 2.;
+    // Int_t ny = fNbinsY + 2.;
     Double_t dist, addvalue;
     SMElement* temp;
     fDenominator[nstop + 1];
@@ -759,35 +833,35 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
     Double_t angle, costheta;
     Double_t factor;
     Int_t count = 0;
-    for (int i = 0; i < nstop + 1; i++) {
-    
+    for (int i = 0; i < nstop + 1; i++)
+    {
+
         fDenominator[i] = 0;
-    //fSensitivity[i] = 0;
+        // fSensitivity[i] = 0;
     }
     Int_t nSMentries = fSM->GetEntries();
-  //cout<<"nSMentries = "<<nSMentries <<endl;
-  
-    for (entry = 0; entry < nSMentries; entry++) {
+    // cout<<"nSMentries = "<<nSMentries <<endl;
+
+    for (entry = 0; entry < nSMentries; entry++)
+    {
         temp = (SMElement*)fSM->At(entry);
         binno = temp->GetBin();
         eventno = temp->GetEvent();
         dist = temp->GetDist();
-        fDenominator[eventno] =
-        fDenominator[eventno] + dist * hlastiter->GetBinContent(binno);
-        //cout << " event : " << eventno << endl;
-        //cout << " fac : " << dist * hlastiter->GetBinContent(binno) << endl;
-        //cout << " denom : " << fDenominator[eventno] << endl;
-        
+        fDenominator[eventno] = fDenominator[eventno] + dist * hlastiter->GetBinContent(binno);
+        // cout << " event : " << eventno << endl;
+        // cout << " fac : " << dist * hlastiter->GetBinContent(binno) << endl;
+        // cout << " denom : " << fDenominator[eventno] << endl;
     }
-  
 
-  //cout<< "--------------------------------------" << endl; 
-    for (entry = 0; entry < nSMentries; entry++) {
+    // cout<< "--------------------------------------" << endl;
+    for (entry = 0; entry < nSMentries; entry++)
+    {
         addvalue = 0;
         temp = (SMElement*)fSM->At(entry);
         binno = temp->GetBin();
-    //binz = binno%(fNbinsZ + 2);
-    //biny = ((binno-binz)/(fNbinsZ + 2))%(fNbinsY + 2);
+        // binz = binno%(fNbinsZ + 2);
+        // biny = ((binno-binz)/(fNbinsZ + 2))%(fNbinsY + 2);
         eventno = temp->GetEvent();
         dist = temp->GetDist();
     //cout<< " sen 123 : " << fSensitivity[binno] << endl;
@@ -838,7 +912,8 @@ Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
     return DetermineConvergence(iter);
 }
 
-Bool_t CCMLEM::DetermineConvergence(Int_t iter){
+Bool_t CCMLEM::DetermineConvergence(Int_t iter)
+{
     int lastiter = iter - 1;
     if(fSimpleConvergence==false){
 ////////////////////////////////// Applying Stopping (convergence) criterion (pixel-wise) ////////////////////////////////////////////
@@ -890,105 +965,115 @@ Bool_t CCMLEM::DetermineConvergence(Int_t iter){
         	}
 	}
     }
-    //THIS IS IMPLEMENTED AS IT WAS BEFORE NOT CHECKING HOW MEANINGFUL IT IS
-    else{
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//// These below comments was used for simple simulation.
-	///Comparing the sigma_z of new 10th iteration with previous one
-	///to check if it continues improving sigma more or not. The relative error should be less than 1% .
-  	// The FitProjection is a gaussian function defined below in CCMLEM code
-  	// fitting parameters are set in the config.txt file //
-	//------------------------------------------------------------------
-	/// BELOW FITTING FUNCTIONS CAN BE USED ALSO FOR SIMPLE SIMULATION, DEPENDING ON SOURCE TYPE, ON/OFF SMEARING EFFECT,.... //////// 
-	///For the unknown source distribution (simple simulation), user should define an appropriate fitting
-	///function to compare reasonablely sigma value of the new 10th iteration with previous one.
-	/*  
-	  TF1* func_z = new TF1("func_z", "[2]*TMath::Erfc((x-[0])/sqrt(2.)/[1])",-10.5, 20.5);
-	          func_z->SetParName(0, "X_{0}");
-	          func_z->SetParName(1, "#sigma");
-	          func_z->SetParName(2, "A");
-	*/          
-	/*          
-	  TF1* func_z = new TF1(
-	      "func", "[0]/2*TMath::Erf((x-[1])/[3])-[0]/2*TMath::Erf((x-[2])/[3])",
-	      -30.5, 30.5);
-	   func_z->SetParameter(0, 2000);
-	   func_z->SetParameter(1, 0);
-	   func_z->SetParameter(2, 0);
-	   //func_z->SetParameter(2, 200);
-	   func_z->SetParameter(3, 5);
-	  func_z->SetParNames("Constant_L","Mean_value_L","Mean_value_R","Sigma_z");
-	  */
-	/*  
-	   TF1* func_y = new TF1("FitProjection", FitProjection, -30.5, 30.5, 3);
-	   func_y->SetParameters(5,-5,5);
-	   func_y->SetParNames("Constant_y","Mean_value_y","Sigma_y");
-	*/   
-	/*
-	  TF1 *func_z = new TF1("func_z","[0]/2*TMath::Erf((x-[1])/[3])-[0]/2*TMath::Erf((x-[2])/[3])",-30, 30);
-	  func_z->SetParameter(0, 7000);
-	  func_z->SetParameter(1, -12);
-	  func_z->SetParameter(2, 12);
-	  func_z->SetParameter(3, 1);
-	  func_z->SetParNames("Constant","Mean_value_L","Mean_value_R","Sigma_z");
-	  
-	  TF1 *func = new TF1("func","[0]/2*TMath::Erf((x-[1])/[3])-[0]/2*TMath::Erf((x-[2])/[3])",-30, 30);
-	  func->SetParameter(0, 700000);
-	  func->SetParameter(1, -12);
-	  func->SetParameter(2, 12);
-	  func->SetParameter(3, 1);
-	  func->SetParNames("Constant","Mean_value_L","Mean_value_R","Sigma_z");
-	*/ 
-	
-	/*  
-	   TF1* func_z = new TF1("func_z", "gaus(0) + pol1(3)", -10.5, 10.5);
-	   func_z->SetParameter(0, 100);
-	   func_z->SetParameter(1, 1);
-	   func_z->SetParameter(2, 2);
-	   func_z->SetParameter(3, 15);
-	   func_z->SetParameter(4, 1);
-	   func_z->SetParameter(5, 1);
-	   func_z->SetParNames("Constant","Mean_value","Sigma_z", "p_{0}", "p_{1}", "p_{2}"); 
-	*/
-	   //func_z->SetParameters(fP0,fP1,fP2);
-	   //func_z->SetParNames("Constant","Mean_value","Sigma_z");
-	   
-	/*   
-	   TF1* func = new TF1("func","[0]*TMath::Exp(-0.5*((x-[1])/[2])*((x-[1])/[2]))", -14.5, 14.5);
-	   //func->SetParameters(fP0,fP1,fP2);
-	   func->SetParameter(0, 400000);
-	   func->SetParameter(1, 0.05);
-	   func->SetParameter(2, 2);
-	   func->SetParNames("Constant","Mean_value","Sigma_z");
-	   */
-	//   func->SetParameter(0, 18000);
-	//   func->SetParameter(1, 0.01);
-	//   func->SetParameter(2, 0.1);
-	  // func->SetParameter(3,8.1);
-  	TF1* func_z = new TF1("FitProjection", FitProjection, -10.5, 10.5, 3);
-  	func_z->SetParameters(fP0,fP1,fP2);
-  	func_z->SetParNames("Constant","Mean_value","Sigma_z");
-  	
-  	TF1* func_y = new TF1("FitProjection", FitProjection, -30.5, 30.5, 3);
-  	func_y->SetParameters(fP0,fP1,fP2);
-  	func_y->SetParNames("Constant","Mean_value","Sigma_y");
-	//ONLY EVERY 10th sigma is checked
-  	if(iter%10!=0) return false;
-  	//TH1D* ProY[iter] = fImage[iter]->ProjectionY();
-  	//ProY[i]->Fit(func_y,"r");
-  	
-  	TH1D* ProZ = fImage[iter]->ProjectionX();
-  	ProZ->Fit(func_z, "r");
-  	
-  	fSigma[iter] = func_z->GetParameter(2);
-	//NEED 20 ITERATIONS TO COMPARE
-  	if(iter<20) return true; 
-  	if((fabs(fSigma[iter]-fSigma[iter-10]))/fabs(fSigma[iter])<fConvergenceCriterium){
-  	        //cout << "SigmaIter" << iter << " - " << "SigmaIter" << j - 10 << " = " << " Relative Error : " << fSigma[250] << endl;
-  	        return false;    
-  	}
-    } 
-      
+    // THIS IS IMPLEMENTED AS IT WAS BEFORE NOT CHECKING HOW MEANINGFUL IT IS
+    else
+    {
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //// These below comments was used for simple simulation.
+        /// Comparing the sigma_z of new 10th iteration with previous one
+        /// to check if it continues improving sigma more or not. The relative error
+        /// should be less than 1% .
+        // The FitProjection is a gaussian function defined below in CCMLEM code
+        // fitting parameters are set in the config.txt file //
+        //------------------------------------------------------------------
+        /// BELOW FITTING FUNCTIONS CAN BE USED ALSO FOR SIMPLE SIMULATION,
+        /// DEPENDING ON SOURCE TYPE, ON/OFF SMEARING EFFECT,.... ////////
+        /// For the unknown source distribution (simple simulation), user should
+        /// define an appropriate fitting function to compare reasonablely sigma
+        /// value of the new 10th iteration with previous one.
+        /*
+          TF1* func_z = new TF1("func_z",
+          "[2]*TMath::Erfc((x-[0])/sqrt(2.)/[1])",-10.5, 20.5);
+                  func_z->SetParName(0, "X_{0}");
+                  func_z->SetParName(1, "#sigma");
+                  func_z->SetParName(2, "A");
+        */
+        /*
+          TF1* func_z = new TF1(
+              "func", "[0]/2*TMath::Erf((x-[1])/[3])-[0]/2*TMath::Erf((x-[2])/[3])",
+              -30.5, 30.5);
+           func_z->SetParameter(0, 2000);
+           func_z->SetParameter(1, 0);
+           func_z->SetParameter(2, 0);
+           //func_z->SetParameter(2, 200);
+           func_z->SetParameter(3, 5);
+          func_z->SetParNames("Constant_L","Mean_value_L","Mean_value_R","Sigma_z");
+          */
+        /*
+           TF1* func_y = new TF1("FitProjection", FitProjection, -30.5, 30.5, 3);
+           func_y->SetParameters(5,-5,5);
+           func_y->SetParNames("Constant_y","Mean_value_y","Sigma_y");
+        */
+        /*
+          TF1 *func_z = new
+          TF1("func_z","[0]/2*TMath::Erf((x-[1])/[3])-[0]/2*TMath::Erf((x-[2])/[3])",-30,
+          30); func_z->SetParameter(0, 7000); func_z->SetParameter(1, -12);
+          func_z->SetParameter(2, 12);
+          func_z->SetParameter(3, 1);
+          func_z->SetParNames("Constant","Mean_value_L","Mean_value_R","Sigma_z");
+
+          TF1 *func = new
+          TF1("func","[0]/2*TMath::Erf((x-[1])/[3])-[0]/2*TMath::Erf((x-[2])/[3])",-30,
+          30); func->SetParameter(0, 700000); func->SetParameter(1, -12);
+          func->SetParameter(2, 12);
+          func->SetParameter(3, 1);
+          func->SetParNames("Constant","Mean_value_L","Mean_value_R","Sigma_z");
+        */
+
+        /*
+           TF1* func_z = new TF1("func_z", "gaus(0) + pol1(3)", -10.5, 10.5);
+           func_z->SetParameter(0, 100);
+           func_z->SetParameter(1, 1);
+           func_z->SetParameter(2, 2);
+           func_z->SetParameter(3, 15);
+           func_z->SetParameter(4, 1);
+           func_z->SetParameter(5, 1);
+           func_z->SetParNames("Constant","Mean_value","Sigma_z", "p_{0}", "p_{1}",
+           "p_{2}");
+        */
+        // func_z->SetParameters(fP0,fP1,fP2);
+        // func_z->SetParNames("Constant","Mean_value","Sigma_z");
+
+        /*
+           TF1* func = new
+           TF1("func","[0]*TMath::Exp(-0.5*((x-[1])/[2])*((x-[1])/[2]))",
+           -14.5, 14.5);
+           //func->SetParameters(fP0,fP1,fP2);
+           func->SetParameter(0, 400000);
+           func->SetParameter(1, 0.05);
+           func->SetParameter(2, 2);
+           func->SetParNames("Constant","Mean_value","Sigma_z");
+           */
+        //   func->SetParameter(0, 18000);
+        //   func->SetParameter(1, 0.01);
+        //   func->SetParameter(2, 0.1);
+        // func->SetParameter(3,8.1);
+        TF1* func_z = new TF1("FitProjection", FitProjection, -10.5, 10.5, 3);
+        func_z->SetParameters(fP0, fP1, fP2);
+        func_z->SetParNames("Constant", "Mean_value", "Sigma_z");
+
+        TF1* func_y = new TF1("FitProjection", FitProjection, -30.5, 30.5, 3);
+        func_y->SetParameters(fP0, fP1, fP2);
+        func_y->SetParNames("Constant", "Mean_value", "Sigma_y");
+        // ONLY EVERY 10th sigma is checked
+        if (iter % 10 != 0) return false;
+        // TH1D* ProY[iter] = fImage[iter]->ProjectionY();
+        // ProY[i]->Fit(func_y,"r");
+
+        TH1D* ProZ = fImage[iter]->ProjectionX();
+        ProZ->Fit(func_z, "r");
+
+        fSigma[iter] = func_z->GetParameter(2);
+        // NEED 20 ITERATIONS TO COMPARE
+        if (iter < 20) return true;
+        if ((fabs(fSigma[iter] - fSigma[iter - 10])) / fabs(fSigma[iter]) < fConvergenceCriterium)
+        {
+            // cout << "SigmaIter" << iter << " - " << "SigmaIter" << j - 10 << " = "
+            // << " Relative Error : " << fSigma[250] << endl;
+            return false;
+        }
+    }
+
     return true;
 }
 
@@ -999,36 +1084,36 @@ void CCMLEM::DrawAtConvergence(int iter){
     TCanvas* cany = new TCanvas("MLEM1DY_Convergence","MLEM1DY_Convergence",1000,1000);
     //HOLDs Image[0],GausFiltered[0],Image[atconvergence],GausFiltered[atconvervence]
     can->Divide(2, 2);
-    //HOLDs projection of the above to z
+    // HOLDs projection of the above to z
     canz->Divide(2, 2);
-    //HOLDs projections of the above to y 
+    // HOLDs projections of the above to y
     cany->Divide(2, 2);
-     
+
     can->cd(1);
-    
+
     fImage[0]->Draw("colz");
     can->cd(2);
     fSH[0]->Draw("colz");
-    
+
     canz->cd(1);
-    //fImage[0]->Project3D("X")->Draw();
+    // fImage[0]->Project3D("X")->Draw();
     fImage[0]->ProjectionX()->Draw();
     canz->cd(2);
     fSH[0]->ProjectionX()->Draw();
-    
+
     cany->cd(1);
-    //fImage[0]->Project3D("Y")->Draw();
+    // fImage[0]->Project3D("Y")->Draw();
     fImage[0]->ProjectionY()->Draw();
     cany->cd(2);
     fSH[0]->ProjectionY()->Draw();
-       
+
     can->cd(3);
     fImage[iter]->Draw("colz");
     can->cd(4);
     fSH[iter]->Draw("colz");
-     
+
     canz->cd(3);
-    //fImage[iter]->Project3D("X")->Draw();
+    // fImage[iter]->Project3D("X")->Draw();
     fImage[iter]->ProjectionX()->Draw();
      
     cany->cd(3);
@@ -1110,231 +1195,246 @@ void CCMLEM::DrawREGraph(int iter){
     g->GetYaxis()->SetTitle("The Relative Error(%)");
     g->GetYaxis()->SetLabelSize(0.0385);
     g->GetYaxis()->SetTitleSize(0.0385);
-    g->Draw("AP"); 
+    g->Draw("AP");
     SaveToFile(can); 
 }
 //------------------------------------
 /// Draw reconstructed profiles after a fixed iterations ///
-///NOT CHANGED YET PLOTTING LIKE THIS MAKES NO SENSE
-Bool_t CCMLEM::DrawCanvas(void){
-  
-  int iter;
-  
-  TF1 *func = new TF1("func","[0]/2*TMath::Erf((x-[1])/[4])-[2]/2*TMath::Erf((x-[3])/[4])",-10,10);
-  func->SetParameter(0, 5000);
-  func->SetParameter(1, -20);
-  func->SetParameter(3, 20);
-  func->SetParameter(2, 4500);
-  func->SetParameter(4, 10);
-  func->SetParNames("Constant_L","Mean_value_L","Constant_R","Mean_value_R","Sigma_z");
-  
-  TF1 *f1 = new TF1("f1","([0]+[1]*x+[2]*x*x)*[3]*gaus(3)", -10, 10);     
-  f1->SetParameters(0.6,-3,-0.8,3.5,0,5); 
-  
-  TF1 *func_z = new TF1("func_z","[0]/2*TMath::Erf((x-[1])/[4])-[2]/2*TMath::Erf((x-[3])/[4])",-20.5, 20.5);
-  func_z->SetParameter(0, 3.2);
-  func_z->SetParameter(1, -15);
-  func_z->SetParameter(2, 1.9);
-  func_z->SetParameter(3, 10);
-  func_z->SetParameter(4, 5);
-  //func_z->SetParameter(5, 3);
-  func_z->SetParNames("Constant_L","Mean_value_L","Constant_R","Mean_value_R","Sigma_z");
-  
-  TF1 *func_z2 = new TF1("func_z2","[0]/2*TMath::Erf((x-[1])/[4])-[2]/2*TMath::Erf((x-[3])/[4])",-20.5, 20.5);
-  func_z2->SetParameter(0, 3.2);
-  func_z2->SetParameter(1, -15);
-  func_z2->SetParameter(2, 1.9);
-  func_z2->SetParameter(3, 10);
-  func_z2->SetParameter(4, 5);
-  //func_z2->SetParameter(5, 3);
-  func_z2->SetParNames("Constant_L","Mean_value_L","Constant_R","Mean_value_R","Sigma_z");
-  
-  TF1 *func_z3 = new TF1("func_z3","[0]/2*TMath::Erf((x-[1])/[4])-[2]/2*TMath::Erf((x-[3])/[4])",-20.5, 20.5);
-  func_z3->SetParameter(0, 5.5);
-  func_z3->SetParameter(1, -20.5);
-  func_z3->SetParameter(2, 1.2);
-  func_z3->SetParameter(3, 20.5);
-  func_z3->SetParameter(4, 5);
-  //func_z3->SetParameter(5, 3);
-  func_z3->SetParNames("Constant_L","Mean_value_L","Constant_R","Mean_value_R","Sigma_z");
-////////////////////////////////////////////////////////////////////////////////////////////////////////
-  TF1* func_z4 = new TF1("FitProjection", FitProjection, -20.5, 20.5, 3);
-  func_z4->SetParameters(fP0,fP1,fP2);
-  func_z4->SetParNames("Constant","Mean_value","Sigma_z");
-  
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////  
-  TF1 *func_y = new TF1("func_y","[0]/2*TMath::Erf((x-[1])/[4])-[2]/2*TMath::Erf((x-[3])/[4])",-5.5, 5.5);
-  func_y->SetParameter(0, 120);
-  func_y->SetParameter(1, -5);
-  func_y->SetParameter(3, 5);
-  func_y->SetParameter(2, 112);
-  func_y->SetParameter(4, 3);
-  //func_y->SetParameter(5, 3);
-  func_y->SetParNames("Constant_L","Mean_value_L","Constant_R","Mean_value_R","Sigma_y");
+/// NOT CHANGED YET PLOTTING LIKE THIS MAKES NO SENSE
+Bool_t CCMLEM::DrawCanvas(void)
+{
 
-/*
-  TF1* func_y = new TF1("FitProjection", FitProjection, -10.5, 10.5, 3);
-  func_y->SetParameters(5,-5,5);
-  func_y->SetParNames("Constant_y","Mean_value_y","Sigma_y");
-*/
-/*  TF1* func_z = new TF1("func_z", "[0]*TMath::Erfc((x-[1])/sqrt(2.)/[2])",-80, 100);
-  
-  func_z->SetParameter(0, 800);
-  func_z->SetParameter(1, 20);
-  func_z->SetParameter(2, 5);
-  
-  func_z->SetParName(0, "A");
-  func_z->SetParName(1, "X_{0}");
-  func_z->SetParName(2, "#sigma");
-*/ 
-/*  TF1* func_z = new TF1("FitProjection", FitProjection, -14.5, 14.5, 3);
-  //func_z->SetParameters(fP0,fP1,fP2);
-  func_z->SetParameter(0, 18000);
-  func_z->SetParameter(1, 0.1);
-  func_z->SetParameter(2, 5);
-  func_z->SetParNames("Constant","Mean_value","Sigma_z");
-  
-  
-  TF1* func = new TF1("FitProjection", FitProjection, -14.5, 14.5, 3);
-  //func_z->SetParameters(fP0,fP1,fP2);
-  func->SetParameter(0, 1800000);
-  func->SetParameter(1, 0.1);
-  func->SetParameter(2, 10);
-  func->SetParNames("Constant","Mean_value","Sigma_z");
-  
-  TH1D* ProZ[150];
-  TH1D* ProY[150];
-  TCanvas* can  = new TCanvas("MLEM2D","MLEM2D",1000,1000);
-  TCanvas* canz = new TCanvas("MLEM1DZ","MLEM1DZ",1000,1000);
-  TCanvas* cany = new TCanvas("MLEM1DY","MLEM1DY",1000,1000);
-  can->Divide(4, 5);
-  canz->Divide(4, 5);
-  cany->Divide(4, 5);
-*/  
+    int iter;
 
-  TCanvas* can  = new TCanvas("MLEM2D","MLEM2D",1000,1000);
-  TCanvas* canz = new TCanvas("MLEM1DZ","MLEM1DZ",1000,1000);
-  TCanvas* cany = new TCanvas("MLEM1DY","MLEM1DY",1000,1000);
-//   can->Divide(4, 3);
-//   canz->Divide(4, 3);
-//   cany->Divide(4, 3);
-  can->Divide(1, 2);
-  canz->Divide(1, 2);
-  cany->Divide(1, 2);
-  
-  for(iter=0; iter<fIter+1; iter=iter + 30) {
-      
-      fSH[iter] = dynamic_cast<TH2F*>(SmoothGauss(fImage[iter], 3));
-    
-      if (iter < 30) {
-          
-          //cout<< " number = 0 : " <<endl; 
-          can->cd(1);
-    
-          fImage[0]->Draw("colz");
-          //fSH[0]->Draw("colz");
-    
-          canz->cd(1);
-          
-          
-          //fImage[0]->Project3D("X")->Draw();
-          
-          ;
-          
-          //fProZ[0]=fSH[0]->ProjectionX();
-          
-          //fProZ[0]->Fit(func, "r");
-          fImage[0]->ProjectionX()->Draw();
-          
-          cany->cd(1);
-          
-          //fImage[0]->Project3D("Y")->Draw();
-          
-          fImage[0]->ProjectionY()->Draw();
-          
-          //fProY[0]=fSH[0]->ProjectionY();
-      
-      } else {
-          
-          can->cd((iter/30) + 1);
-          
-          //fImage[iter]->Draw("colz");
-          fSH[iter]->Draw("colz");
-          
-          canz->cd((iter/30) + 1);
-          
-          //fImage[iter]->Project3D("X")->Draw();
-          
-          TH1D* ProZ=fSH[iter]->ProjectionX();
-          //ProZ[iter]=fImage[iter]->ProjectionX();
-          //ProZ[iter]->Fit(func_z3, "R");
-          ProZ->Draw();
-           
-          cany->cd((iter/30) + 1);
-          
-          //fImage[iter]->Project3D("Y")->Draw();
-          
-          TH1D* ProY=fSH[iter]->ProjectionY();
-          //ProY[iter]=fImage[iter]->ProjectionY();
-          //ProY[iter]->Fit(func_y, "RSM");
-          ProY->Draw();
-      }
-      
-  }
+    TF1* func =
+        new TF1("func", "[0]/2*TMath::Erf((x-[1])/[4])-[2]/2*TMath::Erf((x-[3])/[4])", -10, 10);
+    func->SetParameter(0, 5000);
+    func->SetParameter(1, -20);
+    func->SetParameter(3, 20);
+    func->SetParameter(2, 4500);
+    func->SetParameter(4, 10);
+    func->SetParNames("Constant_L", "Mean_value_L", "Constant_R", "Mean_value_R", "Sigma_z");
 
-  SaveToFile(can);
-  SaveToFile(canz);
-  SaveToFile(cany);
-  return kTRUE;
+    TF1* f1 = new TF1("f1", "([0]+[1]*x+[2]*x*x)*[3]*gaus(3)", -10, 10);
+    f1->SetParameters(0.6, -3, -0.8, 3.5, 0, 5);
+
+    TF1* func_z = new TF1("func_z", "[0]/2*TMath::Erf((x-[1])/[4])-[2]/2*TMath::Erf((x-[3])/[4])",
+                          -20.5, 20.5);
+    func_z->SetParameter(0, 3.2);
+    func_z->SetParameter(1, -15);
+    func_z->SetParameter(2, 1.9);
+    func_z->SetParameter(3, 10);
+    func_z->SetParameter(4, 5);
+    // func_z->SetParameter(5, 3);
+    func_z->SetParNames("Constant_L", "Mean_value_L", "Constant_R", "Mean_value_R", "Sigma_z");
+
+    TF1* func_z2 = new TF1("func_z2", "[0]/2*TMath::Erf((x-[1])/[4])-[2]/2*TMath::Erf((x-[3])/[4])",
+                           -20.5, 20.5);
+    func_z2->SetParameter(0, 3.2);
+    func_z2->SetParameter(1, -15);
+    func_z2->SetParameter(2, 1.9);
+    func_z2->SetParameter(3, 10);
+    func_z2->SetParameter(4, 5);
+    // func_z2->SetParameter(5, 3);
+    func_z2->SetParNames("Constant_L", "Mean_value_L", "Constant_R", "Mean_value_R", "Sigma_z");
+
+    TF1* func_z3 = new TF1("func_z3", "[0]/2*TMath::Erf((x-[1])/[4])-[2]/2*TMath::Erf((x-[3])/[4])",
+                           -20.5, 20.5);
+    func_z3->SetParameter(0, 5.5);
+    func_z3->SetParameter(1, -20.5);
+    func_z3->SetParameter(2, 1.2);
+    func_z3->SetParameter(3, 20.5);
+    func_z3->SetParameter(4, 5);
+    // func_z3->SetParameter(5, 3);
+    func_z3->SetParNames("Constant_L", "Mean_value_L", "Constant_R", "Mean_value_R", "Sigma_z");
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    TF1* func_z4 = new TF1("FitProjection", FitProjection, -20.5, 20.5, 3);
+    func_z4->SetParameters(fP0, fP1, fP2);
+    func_z4->SetParNames("Constant", "Mean_value", "Sigma_z");
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    TF1* func_y =
+        new TF1("func_y", "[0]/2*TMath::Erf((x-[1])/[4])-[2]/2*TMath::Erf((x-[3])/[4])", -5.5, 5.5);
+    func_y->SetParameter(0, 120);
+    func_y->SetParameter(1, -5);
+    func_y->SetParameter(3, 5);
+    func_y->SetParameter(2, 112);
+    func_y->SetParameter(4, 3);
+    // func_y->SetParameter(5, 3);
+    func_y->SetParNames("Constant_L", "Mean_value_L", "Constant_R", "Mean_value_R", "Sigma_y");
+
+    /*
+      TF1* func_y = new TF1("FitProjection", FitProjection, -10.5, 10.5, 3);
+      func_y->SetParameters(5,-5,5);
+      func_y->SetParNames("Constant_y","Mean_value_y","Sigma_y");
+    */
+    /*  TF1* func_z = new TF1("func_z",
+      "[0]*TMath::Erfc((x-[1])/sqrt(2.)/[2])",-80, 100);
+
+      func_z->SetParameter(0, 800);
+      func_z->SetParameter(1, 20);
+      func_z->SetParameter(2, 5);
+
+      func_z->SetParName(0, "A");
+      func_z->SetParName(1, "X_{0}");
+      func_z->SetParName(2, "#sigma");
+    */
+    /*  TF1* func_z = new TF1("FitProjection", FitProjection, -14.5, 14.5, 3);
+      //func_z->SetParameters(fP0,fP1,fP2);
+      func_z->SetParameter(0, 18000);
+      func_z->SetParameter(1, 0.1);
+      func_z->SetParameter(2, 5);
+      func_z->SetParNames("Constant","Mean_value","Sigma_z");
+
+
+      TF1* func = new TF1("FitProjection", FitProjection, -14.5, 14.5, 3);
+      //func_z->SetParameters(fP0,fP1,fP2);
+      func->SetParameter(0, 1800000);
+      func->SetParameter(1, 0.1);
+      func->SetParameter(2, 10);
+      func->SetParNames("Constant","Mean_value","Sigma_z");
+
+      TH1D* ProZ[150];
+      TH1D* ProY[150];
+      TCanvas* can  = new TCanvas("MLEM2D","MLEM2D",1000,1000);
+      TCanvas* canz = new TCanvas("MLEM1DZ","MLEM1DZ",1000,1000);
+      TCanvas* cany = new TCanvas("MLEM1DY","MLEM1DY",1000,1000);
+      can->Divide(4, 5);
+      canz->Divide(4, 5);
+      cany->Divide(4, 5);
+    */
+
+    TCanvas* can = new TCanvas("MLEM2D", "MLEM2D", 1000, 1000);
+    TCanvas* canz = new TCanvas("MLEM1DZ", "MLEM1DZ", 1000, 1000);
+    TCanvas* cany = new TCanvas("MLEM1DY", "MLEM1DY", 1000, 1000);
+    //   can->Divide(4, 3);
+    //   canz->Divide(4, 3);
+    //   cany->Divide(4, 3);
+    can->Divide(1, 2);
+    canz->Divide(1, 2);
+    cany->Divide(1, 2);
+
+    for (iter = 0; iter < fIter + 1; iter = iter + 30)
+    {
+
+        fSH[iter] = dynamic_cast<TH2F*>(SmoothGauss(fImage[iter], 3));
+
+        if (iter < 30)
+        {
+
+            // cout<< " number = 0 : " <<endl;
+            can->cd(1);
+
+            fImage[0]->Draw("colz");
+            // fSH[0]->Draw("colz");
+
+            canz->cd(1);
+
+            // fImage[0]->Project3D("X")->Draw();
+
+            ;
+
+            // fProZ[0]=fSH[0]->ProjectionX();
+
+            // fProZ[0]->Fit(func, "r");
+            fImage[0]->ProjectionX()->Draw();
+
+            cany->cd(1);
+
+            // fImage[0]->Project3D("Y")->Draw();
+
+            fImage[0]->ProjectionY()->Draw();
+
+            // fProY[0]=fSH[0]->ProjectionY();
+        }
+        else
+        {
+
+            can->cd((iter / 30) + 1);
+
+            // fImage[iter]->Draw("colz");
+            fSH[iter]->Draw("colz");
+
+            canz->cd((iter / 30) + 1);
+
+            // fImage[iter]->Project3D("X")->Draw();
+
+            TH1D* ProZ = fSH[iter]->ProjectionX();
+            // ProZ[iter]=fImage[iter]->ProjectionX();
+            // ProZ[iter]->Fit(func_z3, "R");
+            ProZ->Draw();
+
+            cany->cd((iter / 30) + 1);
+
+            // fImage[iter]->Project3D("Y")->Draw();
+
+            TH1D* ProY = fSH[iter]->ProjectionY();
+            // ProY[iter]=fImage[iter]->ProjectionY();
+            // ProY[iter]->Fit(func_y, "RSM");
+            ProY->Draw();
+        }
+    }
+
+    SaveToFile(can);
+    SaveToFile(canz);
+    SaveToFile(cany);
+    return kTRUE;
 }
+
 //------------------------------------
 /// Reads configuration file and sets values of private class
 /// members according to read information.
 ///\param path (TString) - full path to the configuration file.
-Bool_t CCMLEM::ReadConfig(TString path) {
+Bool_t CCMLEM::ReadConfig(TString path)
+{
 
-  ifstream config(path);
+    ifstream config(path);
 
-  if (!(config.is_open())) {
-    cout << "##### Could not open configuration file!" << endl;
-    return kFALSE;
-  }
+    if (!(config.is_open()))
+    {
+        cout << "##### Could not open configuration file!" << endl;
+        return kFALSE;
+    }
 
-  cout << "\n\nIn CCMLEM::Config(). Reading config file..." << endl;
+    cout << "\n\nIn CCMLEM::ReadConfig(). Reading config file..." << endl;
 
-  TString comment;
+    TString comment;
 
   while (config.good()) {
     comment.ReadLine(config);
     cout << "READ FROM FILE: " << comment.Data() << endl;
     if (comment.Contains("Name of the input file")) {
-      config >> fInputName;
+        config >> fInputName;
+        cout << "input name: " << fInputName << endl;
       if (!fInputName.Contains(".root")) {
-        cout << "##### Error in CCMLEM::Config()! Unknown file type!" << endl;
+        cout << "##### Error in CCMLEM::ReadConfig()! Unknown file type!" << endl;
         return false;
       }
     }
     else if (comment.Contains("Name of the output file")) {
       config >> fOutputName;
+      cout << "output name: " << fOutputName << endl;
       if (!fOutputName.Contains(".root")) {
-        cout << "##### Error in CCMLEM::Config()! Unknown file type!" << endl;
+        cout << "##### Error in CCMLEM::ReadConfig()! Unknown file type!" << endl;
         return false;
       }
     }
     else if (comment.Contains("Size of image volume")) {
       config >> fDimZ >> fDimY >> fDimX;
+    cout << "sizes: " << fDimZ  << ", " << fDimY << ", " << fDimX << endl;
       //if (fDimZ < 1 || fDimY < 1 || fDimX<1) {//THREEDIMENSIONS
       if (fDimZ < 1 || fDimY < 1) {    
-        cout << "##### Error in CCMLEM::Config()! Image size incorrect!"
+        cout << "##### Error in CCMLEM::ReadConfig()! Image size incorrect!"
              << endl;
         return false;
       }
     } 
     else if (comment.Contains("No. of bins")) {
       config >> fNbinsZ >> fNbinsY >> fNbinsX;
+        cout << "bins: " << fNbinsZ << ", " << fNbinsY << ", " << fNbinsX << endl;
       //if (fNbinsZ < 1 || fNbinsY < 1 || fNbinsX<1) {//THREEDIMENSIONS
       if (fNbinsZ < 1 || fNbinsY < 1) {
-        cout << "##### Error in CCMLEM::Config()! Number of bins incorrect!"
+        cout << "##### Error in CCMLEM::ReadConfig()! Number of bins incorrect!"
              << endl;
         return false;
       }
@@ -1343,34 +1443,41 @@ Bool_t CCMLEM::ReadConfig(TString path) {
     //USED to set the Convergence Method  
     else if(comment.Contains("Convergence Simple")){
 	config >> fSimpleConvergence;
+    cout << "covergence simple: " << fSimpleConvergence << endl;
     }
     //USED to set the ROI for the convergence criterium from Nadja. Need to be fixed to the Image volume/Bins. Should be placed also in the Bragg-peak region. Makes only sense if oyu want to achieve convergence, outherwise limit the number of iterations 
     else if(comment.Contains("ROI")){
 	config >> fROIX>> fROIY>> fROIZ;
+    cout << "ROIs: " << fROIX << ", " << fROIY << ", " << fROIZ << endl;
     }
     //This is a method by Majid that only makes sense for the simple input 
     //USED to set smearing for the Simple Simulation 
     else if (comment.Contains("Smear")) {
       config >> fSmear;
+      cout << "smear: " << fSmear << endl;
     }
     //USED to set kernel for the filter that is applied on the reco images (a gaussian filter is used) 
     else if (comment.Contains("GausFilter")) {
       config >> fGausFilter;
+      cout << "Gauss filter: " << fGausFilter << endl;
     }
     //This is a method by Majid that only makes sense for the simple input 
     //USED to set pos resolution for the smearing for the Simple Simulation 
     else if (comment.Contains("Position resolution")) {
       config >> fResolutionX >> fResolutionY >> fResolutionZ;
+      cout << "position resolution: " << fResolutionX << ", " << fResolutionY << ", " << fResolutionZ << endl;
     }
     //USED to set ???, could not find the meaning of this 
     else if (comment.Contains("Fitting parameters")) {
       config >> fP0 >> fP1 >> fP2;
+      cout << "fitting params " << fP0 << ", " << fP1 << ", " << fP2 << endl;
     }
     //USED to set maximum number of iterations. This should be used oif you know that convergence will not be reached 
     else if (comment.Contains("No. of MLEM iterations")) {
       config >> fIter;
+      cout << "no of iterations " << fIter << endl;
       if (fIter < 0) {
-        cout << "##### Error in CCMLEM::Config()! Number of iterations "
+        cout << "##### Error in CCMLEM::ReadConfig()! Number of iterations "
                 "incorrect!"
              << endl;
         return false;
@@ -1379,10 +1486,12 @@ Bool_t CCMLEM::ReadConfig(TString path) {
     //USED to set the recreation of the output instead of updating. In the most cases this should be set to true 
     else if (comment.Contains("Fresh output")) {
       config >> fFreshOutput;
+      cout << "fresh output: " << fFreshOutput << endl;
     }
     //USED to set the saving of the intermediate results. If this is set to false way less histograms are saved. Makes it faster 
     else if (comment.Contains("Save Intermediate")) {
       config >> fSaveAll;
+      cout << "save intermediate: " << fSaveAll << endl;
     }
     //USED to set the number events that is reconstructed
     //fStart normally should be =0 since you do not want to cut stuff from your file starting simply by order
@@ -1390,8 +1499,9 @@ Bool_t CCMLEM::ReadConfig(TString path) {
     //if fStop !0 fStart, fStop is the number of events that are used in the reco. It is checked if enough events full fill the cuts to reach fStops, If not the reconstruction is not done 
     else if (comment.Contains("No. of first and last event")) {
       config >> fStart >> fStop;
+      cout << "start and stop: " << fStart << ", " << fStop << endl;
       if (fStart < 0 || fStop < 0 || fStop < fStart) {
-        cout << "##### Error in CCMLEM::Config()! Number of first or last "
+        cout << "##### Error in CCMLEM::ReadConfig()! Number of first or last "
                 "event incorrect!"
              << endl;
         return false;
@@ -1401,244 +1511,263 @@ Bool_t CCMLEM::ReadConfig(TString path) {
     //	see explanation above. Can be used to set fStop seperatly of fStart 
     else if (comment.Contains("No. used events")) {
       config >> fStop;
+      cout << "used events: " << fStop << endl;
       fStart=0;
       if (fStart < 0 || fStop < 0 || fStop < fStart) {
-        cout << "##### Error in CCMLEM::Config()! Number of used selected events is not meaningful"<< endl;
+        cout << "##### Error in CCMLEM::ReadConfig()! Number of used selected events is not meaningful"<< endl;
         return false;
       }
     }
     else if (comment.Contains("Verbose flag")) {
       config >> fVerbose;
+      cout << "verbose: " << fVerbose << endl;
     }
     //USED to set that the Monte Carlo data is loaded from the Geant4 simulation instead of the reco
     else if (comment.Contains("Load Real")) {
       config >> fLoadReal;
+      cout << "load real: " << fLoadReal << endl;
     }
     //USED to set that only the correct identified events are loaded from the geant4 or NN input. Integers are used. What the meaning is see in the InputReaders
     else if (comment.Contains("Load only correct identified")) {
       config >> fCorrectIdentified;
+      cout << "correct identified: " << fCorrectIdentified << endl;
     }
     else {
-      cout << "##### Warning in CCMLEM::Config()! Unknown syntax!" << endl;
+      cout << "##### Warning in CCMLEM::ReadConfig()! Unknown syntax!" << endl;
       cout << comment << endl;
     }
-  }
+    }
 
-  if (fVerbose) Print();
+    if (fVerbose) Print();
 
-  config.close();
+    config.close();
 
-  return true;
+    return true;
 }
 //------------------------------------
-///Saves 2D histogram and the projections of the final reconstructed image in the ROOT file. 
-Bool_t CCMLEM::DrawHisto(void) {
+/// Saves 2D histogram and the projections of the final reconstructed image in
+/// the ROOT file.
+Bool_t CCMLEM::DrawHisto(void)
+{
 
-  int lastiter = fIter;
+    int lastiter = fIter;
 
-  TH1D* hProZ[250];
-  TH1D* hProY[250];
-  //TH1D* hProX[150];
-  TCanvas* can = new TCanvas("MLEM2D", "MLEM2D", 1000, 1000);
-  
-  can->Divide(2, 2);
-  can->cd(1);
-  // gPad->SetLogz(1);
-  
-  fImage[lastiter]->Draw("colz");
-  // fImage[iter]->SetMinimum(200);
-  hProZ[lastiter] = fImage[lastiter]->ProjectionX();
-  hProY[lastiter] = fImage[lastiter]->ProjectionY();
-  //hProX[lastiter] = fImage[lastiter]->ProjectionZ();
-  can->cd(2);
-  hProZ[lastiter]->Draw();
-  can->cd(3);
-  hProY[lastiter]->Draw();
-  //can->cd(4);
-  //hProX[lastiter]->Draw();
-  
+    TH1D* hProZ[250];
+    TH1D* hProY[250];
+    // TH1D* hProX[150];
+    TCanvas* can = new TCanvas("MLEM2D", "MLEM2D", 1000, 1000);
 
-  SaveToFile(can);
- 
-  return kTRUE;
+    can->Divide(2, 2);
+    can->cd(1);
+    // gPad->SetLogz(1);
+
+    fImage[lastiter]->Draw("colz");
+    // fImage[iter]->SetMinimum(200);
+    hProZ[lastiter] = fImage[lastiter]->ProjectionX();
+    hProY[lastiter] = fImage[lastiter]->ProjectionY();
+    // hProX[lastiter] = fImage[lastiter]->ProjectionZ();
+    can->cd(2);
+    hProZ[lastiter]->Draw();
+    can->cd(3);
+    hProY[lastiter]->Draw();
+    // can->cd(4);
+    // hProX[lastiter]->Draw();
+
+    SaveToFile(can);
+
+    return kTRUE;
 }
 //------------------------------------
-///Comparing the sigma_z of new 10th iteration with previous one
-///to check if iteration continues more or not.
-///user should define an appropriate fitting function
-///with respect to source distribution (simple simulation).
-Bool_t CCMLEM::GetSigmaError(void) {
+/// Comparing the sigma_z of new 10th iteration with previous one
+/// to check if iteration continues more or not.
+/// user should define an appropriate fitting function
+/// with respect to source distribution (simple simulation).
+Bool_t CCMLEM::GetSigmaError(void)
+{
 
-  double sigma[fIter + 1];
-  TH1D* ProZ[250];
-  TH1D* ProY[250];
+    double sigma[fIter + 1];
+    TH1D* ProZ[250];
+    TH1D* ProY[250];
 
-  TF1* func = new TF1(
-      "func", "[0]/2*TMath::Erf((x-[1])/[3])-[0]/2*TMath::Erf((x-[2])/[3])",
-      -40.5, 40.5);
-  func->SetParameter(0, 2500);
-  func->SetParameter(1, 0.01);
-  func->SetParameter(2, 0.01);
-  // func->SetParameter(3,200);
-  func->SetParameter(3, 8.1);
-  // func->SetParameter(5,8);
-  for (int i = 10; i <= fIter + 1; i = i + 10) {
-    
-    //ProX[i] = fImage[i]->ProjectionZ();  
-      ProY[i] = fImage[i]->ProjectionY();
-      ProZ[i] = fImage[i]->ProjectionX();
-      ProZ[i]->Fit(func, "r");
-    //ProY[i]->Fit(func_y,"r");
-      sigma[i] = func->GetParameter(2);
-    // cout<< "i : \t" << i << "\t" << "sigma : \t " << sigma[i]<< endl;
-  }
-  
-  for (int j = 20; j <= fIter + 1; j = j + 10) {
-       //cout << fSigma[100] << endl;
-      if (fabs(sigma[j]) !=0) fSigma[250] = (fabs(sigma[j] - sigma[j - 10]))/fabs(sigma[j]);
-       //cout << fSigma[100] << endl;
-      if (fSigma[250] < 0.1) {
- 
-          cout << "SigmaIter" << j << " - " << "SigmaIter" << j - 10 << " = " << "SigmaPercentageErr : " << fSigma[150] << endl;
- 
-          TCanvas* can = new TCanvas("can", "MLEM2D", 1000, 1000);
-          can->Divide(2, 2);
-          can->cd(1);
-          fImage[j - 10]->Draw("colz");
-          can->cd(2);
-          ProZ[j - 10]->Draw();
-          can->cd(3);
-          ProY[j - 10]->Draw();
-          //can->cd(4);
-          //ProX[j - 10]->Draw();
-                
-          SaveToFile(can);
-          //can->Update();
-          //delete can;
- 
-          return 0;
-            }
-     }
- 
+    TF1* func =
+        new TF1("func", "[0]/2*TMath::Erf((x-[1])/[3])-[0]/2*TMath::Erf((x-[2])/[3])", -40.5, 40.5);
+    func->SetParameter(0, 2500);
+    func->SetParameter(1, 0.01);
+    func->SetParameter(2, 0.01);
+    // func->SetParameter(3,200);
+    func->SetParameter(3, 8.1);
+    // func->SetParameter(5,8);
+    for (int i = 10; i <= fIter + 1; i = i + 10)
+    {
 
-  return kTRUE;
+        // ProX[i] = fImage[i]->ProjectionZ();
+        ProY[i] = fImage[i]->ProjectionY();
+        ProZ[i] = fImage[i]->ProjectionX();
+        ProZ[i]->Fit(func, "r");
+        // ProY[i]->Fit(func_y,"r");
+        sigma[i] = func->GetParameter(2);
+        // cout<< "i : \t" << i << "\t" << "sigma : \t " << sigma[i]<< endl;
+    }
+
+    for (int j = 20; j <= fIter + 1; j = j + 10)
+    {
+        // cout << fSigma[100] << endl;
+        if (fabs(sigma[j]) != 0) fSigma[250] = (fabs(sigma[j] - sigma[j - 10])) / fabs(sigma[j]);
+        // cout << fSigma[100] << endl;
+        if (fSigma[250] < 0.1)
+        {
+
+            cout << "SigmaIter" << j << " - "
+                 << "SigmaIter" << j - 10 << " = "
+                 << "SigmaPercentageErr : " << fSigma[150] << endl;
+
+            TCanvas* can = new TCanvas("can", "MLEM2D", 1000, 1000);
+            can->Divide(2, 2);
+            can->cd(1);
+            fImage[j - 10]->Draw("colz");
+            can->cd(2);
+            ProZ[j - 10]->Draw();
+            can->cd(3);
+            ProY[j - 10]->Draw();
+            // can->cd(4);
+            // ProX[j - 10]->Draw();
+
+            SaveToFile(can);
+            // can->Update();
+            // delete can;
+
+            return 0;
+        }
+    }
+
+    return kTRUE;
 }
 //-------------------------------------------------------------
-/// The function implements gaussian smearing/blur in two passes, first x and then y,
-/// based on the statements from https://en.wikipedia.org/wiki/Gaussian_blur
-///  that this is equivalent to a single 2D pass, but requires less computing time.
+/// The function implements gaussian smearing/blur in two passes, first x and
+/// then y, based on the statements from
+/// https://en.wikipedia.org/wiki/Gaussian_blur
+///  that this is equivalent to a single 2D pass, but requires less computing
+///  time.
 /// \param hin is the pointer to the histogram which should be smeared
 /// \param sigma is the standard deviation of the gaussian kernel
 ///
-/// Function returns a new object of a class TH2, therefore to get the desired type
-/// one needs to cast
-/// Example of usage: TH2F* h = dynamic_cast<TH2F*>(SmoothGauss(hin, 3.0));
+/// Function returns a new object of a class TH2, therefore to get the desired
+/// type one needs to cast Example of usage: TH2F* h =
+/// dynamic_cast<TH2F*>(SmoothGauss(hin, 3.0));
 
-TH2* CCMLEM::SmoothGauss(TH2* hin, double sigma){
+TH2* CCMLEM::SmoothGauss(TH2* hin, double sigma)
+{
 
-  if(sigma <= 0){
-    std::cout << "Smearing with sigma = " << sigma 
-              << " will not work, provide a positive number here..." << std::endl;
-    return nullptr;
-  }
-  
-  TH2* hout = dynamic_cast<TH2*>(hin->Clone(Form("%s_smooth_%.2f", hin->GetName(), sigma)));
-  hout->Reset();
-  const int nbinsx = hin->GetNbinsX();
-  const int nbinsy = hin->GetNbinsY();
-  double binwx = hin->GetXaxis()->GetBinWidth(1);
-  double binwy = hin->GetYaxis()->GetBinWidth(1);
-  
-  double kernelx[nbinsx];
-  double kernely[nbinsy];
-  
-  TF1* gaus = new TF1("gaus", "gaus");
-  gaus->SetParameters(1./sqrt(TMath::TwoPi())/sigma, 0, sigma);
-
-  for(int i=0; i<nbinsx + 1; i++)
-    kernelx[i] = gaus->Eval(binwx*i);
-  for(int i=0; i<nbinsy + 1; i++)
-    kernely[i] = gaus->Eval(binwy*i);
-
-  int deltabin = 0;
-  double z = 0;
-
-  //smearing in rows
-  for(int biny=0; biny<nbinsy + 1; biny++){
-    for(int binx=0; binx<nbinsx + 1; binx++){
-      z = 0;
-      for(int binxp=0; binxp<nbinsx + 1; binxp++){
-        deltabin = abs(binxp-binx);
-        z += kernelx[deltabin]*hin->GetBinContent(binxp, biny);
-      }
-      hout->SetBinContent(binx, biny, z);      
+    if (sigma <= 0)
+    {
+        std::cout << "Smearing with sigma = " << sigma
+                  << " will not work, provide a positive number here..." << std::endl;
+        return nullptr;
     }
-  }
-  TH2* htmp = dynamic_cast<TH2*>(hout->Clone());
-  hout->Reset();
-  
-  //smearing in columns
-  for(int binx=0; binx<nbinsx + 1; binx++){
-    for(int biny=0; biny<nbinsy + 1; biny++){
-      z = 0;
-      for(int binyp=0; binyp<nbinsy + 1; binyp++){
-        deltabin = abs(binyp-biny);
-        z += kernely[deltabin]*htmp->GetBinContent(binx, binyp);	
-      }
-      hout->SetBinContent(binx, biny, z);      
-    }
-  }
 
-  return hout;
+    TH2* hout = dynamic_cast<TH2*>(hin->Clone(Form("%s_smooth_%.2f", hin->GetName(), sigma)));
+    hout->Reset();
+    const int nbinsx = hin->GetNbinsX();
+    const int nbinsy = hin->GetNbinsY();
+    double binwx = hin->GetXaxis()->GetBinWidth(1);
+    double binwy = hin->GetYaxis()->GetBinWidth(1);
+
+    double kernelx[nbinsx];
+    double kernely[nbinsy];
+
+    TF1* gaus = new TF1("gaus", "gaus");
+    gaus->SetParameters(1. / sqrt(TMath::TwoPi()) / sigma, 0, sigma);
+
+    for (int i = 0; i < nbinsx + 1; i++)
+        kernelx[i] = gaus->Eval(binwx * i);
+    for (int i = 0; i < nbinsy + 1; i++)
+        kernely[i] = gaus->Eval(binwy * i);
+
+    int deltabin = 0;
+    double z = 0;
+
+    // smearing in rows
+    for (int biny = 0; biny < nbinsy + 1; biny++)
+    {
+        for (int binx = 0; binx < nbinsx + 1; binx++)
+        {
+            z = 0;
+            for (int binxp = 0; binxp < nbinsx + 1; binxp++)
+            {
+                deltabin = abs(binxp - binx);
+                z += kernelx[deltabin] * hin->GetBinContent(binxp, biny);
+            }
+            hout->SetBinContent(binx, biny, z);
+        }
+    }
+    TH2* htmp = dynamic_cast<TH2*>(hout->Clone());
+    hout->Reset();
+
+    // smearing in columns
+    for (int binx = 0; binx < nbinsx + 1; binx++)
+    {
+        for (int biny = 0; biny < nbinsy + 1; biny++)
+        {
+            z = 0;
+            for (int binyp = 0; binyp < nbinsy + 1; binyp++)
+            {
+                deltabin = abs(binyp - biny);
+                z += kernely[deltabin] * htmp->GetBinContent(binx, binyp);
+            }
+            hout->SetBinContent(binx, biny, z);
+        }
+    }
+
+    return hout;
 }
 //-------------------------------------------
-///Returns a double value from fitting function(gausian) used 
-///for comparing sigma_z values of different iterations.
+/// Returns a double value from fitting function(gausian) used
+/// for comparing sigma_z values of different iterations.
 ///\param x (Double_t*) - unknown value.
 ///\param p (Double_t*) - fitting parameter.
-Double_t CCMLEM::FitProjection(Double_t *x,Double_t *p) {
-      Double_t a = 0;
-      if (p[2]!=0) a = (x[0] - p[1])/p[2];
-      Double_t fitvalue = p[0]*TMath::Exp(-0.5*a*a);
-      return fitvalue;
+Double_t CCMLEM::FitProjection(Double_t* x, Double_t* p)
+{
+    Double_t a = 0;
+    if (p[2] != 0) a = (x[0] - p[1]) / p[2];
+    Double_t fitvalue = p[0] * TMath::Exp(-0.5 * a * a);
+    return fitvalue;
 }
 //-------------------------------------------
-///Returns a double value from fitting function(Breit-Wiegner) used 
-///for comparing sigma_z values of different iterations.
+/// Returns a double value from fitting function(Breit-Wiegner) used
+/// for comparing sigma_z values of different iterations.
 ///\param x (Double_t*) - unknown value.
 ///\param p (Double_t*) - fitting parameter.
-Double_t CCMLEM::FitProjection1(Double_t *x,Double_t *p) {
-      Double_t a = 0;
-      a = (x[0] - p[1])*(x[0] - p[1]) + 0.5*0.5*p[2]*p[2];
-      Double_t fitvalue = p[0]*0.5*p[2]/a;
-      return fitvalue;
+Double_t CCMLEM::FitProjection1(Double_t* x, Double_t* p)
+{
+    Double_t a = 0;
+    a = (x[0] - p[1]) * (x[0] - p[1]) + 0.5 * 0.5 * p[2] * p[2];
+    Double_t fitvalue = p[0] * 0.5 * p[2] / a;
+    return fitvalue;
 }
 //-------------------------------------------
-///Prints details of the CCMLEM class obejct.
-void CCMLEM::Print(void) {
-  cout << "\nCCMLEM::Print()" << endl;
-  cout << setw(35) << "Name of input file: \t"
-       << fInputName << endl;
-   //cout << setw(35) << "Center of reco plane: \t" << fXofRecoPlane << ", "
-   //<< fYofRecoPlane << ", " << fZofRecoPlane << endl;
-  cout << setw(35) << "Size of image volume: \t" << fDimZ << ", " << fDimY
-       << ", " << fDimX << endl;
-  cout << setw(35) << "No. of bins: \t" << fNbinsZ << ", " << fNbinsY << ", "
-       << fNbinsX << endl;
-  cout << setw(35) << "No. of MLEM iterations: \t" << fIter << endl;
-  cout << setw(35) << "FreshOutput level: \t" << fFreshOutput << endl;
-  cout << setw(35) << "No. of first and last event: \t" << fStart << ", "
-       << fStop << endl;
-  cout << setw(35) << "Verbose level: \t" << fVerbose << endl << endl;
-  cout << setw(35) << "INFORMATION FOR SIMPLEINPUT" << endl;
-  cout << setw(35) << "Smear level: \t" << fSmear << endl;
-  cout << setw(35) << "Pos resolution: \t" << fResolutionX << ", "
-       << fResolutionY<< ", " << fResolutionZ << endl;
-  cout << setw(35) << "Fitting parameters: \t" << fP0<< ", "
-       << fP1 << ", " << fP2 << endl;
-  cout << setw(35) << "INFORMATION FOR GEANTINPUT" << endl;
-  cout << setw(35) << "Loading Real: \t" << fLoadReal << endl << endl;
-  cout << setw(35) << "Loading Only correct Indentified Events: \t" << fCorrectIdentified<< endl << endl;
+/// Prints details of the CCMLEM class obejct.
+void CCMLEM::Print(void)
+{
+    cout << "\nCCMLEM::Print()" << endl;
+    cout << setw(35) << "Name of input file: \t" << fInputName << endl;
+    // cout << setw(35) << "Center of reco plane: \t" << fXofRecoPlane << ", "
+    //<< fYofRecoPlane << ", " << fZofRecoPlane << endl;
+    cout << setw(35) << "Size of image volume: \t" << fDimZ << ", " << fDimY << ", " << fDimX
+         << endl;
+    cout << setw(35) << "No. of bins: \t" << fNbinsZ << ", " << fNbinsY << ", " << fNbinsX << endl;
+    cout << setw(35) << "No. of MLEM iterations: \t" << fIter << endl;
+    cout << setw(35) << "FreshOutput level: \t" << fFreshOutput << endl;
+    cout << setw(35) << "No. of first and last event: \t" << fStart << ", " << fStop << endl;
+    cout << setw(35) << "Verbose level: \t" << fVerbose << endl << endl;
+    cout << setw(35) << "INFORMATION FOR SIMPLEINPUT" << endl;
+    cout << setw(35) << "Smear level: \t" << fSmear << endl;
+    cout << setw(35) << "Pos resolution: \t" << fResolutionX << ", " << fResolutionY << ", "
+         << fResolutionZ << endl;
+    cout << setw(35) << "Fitting parameters: \t" << fP0 << ", " << fP1 << ", " << fP2 << endl;
+    cout << setw(35) << "INFORMATION FOR GEANTINPUT" << endl;
+    cout << setw(35) << "Loading Real: \t" << fLoadReal << endl << endl;
+    cout << setw(35) << "Loading Only correct Indentified Events: \t" << fCorrectIdentified << endl
+         << endl;
 }
 //--------------------------------------
 ///Sets default values of the private class members.
@@ -1679,52 +1808,53 @@ void CCMLEM::Clear(void) {
   fOutputFile = NULL;
 }
 //--------------------------------------
-///Saves SystemMatrix in the output file.
+/// Saves SystemMatrix in the output file.
 ///\param filename (const TString&) - saved file.
-void CCMLEM::SmatrixToFile(const TString& filename) {
-  TFile file(filename, "RECREATE");
-  file.cd();
+void CCMLEM::SmatrixToFile(const TString& filename)
+{
+    TFile file(filename, "RECREATE");
+    file.cd();
     Double_t z, y, x;
     Int_t entry;
     Int_t binno, eventno, binz, biny;
     Double_t dist;
     SMElement* temp;
-   
-/// Generate a Tree with a TClonesArray    
+
+    /// Generate a Tree with a TClonesArray
     fTree = new TTree("SystemMatrix", "SystemMatrix");
-    //TClonesArray &ar = *fSM;
-    //fTree->Branch("tcl",&eventno,"eventno:binno:dist");
-    fTree->Branch("Eventno",&eventno);
-    fTree->Branch("Binno",&binno);
-    fTree->Branch("Dist",&dist);
-    
-    
-    fSmatrix = new TH2F("Smatrix","Smatrix",fNbinsZ, -fDimZ / 2. , fDimZ / 2.,
-                       fNbinsY, -fDimY / 2., fDimY / 2.);
+    // TClonesArray &ar = *fSM;
+    // fTree->Branch("tcl",&eventno,"eventno:binno:dist");
+    fTree->Branch("Eventno", &eventno);
+    fTree->Branch("Binno", &binno);
+    fTree->Branch("Dist", &dist);
+
+    fSmatrix = new TH2F("Smatrix", "Smatrix", fNbinsZ, -fDimZ / 2., fDimZ / 2., fNbinsY,
+                        -fDimY / 2., fDimY / 2.);
     fSmatrix->GetXaxis()->SetTitle("z [mm]");
     fSmatrix->GetYaxis()->SetTitle("y [mm]");
-    //ar.Clear();
+    // ar.Clear();
     Int_t nSMentries = fSM->GetEntries();
-   
-    for (entry = 0; entry < nSMentries; entry++) {
-        
+
+    for (entry = 0; entry < nSMentries; entry++)
+    {
+
         temp = (SMElement*)fSM->At(entry);
         eventno = temp->GetEvent();
         binno = temp->GetBin();
-        //binz = binno%(fNbinsZ + 2);
-        //z = h3->GetXaxis()->GetBinCenter(binz);
-        //biny = ((binno-binz)/(fNbinsZ + 2))%(fNbinsY + 2);
-        //y = h3->GetYaxis()->GetBinCenter(biny);
-        
+        // binz = binno%(fNbinsZ + 2);
+        // z = h3->GetXaxis()->GetBinCenter(binz);
+        // biny = ((binno-binz)/(fNbinsZ + 2))%(fNbinsY + 2);
+        // y = h3->GetYaxis()->GetBinCenter(biny);
+
         dist = temp->GetDist();
-        //temp->Print();
-        //cout<< binz << "\t " << z << "\t" << biny << "\t" << y << "\t"<< fImage[0]->GetBinContent(binno) << "\t"<< dist << endl;
+        // temp->Print();
+        // cout<< binz << "\t " << z << "\t" << biny << "\t" << y << "\t"<<
+        // fImage[0]->GetBinContent(binno) << "\t"<< dist << endl;
         fSmatrix->SetBinContent(binno, fImage[0]->GetBinContent(binno));
-        //temp = (SMElement*)ar.ConstructedAt(entry);
-        //temp->SetEvBinDist(eventno, binno, dist);
-        //new(ar[entry]) SMElement(eventno, binno, dist);
+        // temp = (SMElement*)ar.ConstructedAt(entry);
+        // temp->SetEvBinDist(eventno, binno, dist);
+        // new(ar[entry]) SMElement(eventno, binno, dist);
         fTree->Fill();
-        
     }
     fSM->Write();
     fTree->Write();
@@ -1734,16 +1864,17 @@ void CCMLEM::SmatrixToFile(const TString& filename) {
     fSmatrix->Draw("colz");
     fSmatrix->Write();
     can->Write();
-  file.Close();
+    file.Close();
 }
 //--------------------------------------
-///Saves object in the output file.
+/// Saves object in the output file.
 ///\param ob (TObject*) - saved object.
-Bool_t CCMLEM::SaveToFile(TObject* ob) {
-  fOutputFile->cd();
-  ob->Write();
-  cout << ob->ClassName() << " " << ob->GetName() << " saved in the file "
-       << fOutputFile->GetName() << endl;
-  return kTRUE;
+Bool_t CCMLEM::SaveToFile(TObject* ob)
+{
+    fOutputFile->cd();
+    ob->Write();
+    cout << ob->ClassName() << " " << ob->GetName() << " saved in the file "
+         << fOutputFile->GetName() << endl;
+    return kTRUE;
 }
 

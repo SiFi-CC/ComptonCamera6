@@ -7,17 +7,19 @@
 
 #include <spdlog/sinks/stdout_color_sinks.h>
 
-namespace SiFi {
+namespace SiFi
+{
 
 using logger = std::shared_ptr<spdlog::logger>;
 
-inline logger createLogger(std::string name) {
-  auto alreadyExists = spdlog::get(name);
-  if (alreadyExists != nullptr) { return alreadyExists; }
+inline logger createLogger(std::string name)
+{
+    auto alreadyExists = spdlog::get(name);
+    if (alreadyExists != nullptr) { return alreadyExists; }
 
-  auto logger = spdlog::stdout_color_st(name);
-  spdlog::drop(name); // it will be released after all references are lost
-  return logger;
+    auto logger = spdlog::stdout_color_st(name);
+    spdlog::drop(name); // it will be released after all references are lost
+    return logger;
 }
 
 } // namespace SiFi

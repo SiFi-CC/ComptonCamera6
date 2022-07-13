@@ -6,25 +6,28 @@
 #include "CMReconstruction.hh"
 #include "CmdLineConfig.hh"
 
-int main(int argc, char** argv) {
-  spdlog::set_level(spdlog::level::info);
+int main(int argc, char** argv)
+{
+    spdlog::set_level(spdlog::level::info);
 
-  CmdLineOption opt_output("Output", "-o",
-                           "Output file (string), default: Hmatrix.root",
-                           "Hmatrix.root");
+    CmdLineOption opt_output("Output", "-o", "Output file (string), default: Hmatrix.root",
+                             "Hmatrix.root");
 
-  CmdLineArg cmdarg_input("input", "Input file", CmdLineArg::kString);
+    CmdLineOption opt_events("Events", "-n",
+                             "Number of events for each vertex, default: 100000 (integer)", 100000);
 
-  CmdLineConfig::instance()->ReadCmdLine(argc, argv);
+    CmdLineArg cmdarg_input("input", "Input file", CmdLineArg::kString);
 
-  const Positional& args = CmdLineConfig::GetPositionalArguments();
+    CmdLineConfig::instance()->ReadCmdLine(argc, argv);
 
-  spdlog::info("Outputfile: {}", opt_output.GetStringValue());
+    const Positional& args = CmdLineConfig::GetPositionalArguments();
 
-  TString inputfile(args.at("input")->GetStringValue()); // INPUT
-  TString outputfile(opt_output.GetStringValue());       // OUTPUT
+    spdlog::info("Outputfile: {}", opt_output.GetStringValue());
 
-  CMReconstruction reconstruction(inputfile);
+    TString inputfile(args.at("input")->GetStringValue()); // INPUT
+    TString outputfile(opt_output.GetStringValue());       // OUTPUT
 
-  reconstruction.HmatrixToFile(outputfile);
+    CMReconstruction reconstruction(inputfile);
+
+    reconstruction.HmatrixToFile(outputfile);
 }

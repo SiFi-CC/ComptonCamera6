@@ -15,12 +15,13 @@ using namespace std;
 /// for reading simulation data saved in different forms and passing it
 /// to reconstruction classes via set of getter functions.
 
-class InputReader : public TObject {
+class InputReader : public TObject
+{
 
 public:
-  InputReader();
-  InputReader(TString path);
-  ~InputReader();
+    InputReader();
+    InputReader(TString path);
+    ~InputReader();
 
   void Print(void);
   //------------------------------------------------------------------
@@ -55,34 +56,34 @@ public:
   double virtual GetEnergyLoss(void);
   double virtual GetEnergyScattered(void);
 
-//SIMPLE SPECIFIC
+    // SIMPLE SPECIFIC
 
-  void virtual SetSmearing(bool smear,Double_t posX,Double_t posY, Double_t posZ);
-  Double_t virtual SmearGaus(double val, double sigma);
-  Double_t virtual SmearBox(double x, double resolution);
-  Double_t virtual GetSigmaE(double energy);
-//EI SPECIFIC
-
+    void virtual SetSmearing(bool smear, Double_t posX, Double_t posY, Double_t posZ);
+    Double_t virtual SmearGaus(double val, double sigma);
+    Double_t virtual SmearBox(double x, double resolution);
+    Double_t virtual GetSigmaE(double energy);
+    // EI SPECIFIC
 
 //GEANT4 SPECIFIC
   void virtual SetLoadMonteCarlo(void);
 //Geant4/NN SPECIFIC
   void virtual SetLoadOnlyCorrect(int value);
 
-
+    // NN SPECIFIC
 
 protected:
-  TFile* fFile; ///< Input file
-  TTree* fTree; ///< Tree containing simulation results
-  /// Opens tree containing simulations results. Sets branches addresses
-  ///\param name (TString) - name of the tree
-  bool virtual AccessTree(TString name);
-  bool SetInputFile(TString path);
-  //vector<PhysicVec*>* GetRecoClusterPosSize(void);
-  
-  ClassDef(InputReader, 0)
+    TFile* fFile; ///< Input file
+    TTree* fTree; ///< Tree containing simulation results
+    /// Opens tree containing simulations results. Sets branches addresses
+    ///\param name (TString) - name of the tree
+    bool virtual AccessTree(TString name);
+    bool SetInputFile(TString path);
+    // vector<PhysicVec*>* GetRecoClusterPosSize(void);
+
+    ClassDef(InputReader, 0)
 };
-inline void InputReader::SelectEvents(void){}  
+
+inline void InputReader::SelectEvents(void){}
 inline bool InputReader::SelectSingleEvent(void){return false;}
 inline int InputReader::GetNumberOfEventsInFile(void){return 0;}
 inline list<int> InputReader::GetSelectedEvents(void){return std::list<int>();}
@@ -90,8 +91,8 @@ inline list<int> InputReader::GetSelectedEvents(void){return std::list<int>();}
 inline void InputReader::SetLoadMonteCarlo(void){}
 inline void InputReader::SetLoadOnlyCorrect(int value){}
 /// SIMPLE SPECIFIC
-inline void InputReader::SetSmearing(bool smear,Double_t posX,Double_t posY, Double_t posZ){}
-inline Double_t InputReader::SmearGaus(double val, double sigma){ return 0;}
-inline Double_t InputReader::SmearBox(double x, double resolution){return 0;}
-inline Double_t InputReader::GetSigmaE(double energy){return 0;}
+inline void InputReader::SetSmearing(bool smear, Double_t posX, Double_t posY, Double_t posZ) {}
+inline Double_t InputReader::SmearGaus(double val, double sigma) { return 0; }
+inline Double_t InputReader::SmearBox(double x, double resolution) { return 0; }
+inline Double_t InputReader::GetSigmaE(double energy) { return 0; }
 #endif

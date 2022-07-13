@@ -3,12 +3,14 @@
 ClassImp(InputReaderGeant);
 
 //------------------------------------------------------------------
-InputReaderGeant::InputReaderGeant() : InputReader() {
-  Clear();
-  cout << "##### Warning in InputReaderGeant constructor!" << endl;
-  cout << "You are usinf default constructor." << endl;
+InputReaderGeant::InputReaderGeant() : InputReader()
+{
+    Clear();
+    cout << "##### Warning in InputReaderGeant constructor!" << endl;
+    cout << "You are usinf default constructor." << endl;
 }
 //------------------------------------------------------------------
+
 InputReaderGeant::InputReaderGeant(TString path):
 InputReader(path),
 fLoadReal(false),
@@ -16,22 +18,23 @@ fCorrectOnly(0),
 fPrimaryEnergy(0),
 fEnergyLoss(0), 
 fEnergyScattered(0) 
+
 {
-  if (!AccessTree("Events","Setup")) {
-    throw "##### Exception in InputReaderGeant constructor!";
-  }
-  fPositionScat = new TVector3();
-  fPositionAbs = new TVector3();
-  fDirectionScat = new TVector3();
-  
-  fPositionSource = new TVector3();
-  fDirectionSource = new TVector3();
+    if (!AccessTree("Events", "Setup"))
+    {
+        throw "##### Exception in InputReaderGeant constructor!";
+    }
+    fPositionScat = new TVector3();
+    fPositionAbs = new TVector3();
+    fDirectionScat = new TVector3();
 
-
+    fPositionSource = new TVector3();
+    fDirectionSource = new TVector3();
 }
 //------------------------------------------------------------------
-InputReaderGeant::~InputReaderGeant() {
-  if (fFile->IsOpen()) fFile->Close();
+InputReaderGeant::~InputReaderGeant()
+{
+    if (fFile->IsOpen()) fFile->Close();
 }
 //------------------------------------------------------------------
 bool InputReaderGeant::AccessTree(TString name, TString namesetup) {
@@ -284,26 +287,32 @@ bool InputReaderGeant::LoadEvent(int i) {
   return true;
 }
 //------------------------------------------------------------------
-TVector3* InputReaderGeant::GetPositionPrimary(void) {
-  if(fLoadReal){
-  	cout << "##### Warning in InputReaderGeant::GetPositionPrimary()!" << endl;
-  	cout << "\t Position of gamma source is unknown!" << endl;
-  	return NULL;
-  }
-  else{
-  	return fRealPosition_source;
-  }
+TVector3* InputReaderGeant::GetPositionPrimary(void)
+{
+    if (fLoadReal)
+    {
+        cout << "##### Warning in InputReaderGeant::GetPositionPrimary()!" << endl;
+        cout << "\t Position of gamma source is unknown!" << endl;
+        return NULL;
+    }
+    else
+    {
+        return fRealPosition_source;
+    }
 }
 //------------------------------------------------------------------
-TVector3* InputReaderGeant::GetGammaDirPrimary(void) {
-  if(fLoadReal){
-  	cout << "##### Warning in InputReaderGeant::GetGammaDirPrimary()!" << endl;
-  	cout << "\t Direction of primary gamma is unknown!" << endl;
-  	return NULL;
-  }
-  else{
-  	return fDirectionSource;
-  }
+TVector3* InputReaderGeant::GetGammaDirPrimary(void)
+{
+    if (fLoadReal)
+    {
+        cout << "##### Warning in InputReaderGeant::GetGammaDirPrimary()!" << endl;
+        cout << "\t Direction of primary gamma is unknown!" << endl;
+        return NULL;
+    }
+    else
+    {
+        return fDirectionSource;
+    }
 }
 void InputReaderGeant::Clear(void) {
   fEventNumber = -1;

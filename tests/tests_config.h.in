@@ -1,0 +1,10 @@
+#ifndef CC6_TESTS_CONFIG_H
+#define CC6_TESTS_CONFIG_H
+
+#include <string>
+
+const std::string tests_path = "@CMAKE_CURRENT_SOURCE_DIR@/";
+const std::string build_path = "@CMAKE_CURRENT_BINARY_DIR@/";
+
+#endif /* CC6_TESTS_CONFIG_H */
+
