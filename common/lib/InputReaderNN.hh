@@ -32,7 +32,7 @@ public:
   void SetLoadOnlyCorrect(int value);
 
 private:
-  int fCorrectOnly;
+  int fCorrectOnly; // 0 all results from the NN, 1 loading eventtype 1 and 2, 2 loading eventtype 2, 3 only eventtype 0, 4 only eventtype 1 
   list<int> fSelectedEvents;
   
   float fX1;

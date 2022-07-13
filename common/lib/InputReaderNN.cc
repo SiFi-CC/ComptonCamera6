@@ -123,8 +123,11 @@ bool InputReaderNN::AccessTree(TString name) {
 void InputReaderNN::SelectEvents(){  
   for(int i=0;i<fTree->GetEntries();i++) {
   	fTree->GetEntry(i);
-  	if(fCorrectOnly!=fEventType) continue; 
-  	fSelectedEvents.push_back(i);
+	if(fCorrectOnly==1 && fEventType==0)continue;
+	else if(fCorrectOnly==2 && fEventType!=2)continue;
+	else if(fCorrectOnly==3 && fEventType!=0)continue;
+	else if(fCorrectOnly==4 && fEventType!=1)continue;
+ 	fSelectedEvents.push_back(i);
   }
 }
 //------------------------------------------------------------------
@@ -142,7 +145,10 @@ bool InputReaderNN::LoadEvent(int i) {
   }
 
   fTree->GetEntry(i);
-  if(fCorrectOnly>fEventType) return false; 
+  if(fCorrectOnly==1 && fEventType==0)return false;
+  else if(fCorrectOnly==2 && fEventType!=2)return false;
+  else if(fCorrectOnly==3 && fEventType!=0)return false;
+  else if(fCorrectOnly==4 && fEventType!=1)return false;
   fPositionScat->SetXYZ(fX1,fY1,fZ1);
   fPositionAbs->SetXYZ(fX2,fY2,fZ2);
   fDirectionScat->SetXYZ(fPX,fPY,fPZ);
