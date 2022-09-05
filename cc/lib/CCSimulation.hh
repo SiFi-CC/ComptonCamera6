@@ -111,14 +111,15 @@ private:
     Double_t fZgap;        ///< For generator #3 - distance between two point-like sources
                            /// along Z axis
     Double_t fRadius;      ///< For generator #5 - radius of the gamma source
-    Double_t fNegAngle;    ///< Negative constraint on generated photons
-    Double_t fPosAngle;    ///< Positive constraint on generated photons
+    Double_t fNegAngle;    ///< Negative constraint on generated photons (azimuthal angle)
+    Double_t fPosAngle;    ///< Positive constraint on generated photons (azimuthal angle)
 
     TH2F* hSource{nullptr};     ///< 2D histogram of distribution of the gamma source
     TH2F* hScat{nullptr};       ///< 2D histogram of distribution of evens on scatterer plane
     TH2F* hAbs{nullptr};        ///< 2D histogram of distribution of events on absorber plane
     TH1F* hEnergyAbs{nullptr};  ///< Histogram of scattered gammas energy
     TH1F* hEnergyLoss{nullptr}; ///< Histogram of energy loss
+    TH1F* hScaAngle{nullptr};   ///< Histogram of scattering angle
 };
 
 #endif

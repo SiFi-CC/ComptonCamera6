@@ -63,7 +63,8 @@ public:
     Double_t virtual SmearBox(double x, double resolution);
     Double_t virtual GetSigmaEScat(double energy);
     Double_t virtual GetSigmaEAbs(double energy);
-    Bool_t ReadGeometry(void); ///< Reads scatterer's and absorber's width and height
+    void virtual ReadGeometry(void) { }; ///< Reads scatterer's and absorber's width and height
+    void virtual PrintEvent(int i) { };
     // EI SPECIFIC
 
 //GEANT4 SPECIFIC

@@ -8,6 +8,7 @@
 #include "TSystem.h"
 #include "TVector3.h"
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -43,12 +44,13 @@ public:
     
     TString fInputFile; ///< Path to the root file
     
-    Bool_t ReadGeometry(void); ///< Reads scatterer's and absorber's width and height
+    void ReadGeometry(void); ///< Reads scatterer's and absorber's width and height
     /* Scatterer's and absorber's width and height read from geometry file */
     Double_t fScatWidth;
     Double_t fScatHeight;
     Double_t fAbsWidth;
     Double_t fAbsHeight;
+    void PrintEvent(int i);
 
 private:
     // LOADING FROM THE TREE

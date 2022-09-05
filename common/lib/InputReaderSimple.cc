@@ -91,16 +91,18 @@ bool InputReaderSimple::LoadEvent(int i)
                              SmearBox(fPositionAbs->Z(), fAbsResolutionZ));
         fEnergyLoss = SmearGaus(fEnergyLoss, GetSigmaEScat(fEnergyLoss));
         fEnergyScattered = SmearGaus(fEnergyScattered, GetSigmaEAbs(fEnergyScattered));
+
         
-//         if (fPositionScat->Y() < -fScatHeight/2) fPositionScat->Y() = -fScatHeight/2;
-//         if (fPositionScat->Y() > fScatHeight/2) fPositionScat->Y() = fScatHeight/2;
-//         if (fPositionScat->Z() < -fScatWidth/2) fPositionScat->Y() = -fScatWidth/2;
-//         if (fPositionScat->Z() > fScatWidth/2) fPositionScat->Y() = fScatWidth/2;
-//         
-//         if (fPositionAbs->Y() < -fAbsHeight/2) fPositionAbs->Y() = -fAbsHeight/2;
-//         if (fPositionAbs->Y() > fAbsHeight/2) fPositionAbs->Y() = fAbsHeight/2;
-//         if (fPositionAbs->Z() < -fAbsWidth/2) fPositionAbs->Y() = -fAbsWidth/2;
-//         if (fPositionAbs->Z() > fAbsWidth/2) fPositionAbs->Y() = fAbsWidth/2;
+        ///Makes sure that events are not out of the detector volumes.
+         if (fPositionScat->Y() < -fScatHeight/2) fPositionScat->SetY(-fScatHeight/2);
+         if (fPositionScat->Y() > fScatHeight/2) fPositionScat->SetY(fScatHeight/2);
+         if (fPositionScat->Z() < -fScatWidth/2) fPositionScat->SetY(-fScatWidth/2);
+         if (fPositionScat->Z() > fScatWidth/2) fPositionScat->SetY(fScatWidth/2);
+         
+         if (fPositionAbs->Y() < -fAbsHeight/2) fPositionAbs->SetY(-fAbsHeight/2);
+         if (fPositionAbs->Y() > fAbsHeight/2) fPositionAbs->SetY(fAbsHeight/2);
+         if (fPositionAbs->Z() < -fAbsWidth/2) fPositionAbs->SetY(-fAbsWidth/2);
+         if (fPositionAbs->Z() > fAbsWidth/2) fPositionAbs->SetY(fAbsWidth/2);
     }
     return true;
 }
@@ -116,55 +118,50 @@ void InputReaderSimple::SelectEvents() {
 }
 //------------------------------------------------------------------
 bool InputReaderSimple::SelectSingleEvent() {
-    return true;
+    if (fEnergy1 > 0.0001) return true;
+    else return false;
+}
+//------------------------------------------------------------------
+void InputReaderSimple::PrintEvent(int i) {
+    fTree->GetEntry(i);
+    cout << "position in the scatterer: " << fPositionScat->X() << " " << fPositionScat->Y() << " " << fPositionScat->Z() << endl;
+    cout << "position in the absorber: " << fPositionAbs->X() << " " << fPositionAbs->Y() << " " << fPositionAbs->Z() << endl;
+    cout << "energy in the scatterer: " << fEnergyLoss << endl;
+    cout << "energy in the absorber: " << fEnergyScattered << endl;
 }
 //------------------------------------------------------------------
 /// Reads scatterer's and absorber's dimensions from Simple Simulation.
-Bool_t InputReaderSimple::ReadGeometry(void)
-{
-    cout << "fInputFile: " << fInputFile.Data() << endl;
-
+/// Works only if the files are in certain directories!
+void InputReaderSimple::ReadGeometry(void) {
     string inputFile(fInputFile.Data());
-    cout << "in CCMLEM   input file: " << inputFile << endl;
-
-//     string geometryPath = inputFile;
-//     geometryPath.replace(0, 21, "results/CCSimulation_geometry_");
-//     geometryPath = geometryPath.substr(0, geometryPath.find("_scat")) + ".txt";
-//     
-//     cout << "in CCMLEM   geometry path: " << geometryPath << endl;
-//     
-//     ifstream geometry(geometryPath);
-//     
-//     if (geometry.is_open()) {
-//         string line;
-//         bool scattererSection = true;
-//         while (getline(geometry, line)) {
-//             if (line.rfind("fDimZ", 0) == 0) {
-//                 double value = stod(line.substr(8));
-//                 if (scattererSection) {
-//                     fScatWidth = value;
-//                 } else {
-//                     fAbsWidth = value;
-//                 }
-//             } else if (line.rfind("fDimY", 0) == 0) {
-//                 double value = stod(line.substr(8));
-//                 if (scattererSection) {
-//                     fScatHeight = value;
-//                     scattererSection = false;
-//                 } else {
-//                     fAbsHeight = value;
-//                 }
-//             }
-//         }
-//         geometry.close();
-//     }
-//     
-//     cout << "fScatWidth: " << fScatWidth << endl;
-//     cout << "fScatHeight: " << fScatHeight << endl;
-//     cout << "fAbsWidth: " << fAbsWidth << endl;
-//     cout << "fAbsHeight: " << fAbsHeight << endl;
-
-    return true;
+    string geometryPath = inputFile;
+    geometryPath.replace(0, 21, "results/CCSimulation_geometry_");
+    geometryPath = geometryPath.substr(0, geometryPath.find("_scat")) + ".txt";
+    ifstream geometry(geometryPath);
+    
+    if (geometry.is_open()) {
+        string line;
+        bool scattererSection = true;
+        while (getline(geometry, line)) {
+            if (line.rfind("fDimZ", 0) == 0) {
+                double value = stod(line.substr(8));
+                if (scattererSection) {
+                    fScatWidth = value;
+                } else {
+                    fAbsWidth = value;
+                }
+            } else if (line.rfind("fDimY", 0) == 0) {
+                double value = stod(line.substr(8));
+                if (scattererSection) {
+                    fScatHeight = value;
+                    scattererSection = false;
+                } else {
+                    fAbsHeight = value;
+                }
+            }
+        }
+        geometry.close();
+    }
 }
 //------------------------------------------------------------------
 void InputReaderSimple::Clear(void)
@@ -224,14 +221,12 @@ Double_t InputReaderSimple::SmearBox(double x, double resolution)
 ///\param energy (double) - the given energy value.
 Double_t InputReaderSimple::GetSigmaEScat(double energy)
 {
-    double sigma = fHisto->GetFunction("fit1")->Eval(energy) * energy * 9/7.2;
+    double sigma = fHisto->GetFunction("fit1")->Eval(energy) * energy * 8.8/7.2;
     return sigma;
 }
 //------------------------------------
 Double_t InputReaderSimple::GetSigmaEAbs(double energy)
 {
-//     double sigma = fHisto->GetFunction("fit1")->Eval(energy) * energy * 4.5/7.2;
-    
     double sigma = (-0.00488 * energy + 0.04688) * energy;
     return sigma;
 }

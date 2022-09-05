@@ -68,6 +68,9 @@ CCSimulation::CCSimulation(const TString& name, const TString& outputPath, Int_t
     hEnergyLoss->GetXaxis()->SetTitle("energy [MeV]");
     hEnergyAbs = new TH1F("hEnergyScattered", "energy of scattered gamma", nbins, 0., 5.);
     hEnergyAbs->GetXaxis()->SetTitle("energy [MeV]");
+    hScaAngle = new TH1F("hScatteringAngle", "scattering angle", nbins, 0, 50);
+    hScaAngle->GetXaxis()->SetTitle("angle [deg]");
+    hScaAngle->GetYaxis()->SetTitle("counts");
 }
 //------------------------------------------------------------------
 /// Default destructor. Here the tree and 2D histograms are saved
@@ -83,6 +86,7 @@ CCSimulation::~CCSimulation()
     hAbs->Write();
     hEnergyAbs->Write();
     hEnergyLoss->Write();
+    hScaAngle->Write();
 
     fFile->Close();
 
@@ -149,8 +153,6 @@ Bool_t CCSimulation::GenerateRay()
                 phi = gRandom->Uniform(-TMath::Pi(), fNegAngle*TMath::DegToRad());        // rad
             else
                 phi = gRandom->Uniform(fPosAngle*TMath::DegToRad(), TMath::Pi());         // rad
-            // Double_t theta = TMath::Pi()/2.;	//rad
-            // Double_t phi = TMath::Pi();		//rad
             break;
         case 2: // uniform distribution along z axis (beam)
             maxz = fScatterer.GetDimZ() / 4.;
@@ -235,7 +237,7 @@ Bool_t CCSimulation::ProcessEvent()
     // cout << fXofSource << "\t" << fYofSource << "\t" << fZofSource << endl;
     // cout << endl << endl << endl;
 
-    fEnergy0 = 1.275;
+    fEnergy0 = 0.511;
     Track fTrack1;
     fTrack1.SetPoint(fPoint0);
     fTrack1.SetVersor(fVersor1);
@@ -315,6 +317,7 @@ Bool_t CCSimulation::ProcessEvent()
     hAbs->Fill(fPoint2.Z(), fPoint2.Y());
     hEnergyLoss->Fill(fEnergy1);
     hEnergyAbs->Fill(fEnergy2);
+    hScaAngle->Fill(fVersor1.Angle(fVersor2)*TMath::RadToDeg());
     fNev++;
 
     return kTRUE;

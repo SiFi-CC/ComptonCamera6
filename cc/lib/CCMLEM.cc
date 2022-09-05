@@ -260,9 +260,15 @@ Bool_t CCMLEM::Reconstruct(){
 
     TStopwatch t;
     t.Start();
+    
+    TH1F *hIsectionCones = new TH1F("hIsectionCones", "hIsectionCones", 100, 0, 2000); // histogram showing the number of intersection points for each Compton cone
+    TH1F *hScaAngle = new TH1F("hScatteringAngle", "hScatteringAngle", 100, 0, 180);
+    hScaAngle->GetXaxis()->SetTitle("angle [deg]");
+    hScaAngle->GetYaxis()->SetTitle("counts");
 
 /// This loop will always analyze all events in the fEvents list. The number is given by the cuts you perform and/or the number of events you actually want to use 
     int counter=0;
+    int zero_points = 0;
     for (Int_t eve :fEvents) {
 
         fNIpoints = 0;
@@ -289,7 +295,6 @@ Bool_t CCMLEM::Reconstruct(){
         interactionPoint = cone->GetApex();
         coneAxis = cone->GetAxis();
         coneTheta = cone->GetAngle();
-        // cout<< "theta :" << "\t"<< coneTheta << endl;
 
         Double_t K = cos(coneTheta);
         Double_t a, b, c1, c2, c3, c4, c, z1, z2;
@@ -404,6 +409,8 @@ Bool_t CCMLEM::Reconstruct(){
             fA[i] = tempp->GetBin();
             // if(fVerbose) tempp->Print();
         }
+        
+        hIsectionCones->Fill(fNIpoints);
 
         TMath::Sort(fNIpoints, fA, index, kFALSE);
 
@@ -412,6 +419,12 @@ Bool_t CCMLEM::Reconstruct(){
         Double_t dist;
         Int_t binno1, binno2, binno;
         SMElement* temp;
+        
+        if (fNIpoints > 0) {
+            hScaAngle->Fill(coneTheta*TMath::RadToDeg());
+        }
+        
+        if (fNIpoints == 0) zero_points++;
 
         for (int h = 0; h < fNIpoints; h = h + 2)
         {
@@ -472,7 +485,7 @@ Bool_t CCMLEM::Reconstruct(){
 
         // } // end of third dimension loop//THIRDDIMENSION
 
-        // cout<< " number of bins : " << goodeventcounter<<endl;
+        // cout << " number of bins : " << goodeventcounter << endl;
         delete cone;
 
         if (fVerbose)
@@ -480,6 +493,12 @@ Bool_t CCMLEM::Reconstruct(){
            << endl;
         counter++; 
    } // end of loop over events
+   
+   cout << "integral: " << hIsectionCones->Integral(2,2000) << endl;
+   cout << "zero points: " << zero_points << endl;
+   
+   SaveToFile(hIsectionCones);
+   SaveToFile(hScaAngle);
   
   //Int_t ncells = fImage[0]->GetSize();
   //cout<<"total number of bins :"<< ncells<<endl;
@@ -488,7 +507,7 @@ Bool_t CCMLEM::Reconstruct(){
     fArray->Clear("C");
 
     cout << " DisQualified events : " << badeventcounter << endl;
-    cout << "number of events : " << goodeventcounter << endl;
+    cout << "Number of events : " << goodeventcounter << endl;
 
     for(k=1; k< fNbinsZ + 1 ; k++){
     	for(j=1; j< fNbinsY + 1 ; j++){
@@ -499,8 +518,6 @@ Bool_t CCMLEM::Reconstruct(){
     SaveToFile(fImage[0]);
     fSH[0] = dynamic_cast<TH2F*>(SmoothGauss(fImage[0], fGausFilter));
     SaveToFile(fSH[0]);
-    
-    cout << "after saving fSH[0] to file" << endl;
 
     /// Sensitivity map calculation////
 
@@ -639,8 +656,6 @@ Bool_t CCMLEM::Reconstruct(){
 /// End of Sensitivity map calculation
 
     for (int iter = 1; iter < fIter + 1; iter++) {
-        
-        cout << "in the loop over fIter" << endl;
       
         bool status=Iterate(fStop, iter);
         if(!status){
@@ -661,8 +676,6 @@ Bool_t CCMLEM::Reconstruct(){
     // fSM->Clear("C");
     t.Stop();
     t.Print();
-    
-    cout << "end of the Reconstruct() method" << endl;
 
     return kTRUE;
 }
@@ -1393,7 +1406,7 @@ Bool_t CCMLEM::ReadConfig(TString path)
     cout << "READ FROM FILE: " << comment.Data() << endl;
     if (comment.Contains("Name of the input file")) {
         config >> fInputName;
-        cout << "input name: " << fInputName << endl;
+        cout << "Input name: " << fInputName << endl;
       if (!fInputName.Contains(".root")) {
         cout << "##### Error in CCMLEM::ReadConfig()! Unknown file type!" << endl;
         return false;
@@ -1401,7 +1414,7 @@ Bool_t CCMLEM::ReadConfig(TString path)
     }
     else if (comment.Contains("Name of the output file")) {
       config >> fOutputName;
-      cout << "output name: " << fOutputName << endl;
+      cout << "Output name: " << fOutputName << endl;
       if (!fOutputName.Contains(".root")) {
         cout << "##### Error in CCMLEM::ReadConfig()! Unknown file type!" << endl;
         return false;
@@ -1409,7 +1422,7 @@ Bool_t CCMLEM::ReadConfig(TString path)
     }
     else if (comment.Contains("Size of image volume")) {
       config >> fDimZ >> fDimY >> fDimX;
-    cout << "sizes: " << fDimZ  << ", " << fDimY << ", " << fDimX << endl;
+    cout << "Sizes: " << fDimZ  << ", " << fDimY << ", " << fDimX << endl;
       //if (fDimZ < 1 || fDimY < 1 || fDimX<1) {//THREEDIMENSIONS
       if (fDimZ < 1 || fDimY < 1) {    
         cout << "##### Error in CCMLEM::ReadConfig()! Image size incorrect!"
@@ -1419,7 +1432,7 @@ Bool_t CCMLEM::ReadConfig(TString path)
     } 
     else if (comment.Contains("No. of bins")) {
       config >> fNbinsZ >> fNbinsY >> fNbinsX;
-        cout << "bins: " << fNbinsZ << ", " << fNbinsY << ", " << fNbinsX << endl;
+        cout << "Bins: " << fNbinsZ << ", " << fNbinsY << ", " << fNbinsX << endl;
       //if (fNbinsZ < 1 || fNbinsY < 1 || fNbinsX<1) {//THREEDIMENSIONS
       if (fNbinsZ < 1 || fNbinsY < 1) {
         cout << "##### Error in CCMLEM::ReadConfig()! Number of bins incorrect!"
@@ -1431,7 +1444,7 @@ Bool_t CCMLEM::ReadConfig(TString path)
     //USED to set the Convergence Method  
     else if(comment.Contains("Convergence Simple")){
 	config >> fSimpleConvergence;
-    cout << "covergence simple: " << fSimpleConvergence << endl;
+    cout << "Covergence simple: " << fSimpleConvergence << endl;
     }
     //USED to set the ROI for the convergence criterium from Nadja. Need to be fixed to the Image volume/Bins. Should be placed also in the Bragg-peak region. Makes only sense if oyu want to achieve convergence, outherwise limit the number of iterations 
     else if(comment.Contains("ROI")){
@@ -1442,7 +1455,7 @@ Bool_t CCMLEM::ReadConfig(TString path)
     //USED to set smearing for the Simple Simulation 
     else if (comment.Contains("Smear")) {
       config >> fSmear;
-      cout << "smear: " << fSmear << endl;
+      cout << "Smear: " << fSmear << endl;
     }
     //USED to set kernel for the filter that is applied on the reco images (a gaussian filter is used) 
     else if (comment.Contains("GausFilter")) {
@@ -1453,21 +1466,21 @@ Bool_t CCMLEM::ReadConfig(TString path)
     //USED to set pos resolution for the smearing for the Simple Simulation 
     else if (comment.Contains("Position resolution of the scatterer")) {
       config >> fScatResolutionX >> fScatResolutionY >> fScatResolutionZ;
-      cout << "position resolution scat: " << fScatResolutionX << ", " << fScatResolutionY << ", " << fScatResolutionZ << endl;
+      cout << "Position resolution scat: " << fScatResolutionX << ", " << fScatResolutionY << ", " << fScatResolutionZ << endl;
     }
     else if (comment.Contains("Position resolution of the absorber")) {
       config >> fAbsResolutionX >> fAbsResolutionY >> fAbsResolutionZ;
-      cout << "position resolution abs: " << fAbsResolutionX << ", " << fAbsResolutionY << ", " << fAbsResolutionZ << endl;
+      cout << "Position resolution abs: " << fAbsResolutionX << ", " << fAbsResolutionY << ", " << fAbsResolutionZ << endl;
     }
     //USED to set ???, could not find the meaning of this 
     else if (comment.Contains("Fitting parameters")) {
       config >> fP0 >> fP1 >> fP2;
-      cout << "fitting params " << fP0 << ", " << fP1 << ", " << fP2 << endl;
+      cout << "Fitting params " << fP0 << ", " << fP1 << ", " << fP2 << endl;
     }
     //USED to set maximum number of iterations. This should be used oif you know that convergence will not be reached 
     else if (comment.Contains("No. of MLEM iterations")) {
       config >> fIter;
-      cout << "no of iterations " << fIter << endl;
+      cout << "No of iterations " << fIter << endl;
       if (fIter < 0) {
         cout << "##### Error in CCMLEM::ReadConfig()! Number of iterations "
                 "incorrect!"
@@ -1478,12 +1491,12 @@ Bool_t CCMLEM::ReadConfig(TString path)
     //USED to set the recreation of the output instead of updating. In the most cases this should be set to true 
     else if (comment.Contains("Fresh output")) {
       config >> fFreshOutput;
-      cout << "fresh output: " << fFreshOutput << endl;
+      cout << "Fresh output: " << fFreshOutput << endl;
     }
     //USED to set the saving of the intermediate results. If this is set to false way less histograms are saved. Makes it faster 
     else if (comment.Contains("Save Intermediate")) {
       config >> fSaveAll;
-      cout << "save intermediate: " << fSaveAll << endl;
+      cout << "Save intermediate: " << fSaveAll << endl;
     }
     //USED to set the number events that is reconstructed
     //fStart normally should be =0 since you do not want to cut stuff from your file starting simply by order
@@ -1491,7 +1504,7 @@ Bool_t CCMLEM::ReadConfig(TString path)
     //if fStop !0 fStart, fStop is the number of events that are used in the reco. It is checked if enough events full fill the cuts to reach fStops, If not the reconstruction is not done 
     else if (comment.Contains("No. of first and last event")) {
       config >> fStart >> fStop;
-      cout << "start and stop: " << fStart << ", " << fStop << endl;
+      cout << "Start and stop: " << fStart << ", " << fStop << endl;
       if (fStart < 0 || fStop < 0 || fStop < fStart) {
         cout << "##### Error in CCMLEM::ReadConfig()! Number of first or last "
                 "event incorrect!"
@@ -1503,7 +1516,7 @@ Bool_t CCMLEM::ReadConfig(TString path)
     //	see explanation above. Can be used to set fStop seperatly of fStart 
     else if (comment.Contains("No. used events")) {
       config >> fStop;
-      cout << "used events: " << fStop << endl;
+      cout << "Used events: " << fStop << endl;
       fStart=0;
       if (fStart < 0 || fStop < 0 || fStop < fStart) {
         cout << "##### Error in CCMLEM::ReadConfig()! Number of used selected events is not meaningful"<< endl;
@@ -1512,17 +1525,17 @@ Bool_t CCMLEM::ReadConfig(TString path)
     }
     else if (comment.Contains("Verbose flag")) {
       config >> fVerbose;
-      cout << "verbose: " << fVerbose << endl;
+      cout << "Verbose: " << fVerbose << endl;
     }
     //USED to set that the Monte Carlo data is loaded from the Geant4 simulation instead of the reco
     else if (comment.Contains("Load Real")) {
       config >> fLoadReal;
-      cout << "load real: " << fLoadReal << endl;
+      cout << "Load real: " << fLoadReal << endl;
     }
     //USED to set that only the correct identified events are loaded from the geant4 or NN input. Integers are used. What the meaning is see in the InputReaders
     else if (comment.Contains("Load only correct identified")) {
       config >> fCorrectIdentified;
-      cout << "correct identified: " << fCorrectIdentified << endl;
+      cout << "Correct identified: " << fCorrectIdentified << endl;
     }
     else {
       cout << "##### Warning in CCMLEM::ReadConfig()! Unknown syntax!" << endl;
@@ -1548,17 +1561,11 @@ Bool_t CCMLEM::DrawHisto(void)
     TH1D* hProY[250];
     // TH1D* hProX[150];
 
-    cout << "before creating canvas" << endl;
-
     TCanvas* can = new TCanvas("MLEM2D", "MLEM2D", 1000, 1000);
-
-    cout << "before dividing canvas" << endl;
 
     can->Divide(2, 2);
     can->cd(1);
     // gPad->SetLogz(1);
-
-    cout << "before drawing fImage" << endl;
 
     fImage[lastiter]->Draw("colz");
     // fImage[iter]->SetMinimum(200);
@@ -1571,8 +1578,6 @@ Bool_t CCMLEM::DrawHisto(void)
     hProY[lastiter]->Draw();
     // can->cd(4);
     // hProX[lastiter]->Draw();
-
-    cout << "before saving to file" << endl;
 
     SaveToFile(can);
 
