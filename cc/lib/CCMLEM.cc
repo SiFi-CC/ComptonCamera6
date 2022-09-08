@@ -141,7 +141,6 @@ Bool_t CCMLEM::SetInputReader(void)
 {
 
     TString fullName = fInputName;
-
     TFile* file = new TFile(fullName, "READ");
     if (!file->IsOpen())
     {
@@ -185,6 +184,12 @@ Bool_t CCMLEM::SetInputReader(void)
     {
         file->Close();
         fReader = new InputReaderPMI(fullName);
+        fReader->SelectEvents();
+    }
+    else if (file->Get("CalibratedEventsDec2021"))
+    {
+        file->Close();
+        fReader = new InputReaderPMIDec2021(fullName);
         fReader->SelectEvents();
     }
 
@@ -276,7 +281,8 @@ Bool_t CCMLEM::Reconstruct(){
         point_p = fReader->GetPositionAbsorption();
 
         goodeventcounter++;
-        if(goodeventcounter%100==0) cout << goodeventcounter << " Events are done" << endl;
+        //if(goodeventcounter%100==0) cout << goodeventcounter << " Events are done" << endl;
+        printProgress(goodeventcounter*1.0/fEvents.size() );
         
         ComptonCone* cone = new ComptonCone(point_e, point_p, energy1 + energy2, energy2);
     
@@ -455,7 +461,7 @@ Bool_t CCMLEM::Reconstruct(){
 
             // cout << "distance between bin centres: " << dmb << endl;
 
-            if (binno1 == binno2) cout << "bin numbers are the same" << endl;
+            //if (binno1 == binno2) cout << "bin numbers are the same" << endl;
 
             if (binno1 != binno2) {
                 //count++;
@@ -788,7 +794,7 @@ Int_t CCMLEM::AddIsectionPoint(TString dir, Double_t x, Double_t y, Double_t z)
 ///\param nstop (Int_t) - number of events used for image reconstruction
 ///\param iter (Int_t) - number of iteration for image reconstruction
 Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
-    cout << "Iteration " << iter << " is processed" << endl;
+    //cout << "Iteration " << iter << " is processed" << endl;
     int lastiter = iter - 1;
 
     // double sigma[lastiter + 1];
@@ -958,7 +964,8 @@ Bool_t CCMLEM::DetermineConvergence(Int_t iter)
         	else (fSigma[lastiter]=100);
 		//cout << "---------------------------------------------------------------------------" <<endl;
         	//cout<< diffmax << "," << val << " = " << diffmax/val<< endl;
-        	cout << "-------------------Sigma is: " << fSigma[lastiter] << "------------------------------" <<endl;
+        	//cout << "-------------------Sigma is: " << fSigma[lastiter] << "------------------------------" <<endl;
+            std::cout << iter << " ---sigma: " << fSigma[lastiter] << "---" << std::endl;
         	
         	if (fSigma[lastiter] <= fConvergenceCriterium) {
         	    return false;
@@ -1134,7 +1141,7 @@ void CCMLEM::DrawAtConvergence(int iter){
     braggfunc->SetParameter(2, 20);
     Proj->GetXaxis()->SetRangeUser(0,20.5);
     braggfunc->SetParameter(3, Proj->GetMinimum());
-    braggfunc->SetParNames("Amplitude","Mean","Sigma","Constant");
+    //braggfunc->SetParNames("Amplitude","Mean","Sigma","Constant");
     Proj->Fit(braggfunc,"R");
     Proj->GetXaxis()->SetRangeUser(-fDimZ/2,fDimZ/2);
     Proj->Draw();
@@ -1180,7 +1187,7 @@ void CCMLEM::DrawREGraph(int iter){
     for (Int_t i = 0; i <= iter-1 ; i++) {
             x[i] = i+1;
             y[i] = fSigma[i];
-	    std::cout << fSigma[i] << std::endl;
+	    //std::cout << fSigma[i] << std::endl;
     }
     TCanvas* can = new TCanvas("RE vs. Iteration", "RE vs. Iteration", 1000, 1000);
     can->cd(1);

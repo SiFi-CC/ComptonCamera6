@@ -15,6 +15,7 @@ CC6_GENERATE_LIBRARY(
         InputReaderNN.cc
         InputReaderSimple.cc
         InputReaderPMI.cc
+        InputReaderPMIDec2021.cc
         IsectionPoint.cc
         Source.cc
         Track.cc
@@ -34,6 +35,7 @@ CC6_GENERATE_LIBRARY(
         InputReaderNN.hh
         InputReaderSimple.hh
         InputReaderPMI.hh
+        InputReaderPMIDec2021.hh
         IsectionPoint.hh
         Source.hh
         Track.hh

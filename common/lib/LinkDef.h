@@ -14,6 +14,7 @@
 #pragma link C++ class InputReaderEI;
 #pragma link C++ class InputReaderNN;
 #pragma link C++ class InputReaderPMI;
+#pragma link C++ class InputReaderPMIDec2021;
 #pragma link C++ class BinnedGeometry;
 
 #pragma link C++ class Source+;

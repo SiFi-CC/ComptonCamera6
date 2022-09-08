@@ -8,6 +8,7 @@
 #include "InputReaderNN.hh"
 #include "InputReaderSimple.hh"
 #include "InputReaderPMI.hh"
+#include "InputReaderPMIDec2021.hh"
 #include "TFile.h"
 #include "TGraph.h"
 #include "TRandom3.h"
@@ -134,6 +135,15 @@ private:
   
   InputReader* fReader;     ///< InputReader to read different given input simulation files
   
+  #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
+  #define PBWIDTH 60
+  void printProgress(double percentage) {
+      int val = (int) (percentage * 100);
+      int lpad = (int) (percentage * PBWIDTH);
+      int rpad = PBWIDTH - lpad;
+      printf("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
+      fflush(stdout);
+  }
   ClassDef(CCMLEM, 0)
 };
 
