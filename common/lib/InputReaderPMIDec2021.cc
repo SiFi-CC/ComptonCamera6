@@ -15,7 +15,7 @@ InputReaderPMIDec2021::InputReaderPMIDec2021() : InputReader() {
 ///\param path (TString) - path to the input file.
 InputReaderPMIDec2021::InputReaderPMIDec2021(TString path) : InputReader(path) {
 
-    if (!AccessTree("CalibratedEvents")) {
+    if (!AccessTree("CalibratedEventsDec2021") ) {
         throw "##### Exception in InputReaderPMIDec2021 constructor!";
     }
 }
@@ -116,8 +116,9 @@ double InputReaderPMIDec2021::GetEnergyScattered(void) {
 void InputReaderPMIDec2021::SelectEvents() {  
   fSelectedEvents.clear(); 
   for(int i = 0; i < GetNumberOfEventsInFile(); i++) {
-  	fTree->GetEntry(i);
- 	if(SelectSingleEvent()) fSelectedEvents.push_back(i);
+//  	fTree->GetEntry(i);
+// 	if(SelectSingleEvent()) fSelectedEvents.push_back(i);
+ 	fSelectedEvents.push_back(i);
   }
 }
 //------------------------------------------------------------------
