@@ -96,13 +96,13 @@ bool InputReaderSimple::LoadEvent(int i)
         ///Makes sure that events are not out of the detector volumes.
          if (fPositionScat->Y() < -fScatHeight/2) fPositionScat->SetY(-fScatHeight/2);
          if (fPositionScat->Y() > fScatHeight/2) fPositionScat->SetY(fScatHeight/2);
-         if (fPositionScat->Z() < -fScatWidth/2) fPositionScat->SetY(-fScatWidth/2);
-         if (fPositionScat->Z() > fScatWidth/2) fPositionScat->SetY(fScatWidth/2);
+         if (fPositionScat->Z() < -fScatWidth/2) fPositionScat->SetZ(-fScatWidth/2);
+         if (fPositionScat->Z() > fScatWidth/2) fPositionScat->SetZ(fScatWidth/2);
          
          if (fPositionAbs->Y() < -fAbsHeight/2) fPositionAbs->SetY(-fAbsHeight/2);
          if (fPositionAbs->Y() > fAbsHeight/2) fPositionAbs->SetY(fAbsHeight/2);
-         if (fPositionAbs->Z() < -fAbsWidth/2) fPositionAbs->SetY(-fAbsWidth/2);
-         if (fPositionAbs->Z() > fAbsWidth/2) fPositionAbs->SetY(fAbsWidth/2);
+         if (fPositionAbs->Z() < -fAbsWidth/2) fPositionAbs->SetZ(-fAbsWidth/2);
+         if (fPositionAbs->Z() > fAbsWidth/2) fPositionAbs->SetZ(fAbsWidth/2);
     }
     return true;
 }
