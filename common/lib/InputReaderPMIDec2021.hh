@@ -38,13 +38,15 @@ private:
     TVector3* fPoint2; ///< Coordinates of the interaction in the absorber (absorption)
     double fEnergy1;    ///< Energy deposited in the scatterer [keV]
     double fEnergy2;    ///< Energy of the scattered gamma [keV]
+    long long int fTimeStampSca;
+    long long int fTimeStampAbs;
+
     //PARAMETERS PASSED ON
     TVector3* fPositionScat;  ///< Position of interaction in scatterer
     TVector3* fPositionAbs;   ///< Position of interaction in absorber
     TVector3* fDirectionScat; ///< Direction of the scattered gamma
     double fEnergyLoss;
     double fEnergyScattered;
-    int fabsclustersize;
 
     bool AccessTree(TString name);
     //TTree* fTree;

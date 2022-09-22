@@ -40,18 +40,15 @@ bool InputReaderPMIDec2021::AccessTree(TString name) {
     fPoint1 = new TVector3();
     fPoint2 = new TVector3();
 
-    int fscafibernumber, fabsfibernumber;
-    long long int ftimestampR, ftimestampL, ftimestampAbs;
 
     fTree->SetBranchAddress("ScaPosition", &fPoint1);
     fTree->SetBranchAddress("AbsPosition", &fPoint2);
     fTree->SetBranchAddress("ScaE", &fEnergy1);
     fTree->SetBranchAddress("AbsE", &fEnergy2);
-    fTree->SetBranchAddress("ScaFiberNumber", &fscafibernumber);
-    fTree->SetBranchAddress("AbsNeedleNumber", &fabsfibernumber);
-    fTree->SetBranchAddress("AbsTimeStamp", &ftimestampAbs);
-    fTree->SetBranchAddress("ScaTimeStamp", &ftimestampL);
-    fTree->SetBranchAddress("ScaTimeStamp", &ftimestampR);
+    //fTree->SetBranchAddress("ScaFiberNumber", &fscafibernumber);
+    //fTree->SetBranchAddress("AbsNeedleNumber", &fabsfibernumber);
+    fTree->SetBranchAddress("AbsTimeStamp", &fTimeStampAbs);
+    fTree->SetBranchAddress("ScaTimeStamp", &fTimeStampSca);
 //    fTree->SetBranchAddress("AbsClusterSize", &fabsclustersize);
   
     cout << "\n\nIn InputReaderPMIDec2021::AccessTree()." << endl;
@@ -83,16 +80,16 @@ bool InputReaderPMIDec2021::LoadEvent(int i) {
 }
 //------------------------------------------------------------------
 TVector3* InputReaderPMIDec2021::GetPositionScattering(void) {
-    fPositionScat->SetX(-fPoint1->Z());
+    fPositionScat->SetX(fPoint1->Z());
     fPositionScat->SetY(fPoint1->Y());
-    fPositionScat->SetZ(fPoint1->X());
+    fPositionScat->SetZ(-fPoint1->X());
     return fPositionScat;
 }
 //------------------------------------------------------------------
 TVector3* InputReaderPMIDec2021::GetPositionAbsorption(void) {
-    fPositionAbs->SetX(-fPoint2->Z());
+    fPositionAbs->SetX(fPoint2->Z());
     fPositionAbs->SetY(fPoint2->Y());
-    fPositionAbs->SetZ(fPoint2->X());
+    fPositionAbs->SetZ(-fPoint2->X());
     return fPositionAbs;
 }
 //------------------------------------------------------------------
@@ -114,16 +111,18 @@ double InputReaderPMIDec2021::GetEnergyScattered(void) {
 }
 //------------------------------------------------------------------
 void InputReaderPMIDec2021::SelectEvents() {  
-  fSelectedEvents.clear(); 
-  for(int i = 0; i < GetNumberOfEventsInFile(); i++) {
-//  	fTree->GetEntry(i);
-// 	if(SelectSingleEvent()) fSelectedEvents.push_back(i);
- 	fSelectedEvents.push_back(i);
+  fSelectedEvents.clear();
+  for(int i = 0; i < fTree->GetEntries(); i++) {
+	fTree->GetEntry(i);
+ 	if(SelectSingleEvent()) fSelectedEvents.push_back(i);
   }
 }
 //------------------------------------------------------------------
 bool InputReaderPMIDec2021::SelectSingleEvent() {
-    return fabsclustersize < 3;
+	if(3000<(fTimeStampAbs-fTimeStampSca) && (fTimeStampSca-fTimeStampAbs)<7000 && fEnergy1+fEnergy2>1100 && fEnergy1+fEnergy2<1450 && fEnergy1<450 && fPoint1->y()!=50 && fPoint1->y()!=-50) return true;
+	//if(1100 <( fEnergy1+fEnergy2) && (fEnergy1+fEnergy2)<1300) return true;
+	else return false;    
+	//return true;
 }
 //------------------------------------------------------------------
 void InputReaderPMIDec2021::Clear(void) {
