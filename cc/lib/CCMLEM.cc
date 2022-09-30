@@ -39,9 +39,12 @@ ClassImp(CCMLEM);
 ///\param path (TString) - full path to the configuration file.
 CCMLEM::CCMLEM(TString path):
 fSmear(false),
-fResolutionX(1.3),
-fResolutionY(10),
-fResolutionZ(1.3),
+fScatResolutionX(1.3),
+fScatResolutionY(10),
+fScatResolutionZ(1.3),
+fAbsResolutionX(1.3),
+fAbsResolutionY(10),
+fAbsResolutionZ(1.3),
 fLoadReal(false),
 fCorrectIdentified(0),
 fIter(1),
@@ -141,6 +144,7 @@ Bool_t CCMLEM::SetInputReader(void)
 {
 
     TString fullName = fInputName;
+
     TFile* file = new TFile(fullName, "READ");
     if (!file->IsOpen())
     {
@@ -154,7 +158,9 @@ Bool_t CCMLEM::SetInputReader(void)
         file->Close();
         fReader = new InputReaderSimple(fullName);
     	//Here the smearing things from the files are set. Somehow there where also fits performed but then the outcome wa snot used ... no quaranty for anything here
-	fReader->SetSmearing(fSmear,fResolutionX,fResolutionY,fResolutionZ);
+        fReader->SetSmearing(fSmear, fScatResolutionX, fAbsResolutionX, fScatResolutionY, fAbsResolutionY, fScatResolutionZ, fAbsResolutionZ);
+        fReader->SelectEvents();
+        fReader->ReadGeometry();
     } 
     else if (file->Get("Setup") &&
                file->Get("Events")) {
@@ -186,6 +192,7 @@ Bool_t CCMLEM::SetInputReader(void)
         fReader = new InputReaderPMI(fullName);
         fReader->SelectEvents();
     }
+    
     else if (file->Get("CalibratedEventsDec2021"))
     {
         file->Close();
@@ -259,20 +266,26 @@ Bool_t CCMLEM::Reconstruct(){
 
     TStopwatch t;
     t.Start();
+    
+    TH1F *hIsectionCones = new TH1F("hIsectionCones", "hIsectionCones", 100, 0, 2000); // histogram showing the number of intersection points for each Compton cone
+    TH1F *hScaAngle = new TH1F("hScatteringAngle", "hScatteringAngle", 100, 0, 180);
+    hScaAngle->GetXaxis()->SetTitle("angle [deg]");
+    hScaAngle->GetYaxis()->SetTitle("counts");
 
 /// This loop will always analyze all events in the fEvents list. The number is given by the cuts you perform and/or the number of events you actually want to use 
     int counter=0;
+    int zero_points = 0;
     for (Int_t eve :fEvents) {
 
         fNIpoints = 0;
         if (fVerbose)
         cout << "CCMLEM::Reconstruct(...) event " << eve << endl << endl;
         status = fReader->LoadEvent(eve);
+       	if(fVerbose)fReader->PrintEvent(); 
         if (status == false) {
             badeventcounter++;
             continue;
         }
-
         energy1 = fReader->GetEnergyLoss();
         energy2 = fReader->GetEnergyScattered();
         energy0 = fReader->GetEnergyPrimary();
@@ -281,15 +294,13 @@ Bool_t CCMLEM::Reconstruct(){
         point_p = fReader->GetPositionAbsorption();
 
         goodeventcounter++;
-        //if(goodeventcounter%100==0) cout << goodeventcounter << " Events are done" << endl;
-        printProgress(goodeventcounter*1.0/fEvents.size() );
+        if(goodeventcounter%100==0) cout << goodeventcounter << " Events are done" << endl;
         
         ComptonCone* cone = new ComptonCone(point_e, point_p, energy1 + energy2, energy2);
     
         interactionPoint = cone->GetApex();
         coneAxis = cone->GetAxis();
         coneTheta = cone->GetAngle();
-        // cout<< "theta :" << "\t"<< coneTheta << endl;
 
         Double_t K = cos(coneTheta);
         Double_t a, b, c1, c2, c3, c4, c, z1, z2;
@@ -404,6 +415,8 @@ Bool_t CCMLEM::Reconstruct(){
             fA[i] = tempp->GetBin();
             // if(fVerbose) tempp->Print();
         }
+        
+        hIsectionCones->Fill(fNIpoints);
 
         TMath::Sort(fNIpoints, fA, index, kFALSE);
 
@@ -412,6 +425,12 @@ Bool_t CCMLEM::Reconstruct(){
         Double_t dist;
         Int_t binno1, binno2, binno;
         SMElement* temp;
+        
+        if (fNIpoints > 0) {
+            hScaAngle->Fill(coneTheta*TMath::RadToDeg());
+        }
+        
+        if (fNIpoints == 0) zero_points++;
 
         for (int h = 0; h < fNIpoints; h = h + 2)
         {
@@ -439,29 +458,6 @@ Bool_t CCMLEM::Reconstruct(){
                 // cout<<"Event "<<h<<": distance exceeds pixel diagonal"<<dist/maxdist<<" times"<<endl;
                 continue;
             }
-
-            double x1, y1, z1, x2, y2, z2, dmb;
-
-            int bx1, by1, bz1, bx2, by2, bz2;
-
-            // for(Int_t i=0; i<fImage[0]->GetNbinsX(); ++i) {
-            //     printf("%d %f \n", i, fImage[0]->GetBinContent(i, 1) );
-            // }
-
-            //fImage[0]->Print();
-            // fImage[0]->GetBinXYZ(binno1, bx1, by1, bz1);
-            // x1 = fImage[0]->GetXaxis()->GetBinCenter(bx1);
-            // y1 = fImage[0]->GetXaxis()->GetBinCenter(by1);
-
-            // fImage[0]->GetBinXYZ(binno2, bx2, by2, bz2);
-            // x2 = fImage[0]->GetXaxis()->GetBinCenter(bx2);
-            // y2 = fImage[0]->GetXaxis()->GetBinCenter(by2);
-
-            // dmb = sqrt(pow(x1-x2,2)+pow(y1-y2,2));
-
-            // cout << "distance between bin centres: " << dmb << endl;
-
-            //if (binno1 == binno2) cout << "bin numbers are the same" << endl;
 
             if (binno1 != binno2) {
                 //count++;
@@ -495,7 +491,7 @@ Bool_t CCMLEM::Reconstruct(){
 
         // } // end of third dimension loop//THIRDDIMENSION
 
-        // cout<< " number of bins : " << goodeventcounter<<endl;
+        // cout << " number of bins : " << goodeventcounter << endl;
         delete cone;
 
         if (fVerbose)
@@ -503,6 +499,12 @@ Bool_t CCMLEM::Reconstruct(){
            << endl;
         counter++; 
    } // end of loop over events
+   
+   cout << "integral: " << hIsectionCones->Integral(2,2000) << endl;
+   cout << "zero points: " << zero_points << endl;
+   
+   SaveToFile(hIsectionCones);
+   SaveToFile(hScaAngle);
   
   //Int_t ncells = fImage[0]->GetSize();
   //cout<<"total number of bins :"<< ncells<<endl;
@@ -511,12 +513,10 @@ Bool_t CCMLEM::Reconstruct(){
     fArray->Clear("C");
 
     cout << " DisQualified events : " << badeventcounter << endl;
-    cout << "number of events : " << goodeventcounter << endl;
+    cout << "Number of events : " << goodeventcounter << endl;
 
     for(k=1; k< fNbinsZ + 1 ; k++){
     	for(j=1; j< fNbinsY + 1 ; j++){
-            // cout<<"fImage[0] = "<<fImage[0] << "k, j :" << k << ", " << j <<endl;
-            // cout << "bin content: " << fImage[0]->GetBinContent(k,j) << endl;
 		fImage[0]->SetBinContent(k,j,fImage[0]->GetBinContent(k,j)+1);
 	}
     }
@@ -668,9 +668,11 @@ Bool_t CCMLEM::Reconstruct(){
             cout<<"-----------------------------------------"<<endl;
             cout<< "ITERATINGPROCESS STOPPED AT: " << iter << endl; 
             cout<< "Relative Error is: " << fSigma[iter-1] << endl;
-	    DrawAtConvergence(iter);
+        DrawAtConvergence(iter);
+        
             return false;
 	}
+
     } 
     if(fSigma[fIter-1]>fConvergenceCriterium){
 	cout << "NOT CONVERGED!!" << endl; 
@@ -794,7 +796,7 @@ Int_t CCMLEM::AddIsectionPoint(TString dir, Double_t x, Double_t y, Double_t z)
 ///\param nstop (Int_t) - number of events used for image reconstruction
 ///\param iter (Int_t) - number of iteration for image reconstruction
 Bool_t CCMLEM::Iterate(Int_t nstop, Int_t iter) {
-    //cout << "Iteration " << iter << " is processed" << endl;
+    cout << "Iteration " << iter << " is processed" << endl;
     int lastiter = iter - 1;
 
     // double sigma[lastiter + 1];
@@ -964,8 +966,7 @@ Bool_t CCMLEM::DetermineConvergence(Int_t iter)
         	else (fSigma[lastiter]=100);
 		//cout << "---------------------------------------------------------------------------" <<endl;
         	//cout<< diffmax << "," << val << " = " << diffmax/val<< endl;
-        	//cout << "-------------------Sigma is: " << fSigma[lastiter] << "------------------------------" <<endl;
-            std::cout << iter << " ---sigma: " << fSigma[lastiter] << "---" << std::endl;
+        	cout << "-------------------Sigma is: " << fSigma[lastiter] << "------------------------------" <<endl;
         	
         	if (fSigma[lastiter] <= fConvergenceCriterium) {
         	    return false;
@@ -1073,7 +1074,7 @@ Bool_t CCMLEM::DetermineConvergence(Int_t iter)
         fSigma[iter] = func_z->GetParameter(2);
         // NEED 20 ITERATIONS TO COMPARE
         if (iter < 20) return true;
-        if ((fabs(fSigma[iter] - fSigma[iter - 10])) / fabs(fSigma[iter]) < fConvergenceCriterium)
+        if ((fabs(fSigma[iter] - fSigma[iter - 10])) / fabs(fSigma[iter]) < fConvergenceCriterium) //BUG ??
         {
             // cout << "SigmaIter" << iter << " - " << "SigmaIter" << j - 10 << " = "
             // << " Relative Error : " << fSigma[250] << endl;
@@ -1141,7 +1142,7 @@ void CCMLEM::DrawAtConvergence(int iter){
     braggfunc->SetParameter(2, 20);
     Proj->GetXaxis()->SetRangeUser(0,20.5);
     braggfunc->SetParameter(3, Proj->GetMinimum());
-    //braggfunc->SetParNames("Amplitude","Mean","Sigma","Constant");
+    braggfunc->SetParNames("Amplitude","Mean","Sigma","Constant");
     Proj->Fit(braggfunc,"R");
     Proj->GetXaxis()->SetRangeUser(-fDimZ/2,fDimZ/2);
     Proj->Draw();
@@ -1187,7 +1188,7 @@ void CCMLEM::DrawREGraph(int iter){
     for (Int_t i = 0; i <= iter-1 ; i++) {
             x[i] = i+1;
             y[i] = fSigma[i];
-	    //std::cout << fSigma[i] << std::endl;
+	    std::cout << "fSigma[" << i << "]: " << fSigma[i] << std::endl;
     }
     TCanvas* can = new TCanvas("RE vs. Iteration", "RE vs. Iteration", 1000, 1000);
     can->cd(1);
@@ -1387,7 +1388,6 @@ Bool_t CCMLEM::DrawCanvas(void)
     SaveToFile(cany);
     return kTRUE;
 }
-
 //------------------------------------
 /// Reads configuration file and sets values of private class
 /// members according to read information.
@@ -1412,7 +1412,7 @@ Bool_t CCMLEM::ReadConfig(TString path)
     cout << "READ FROM FILE: " << comment.Data() << endl;
     if (comment.Contains("Name of the input file")) {
         config >> fInputName;
-        cout << "input name: " << fInputName << endl;
+        cout << "Input name: " << fInputName << endl;
       if (!fInputName.Contains(".root")) {
         cout << "##### Error in CCMLEM::ReadConfig()! Unknown file type!" << endl;
         return false;
@@ -1420,7 +1420,7 @@ Bool_t CCMLEM::ReadConfig(TString path)
     }
     else if (comment.Contains("Name of the output file")) {
       config >> fOutputName;
-      cout << "output name: " << fOutputName << endl;
+      cout << "Output name: " << fOutputName << endl;
       if (!fOutputName.Contains(".root")) {
         cout << "##### Error in CCMLEM::ReadConfig()! Unknown file type!" << endl;
         return false;
@@ -1428,7 +1428,7 @@ Bool_t CCMLEM::ReadConfig(TString path)
     }
     else if (comment.Contains("Size of image volume")) {
       config >> fDimZ >> fDimY >> fDimX;
-    cout << "sizes: " << fDimZ  << ", " << fDimY << ", " << fDimX << endl;
+    cout << "Sizes: " << fDimZ  << ", " << fDimY << ", " << fDimX << endl;
       //if (fDimZ < 1 || fDimY < 1 || fDimX<1) {//THREEDIMENSIONS
       if (fDimZ < 1 || fDimY < 1) {    
         cout << "##### Error in CCMLEM::ReadConfig()! Image size incorrect!"
@@ -1438,7 +1438,7 @@ Bool_t CCMLEM::ReadConfig(TString path)
     } 
     else if (comment.Contains("No. of bins")) {
       config >> fNbinsZ >> fNbinsY >> fNbinsX;
-        cout << "bins: " << fNbinsZ << ", " << fNbinsY << ", " << fNbinsX << endl;
+        cout << "Bins: " << fNbinsZ << ", " << fNbinsY << ", " << fNbinsX << endl;
       //if (fNbinsZ < 1 || fNbinsY < 1 || fNbinsX<1) {//THREEDIMENSIONS
       if (fNbinsZ < 1 || fNbinsY < 1) {
         cout << "##### Error in CCMLEM::ReadConfig()! Number of bins incorrect!"
@@ -1450,7 +1450,7 @@ Bool_t CCMLEM::ReadConfig(TString path)
     //USED to set the Convergence Method  
     else if(comment.Contains("Convergence Simple")){
 	config >> fSimpleConvergence;
-    cout << "covergence simple: " << fSimpleConvergence << endl;
+    cout << "Covergence simple: " << fSimpleConvergence << endl;
     }
     //USED to set the ROI for the convergence criterium from Nadja. Need to be fixed to the Image volume/Bins. Should be placed also in the Bragg-peak region. Makes only sense if oyu want to achieve convergence, outherwise limit the number of iterations 
     else if(comment.Contains("ROI")){
@@ -1461,7 +1461,7 @@ Bool_t CCMLEM::ReadConfig(TString path)
     //USED to set smearing for the Simple Simulation 
     else if (comment.Contains("Smear")) {
       config >> fSmear;
-      cout << "smear: " << fSmear << endl;
+      cout << "Smear: " << fSmear << endl;
     }
     //USED to set kernel for the filter that is applied on the reco images (a gaussian filter is used) 
     else if (comment.Contains("GausFilter")) {
@@ -1470,19 +1470,23 @@ Bool_t CCMLEM::ReadConfig(TString path)
     }
     //This is a method by Majid that only makes sense for the simple input 
     //USED to set pos resolution for the smearing for the Simple Simulation 
-    else if (comment.Contains("Position resolution")) {
-      config >> fResolutionX >> fResolutionY >> fResolutionZ;
-      cout << "position resolution: " << fResolutionX << ", " << fResolutionY << ", " << fResolutionZ << endl;
+    else if (comment.Contains("Position resolution of the scatterer")) {
+      config >> fScatResolutionX >> fScatResolutionY >> fScatResolutionZ;
+      cout << "Position resolution scat: " << fScatResolutionX << ", " << fScatResolutionY << ", " << fScatResolutionZ << endl;
+    }
+    else if (comment.Contains("Position resolution of the absorber")) {
+      config >> fAbsResolutionX >> fAbsResolutionY >> fAbsResolutionZ;
+      cout << "Position resolution abs: " << fAbsResolutionX << ", " << fAbsResolutionY << ", " << fAbsResolutionZ << endl;
     }
     //USED to set ???, could not find the meaning of this 
     else if (comment.Contains("Fitting parameters")) {
       config >> fP0 >> fP1 >> fP2;
-      cout << "fitting params " << fP0 << ", " << fP1 << ", " << fP2 << endl;
+      cout << "Fitting params " << fP0 << ", " << fP1 << ", " << fP2 << endl;
     }
     //USED to set maximum number of iterations. This should be used oif you know that convergence will not be reached 
     else if (comment.Contains("No. of MLEM iterations")) {
       config >> fIter;
-      cout << "no of iterations " << fIter << endl;
+      cout << "No of iterations " << fIter << endl;
       if (fIter < 0) {
         cout << "##### Error in CCMLEM::ReadConfig()! Number of iterations "
                 "incorrect!"
@@ -1493,20 +1497,20 @@ Bool_t CCMLEM::ReadConfig(TString path)
     //USED to set the recreation of the output instead of updating. In the most cases this should be set to true 
     else if (comment.Contains("Fresh output")) {
       config >> fFreshOutput;
-      cout << "fresh output: " << fFreshOutput << endl;
+      cout << "Fresh output: " << fFreshOutput << endl;
     }
     //USED to set the saving of the intermediate results. If this is set to false way less histograms are saved. Makes it faster 
     else if (comment.Contains("Save Intermediate")) {
       config >> fSaveAll;
-      cout << "save intermediate: " << fSaveAll << endl;
+      cout << "Save intermediate: " << fSaveAll << endl;
     }
     //USED to set the number events that is reconstructed
     //fStart normally should be =0 since you do not want to cut stuff from your file starting simply by order
     //if fStop =fStart all events that full fill the cuts specified in the config fille are processed
-    //if fStop !0 fStart, fStop is the number of events that are used in the reco. It is checked if enough events full fill the cuts to reach fStops, If not the reconstruction is not done 
+    //if fStop != fStart, fStop is the number of events that are used in the reco. It is checked if enough events full fill the cuts to reach fStops, If not the reconstruction is not done 
     else if (comment.Contains("No. of first and last event")) {
       config >> fStart >> fStop;
-      cout << "start and stop: " << fStart << ", " << fStop << endl;
+      cout << "Start and stop: " << fStart << ", " << fStop << endl;
       if (fStart < 0 || fStop < 0 || fStop < fStart) {
         cout << "##### Error in CCMLEM::ReadConfig()! Number of first or last "
                 "event incorrect!"
@@ -1518,7 +1522,7 @@ Bool_t CCMLEM::ReadConfig(TString path)
     //	see explanation above. Can be used to set fStop seperatly of fStart 
     else if (comment.Contains("No. used events")) {
       config >> fStop;
-      cout << "used events: " << fStop << endl;
+      cout << "Used events: " << fStop << endl;
       fStart=0;
       if (fStart < 0 || fStop < 0 || fStop < fStart) {
         cout << "##### Error in CCMLEM::ReadConfig()! Number of used selected events is not meaningful"<< endl;
@@ -1527,21 +1531,21 @@ Bool_t CCMLEM::ReadConfig(TString path)
     }
     else if (comment.Contains("Verbose flag")) {
       config >> fVerbose;
-      cout << "verbose: " << fVerbose << endl;
+      cout << "Verbose: " << fVerbose << endl;
     }
     //USED to set that the Monte Carlo data is loaded from the Geant4 simulation instead of the reco
     else if (comment.Contains("Load Real")) {
       config >> fLoadReal;
-      cout << "load real: " << fLoadReal << endl;
+      cout << "Load real: " << fLoadReal << endl;
     }
     //USED to set that only the correct identified events are loaded from the geant4 or NN input. Integers are used. What the meaning is see in the InputReaders
     else if (comment.Contains("Load only correct identified")) {
       config >> fCorrectIdentified;
-      cout << "correct identified: " << fCorrectIdentified << endl;
+      cout << "Correct identified: " << fCorrectIdentified << endl;
     }
     else {
       cout << "##### Warning in CCMLEM::ReadConfig()! Unknown syntax!" << endl;
-      cout << comment << endl;
+      cout << "Unknown syntax: " << comment << endl;
     }
     }
 
@@ -1559,9 +1563,10 @@ Bool_t CCMLEM::DrawHisto(void)
 
     int lastiter = fIter;
 
-    TH1D* hProZ[250];
+    TH1D* hProZ[250]; //TODO 251?
     TH1D* hProY[250];
     // TH1D* hProX[150];
+
     TCanvas* can = new TCanvas("MLEM2D", "MLEM2D", 1000, 1000);
 
     can->Divide(2, 2);
@@ -1768,8 +1773,10 @@ void CCMLEM::Print(void)
     cout << setw(35) << "Verbose level: \t" << fVerbose << endl << endl;
     cout << setw(35) << "INFORMATION FOR SIMPLEINPUT" << endl;
     cout << setw(35) << "Smear level: \t" << fSmear << endl;
-    cout << setw(35) << "Pos resolution: \t" << fResolutionX << ", " << fResolutionY << ", "
-         << fResolutionZ << endl;
+    cout << setw(35) << "Pos resolution of the scat: \t" << fScatResolutionX << ", " << fScatResolutionY << ", "
+         << fScatResolutionZ << endl;
+    cout << setw(35) << "Pos resolution of the abs: \t" << fAbsResolutionX << ", " << fAbsResolutionY << ", "
+         << fAbsResolutionZ << endl;
     cout << setw(35) << "Fitting parameters: \t" << fP0 << ", " << fP1 << ", " << fP2 << endl;
     cout << setw(35) << "INFORMATION FOR GEANTINPUT" << endl;
     cout << setw(35) << "Loading Real: \t" << fLoadReal << endl << endl;
@@ -1790,9 +1797,12 @@ void CCMLEM::Clear(void) {
   fNbinsZ = -1000;
   fNbinsY = -1000;
   fNbinsX = -1000;
-  fResolutionX = -1000;
-  fResolutionY = -1000;
-  fResolutionZ = -1000;
+  fScatResolutionX = -1000;
+  fScatResolutionY = -1000;
+  fScatResolutionZ = -1000;
+  fAbsResolutionX = -1000;
+  fAbsResolutionY = -1000;
+  fAbsResolutionZ = -1000;
   fP0 = -1000;
   fP1 = -1000;
   fP2 = -1000;
@@ -1885,3 +1895,48 @@ Bool_t CCMLEM::SaveToFile(TObject* ob)
     return kTRUE;
 }
 
+void CCMLEM::DrawAllIterations(void)
+{
+    TCanvas* can_allIterations = new TCanvas("MLEM2D_allIterations","MLEM2D_allIterations",1000,1000);
+    TCanvas* can_allIterations_z  = new TCanvas("MLEM1DZ_allIterations","MLEM1DZ_allIterations",1000,1000);
+    TCanvas* can_allIterations_y  = new TCanvas("MLEM1DY_allIterations","MLEM1DY_allIterations",1000,1000);
+    TCanvas* can_allIterations_2 = new TCanvas("MLEM2D_allIterations_2","MLEM2D_allIterations_2",1000,1000);
+
+    can_allIterations->DivideSquare(20);
+    can_allIterations_z->DivideSquare(20);
+    can_allIterations_y->DivideSquare(20);
+
+    for(int iter = 0; iter < fIter; iter++) {
+
+        can_allIterations->cd(2*iter+1);
+        gPad->SetLogx(0);
+        fImage[iter+1]->Draw("colz");
+        fImage[iter+1]->Write();
+
+        can_allIterations->cd(2*iter+2);
+        gPad->SetLogx(0);
+        fSH[iter+1]->Draw("colz");
+        fSH[iter+1]->Write();
+
+        can_allIterations_z->cd(2*iter+1);
+        fImage[iter+1]->ProjectionX()->Draw();
+        fImage[iter+1]->ProjectionX()->Write();
+
+        can_allIterations_z->cd(2*iter+2);
+        fSH[iter+1]->ProjectionX()->Draw();
+        fSH[iter+1]->ProjectionX()->Write();
+
+        can_allIterations_y->cd(2*iter+1);
+        fImage[iter+1]->ProjectionY()->Draw();
+        fImage[iter+1]->ProjectionY()->Write();
+
+        can_allIterations_y->cd(2*iter+2);
+        fSH[iter+1]->ProjectionY()->Draw();
+        fSH[iter+1]->ProjectionY()->Write();
+    }
+
+    can_allIterations->Write();
+    can_allIterations_z->Write();
+    can_allIterations_y->Write();
+
+}

@@ -221,7 +221,7 @@ Bool_t CCSimulation::ProcessEvent()
     // cout << fXofSource << "\t" << fYofSource << "\t" << fZofSource << endl;
     // cout << endl << endl << endl;
 
-    fEnergy0 = 4.44;
+    fEnergy0 = 1.275;
     Track fTrack1;
     fTrack1.SetPoint(fPoint0);
     fTrack1.SetVersor(fVersor1);
@@ -293,7 +293,7 @@ Bool_t CCSimulation::ProcessEvent()
        if(fVerbose) cout << "\tNo cross point with the absorber\n" << endl;
        return kFALSE;
     }*/
-    auto& fPoint2 = *absData;
+    fPoint2 = *absData;
 
     fTree->Fill();
     hSource->Fill(fPoint0.Z(), fPoint0.Y());

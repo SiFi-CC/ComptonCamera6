@@ -101,12 +101,12 @@ TVector3* InputReaderPMIDec2021::GetGammaDirScattered(void) {
 }
 //------------------------------------------------------------------
 double InputReaderPMIDec2021::GetEnergyLoss(void) {
-    fEnergyLoss = fEnergy1;
+    fEnergyLoss = fEnergy1/1000.;
     return fEnergyLoss;
 }
 //------------------------------------------------------------------
 double InputReaderPMIDec2021::GetEnergyScattered(void) {
-    fEnergyScattered = fEnergy2;
+    fEnergyScattered = fEnergy2/1000.;
     return fEnergyScattered;
 }
 //------------------------------------------------------------------
@@ -119,10 +119,10 @@ void InputReaderPMIDec2021::SelectEvents() {
 }
 //------------------------------------------------------------------
 bool InputReaderPMIDec2021::SelectSingleEvent() {
-	if(3000<(fTimeStampAbs-fTimeStampSca) && (fTimeStampSca-fTimeStampAbs)<7000 && fEnergy1+fEnergy2>1100 && fEnergy1+fEnergy2<1450 && fEnergy1<450 && fPoint1->y()!=50 && fPoint1->y()!=-50) return true;
+	if(3000<(fTimeStampAbs-fTimeStampSca) && (fTimeStampAbs-fTimeStampSca)<7000 && fEnergy1+fEnergy2>1100 && fEnergy1+fEnergy2<1450 && fEnergy1<450 && fPoint1->y()!=50 && fPoint1->y()!=-50) return true;
 	//if(1100 <( fEnergy1+fEnergy2) && (fEnergy1+fEnergy2)<1300) return true;
+	//if(fPoint1->y()<50 && fPoint1->y()>-50) return true;
 	else return false;    
-	//return true;
 }
 //------------------------------------------------------------------
 void InputReaderPMIDec2021::Clear(void) {

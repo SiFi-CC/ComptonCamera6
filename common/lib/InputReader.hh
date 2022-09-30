@@ -58,10 +58,13 @@ public:
 
     // SIMPLE SPECIFIC
 
-    void virtual SetSmearing(bool smear, Double_t posX, Double_t posY, Double_t posZ);
+    void virtual SetSmearing(bool smear, Double_t posScatX, Double_t posAbsX, Double_t posScatY, Double_t posAbsY, Double_t posScatZ, Double_t posAbsZ);
     Double_t virtual SmearGaus(double val, double sigma);
     Double_t virtual SmearBox(double x, double resolution);
-    Double_t virtual GetSigmaE(double energy);
+    Double_t virtual GetSigmaEScat(double energy);
+    Double_t virtual GetSigmaEAbs(double energy);
+    void virtual ReadGeometry(void) { }; ///< Reads scatterer's and absorber's width and height
+    void virtual PrintEvent() { };
     // EI SPECIFIC
 
 //GEANT4 SPECIFIC
@@ -91,8 +94,9 @@ inline list<int> InputReader::GetSelectedEvents(void){return std::list<int>();}
 inline void InputReader::SetLoadMonteCarlo(void){}
 inline void InputReader::SetLoadOnlyCorrect(int value){}
 /// SIMPLE SPECIFIC
-inline void InputReader::SetSmearing(bool smear, Double_t posX, Double_t posY, Double_t posZ) {}
+inline void InputReader::SetSmearing(bool smear, Double_t posScatX, Double_t posAbsX, Double_t posScatY, Double_t posAbsY, Double_t posScatZ, Double_t posAbsZ) {}
 inline Double_t InputReader::SmearGaus(double val, double sigma) { return 0; }
 inline Double_t InputReader::SmearBox(double x, double resolution) { return 0; }
-inline Double_t InputReader::GetSigmaE(double energy) { return 0; }
+inline Double_t InputReader::GetSigmaEScat(double energy) { return 0; }
+inline Double_t InputReader::GetSigmaEAbs(double energy) { return 0; }
 #endif
