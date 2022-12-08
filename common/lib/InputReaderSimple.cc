@@ -118,7 +118,7 @@ void InputReaderSimple::SelectEvents() {
 }
 //------------------------------------------------------------------
 bool InputReaderSimple::SelectSingleEvent() {
-    if (fEnergy1 > 0.000015) return true;
+    if (fEnergy1 > 0.05) return true;
     else return false;
 }
 //------------------------------------------------------------------
@@ -191,7 +191,7 @@ void InputReaderSimple::SetSmearing(bool smear, Double_t posScatX, Double_t posA
     TF1* func = new TF1("fit1", "[0]+[1]/sqrt(x)+[2]/x^(3/2)", 0, 4.5);
 
     fHisto->Fit("fit1", "r");
-
+	cout<<func->GetParameter(0)<<" "<<func->GetParError(0)<<" "<<func->GetParameter(1)<<" "<<func->GetParError(1)<<" "<<func->GetParameter(2)<<" "<<func->GetParError(2)<<" "<<endl;
     fScatResolutionX = posScatX;
     fScatResolutionY = posScatY;
     fScatResolutionZ = posScatZ;
@@ -226,6 +226,7 @@ Double_t InputReaderSimple::GetSigmaEScat(double energy)
 //------------------------------------
 Double_t InputReaderSimple::GetSigmaEAbs(double energy)
 {
-    double sigma = (-0.00488 * energy + 0.04688) * energy;
+    //double sigma = (-0.00488 * energy + 0.04688) * energy; Monika
+    double sigma = 0.0942939 * energy -0.0187675;
     return sigma;
 }

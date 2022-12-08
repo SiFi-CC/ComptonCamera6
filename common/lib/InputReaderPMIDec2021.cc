@@ -119,10 +119,23 @@ void InputReaderPMIDec2021::SelectEvents() {
 }
 //------------------------------------------------------------------
 bool InputReaderPMIDec2021::SelectSingleEvent() {
-	if(3000<(fTimeStampAbs-fTimeStampSca) && (fTimeStampAbs-fTimeStampSca)<7000 && fEnergy1+fEnergy2>1100 && fEnergy1+fEnergy2<1450 && fEnergy1<450 && fPoint1->y()!=50 && fPoint1->y()!=-50) return true;
+//	if(3000<(fTimeStampAbs-fTimeStampSca) && (fTimeStampAbs-fTimeStampSca)<7000 && fEnergy1+fEnergy2>1100 && fEnergy1+fEnergy2<1450 && fEnergy1<450 && fPoint1->y()!=50 && fPoint1->y()!=-50) return true;
 	//if(1100 <( fEnergy1+fEnergy2) && (fEnergy1+fEnergy2)<1300) return true;
 	//if(fPoint1->y()<50 && fPoint1->y()>-50) return true;
-	else return false;    
+	//else return false;
+if (fPoint1->Y() == 50 || fPoint1->Y()== -50){
+        return false;
+        }
+else if (isnan(fPoint1->X()) || isnan(fPoint1->Y())){return false;}
+else if ((fEnergy1+fEnergy2>1100)&&(fEnergy1+fEnergy2<1500)&&fEnergy1<500){return true;}
+
+else {
+        return false;}
+        return true;
+
+	
+    
+	return true;
 }
 //------------------------------------------------------------------
 void InputReaderPMIDec2021::Clear(void) {
