@@ -125,6 +125,7 @@ private:
 
     TH2F* fSH[250];
     TH2F* fSmatrix;
+    TH2F* fBackground;
     TTree* fTree;
     TClonesArray* fArray; ///< Array of information for intersection of Compton
                           ///< cone with image plane

@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <cassert>
 
 #include <TFitResultPtr.h>
 
@@ -40,6 +41,7 @@ CCMLEM::CCMLEM(TString path)
 
     Clear();
 
+    fBackground = nullptr;
     bool stat_config = ReadConfig(path);
     bool stat_reader = SetInputReader();
     if (!stat_config || !stat_reader) { throw "##### Exception in CCMLEM constructor!"; }
@@ -577,7 +579,20 @@ Bool_t CCMLEM::Reconstruct(void)
       SaveToFile(fSensitivity);
      */
     /// End of Sensitivity map calculation
-
+    
+    //TODO add background subtraction!
+    
+    if(fBackground != nullptr)
+    {
+        assert(fImage[0]->GetXaxis()->GetNbins() == fBackground->GetXaxis()->GetNbins());
+        assert(fImage[0]->GetYaxis()->GetNbins() == fBackground->GetYaxis()->GetNbins());
+        assert(fImage[0]->GetBinWidth(1) == fBackground->GetBinWidth(1));
+        
+        TH2F *fImageClone = (TH2F*)fImage[0]->Clone("image_bp_bgs");
+        fImageClone->Add(fBackground, -1);
+        SaveToFile(fImageClone);
+    }
+    
     for (int iter = 1; iter < fIter + 1; iter++)
     {
 
@@ -1394,6 +1409,22 @@ Bool_t CCMLEM::ReadConfig(TString path)
         else if (comment.Contains("Load only correct identified"))
         {
             config >> fCorrectIdentified;
+        }
+        else if(comment.Contains("File storing background histogram")) // If you dont want to subtract bg, don't include this line!
+        {
+            TString fname = "";
+            config >> fname;
+            
+            TFile *f_bg = new TFile(fname);
+            
+            if(!f_bg->IsOpen())
+            {
+                std::cerr << __PRETTY_FUNCTION__ << std::endl;
+                std::cerr << "Could not open " << fname << " file" << std::endl;
+                std::abort();
+            }
+            
+            fBackground = (TH2F*)f_bg->Get("image_smooth_2.00");
         }
         else
         {

@@ -26,3 +26,6 @@
 0
 # Load only correct identified
 0
+# File storing background histogram
+./results/background.root
+
