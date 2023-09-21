@@ -28,4 +28,6 @@
 0
 # File storing background histogram
 ./results/background.root
+# Scaling factor for background subtraction
+2
 
