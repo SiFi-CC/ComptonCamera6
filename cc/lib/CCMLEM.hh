@@ -116,6 +116,7 @@ private:
     Double_t fROIZ;                 ///< z-component of ROI for convergence criterium
     Double_t fConvergenceCriterium; ///< value that leads to stop of iterations
     Double_t fSigma[250];           ///< Relative sigma values between adjustent iterations
+    Float_t fScale;                 ///< Scaling factor for background subtraction: BGS = BP - fScaling*BG
 
     Double_t fDenominator[10000000];
     TH2F* fSensitivity;

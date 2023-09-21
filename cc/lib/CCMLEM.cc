@@ -589,7 +589,7 @@ Bool_t CCMLEM::Reconstruct(void)
         assert(fImage[0]->GetBinWidth(1) == fBackground->GetBinWidth(1));
         
         TH2F *fImageClone = (TH2F*)fImage[0]->Clone("image_bp_bgs");
-        fImageClone->Add(fBackground, -1);
+        fImageClone->Add(fBackground, -1*fScale);
         SaveToFile(fImageClone);
     }
     
@@ -1425,6 +1425,10 @@ Bool_t CCMLEM::ReadConfig(TString path)
             }
             
             fBackground = (TH2F*)f_bg->Get("image_smooth_2.00");
+        }
+        else if(comment.Contains("Scaling factor for background subtraction"))
+        {
+            config >> fScale;
         }
         else
         {
